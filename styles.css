@@ -355,47 +355,6 @@ h3 {
   transform: translate(-50%, -50%);
 }
 
-.video-overlay {
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
-  z-index: 3;
-  display: grid;
-  gap: 2px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 8px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
-}
-
-.video-overlay span {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.video-overlay strong {
-  font-size: 18px;
-}
-
-.video-link {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
-  z-index: 3;
-  padding: 9px 12px;
-  border-radius: 8px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.48);
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: none;
-  backdrop-filter: blur(12px);
-}
-
 .section {
   padding: clamp(48px, 7vw, 88px) clamp(20px, 5vw, 64px);
   border-top: 1px solid var(--line);
@@ -683,10 +642,6 @@ footer p {
   .hero {
     min-height: auto;
     overflow: hidden;
-  }
-
-  .hero-video {
-    order: -1;
   }
 
   .event-grid {
