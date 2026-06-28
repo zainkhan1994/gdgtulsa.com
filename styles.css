@@ -226,6 +226,24 @@ h3 {
   margin-top: 30px;
 }
 
+.intro-video {
+  max-width: 620px;
+  margin-top: 24px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #000;
+  box-shadow: 0 18px 48px rgba(32, 33, 36, 0.14);
+}
+
+.intro-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
