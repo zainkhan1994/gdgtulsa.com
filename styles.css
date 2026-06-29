@@ -85,46 +85,25 @@ a {
 }
 
 .mark {
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 12px);
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(32, 33, 36, 0.08);
+}
+
+.g-dot {
   display: block;
-  width: 42px;
-  height: 32px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
 
-.arm {
-  position: absolute;
-  width: 24px;
-  height: 11px;
-  border-radius: 10px;
-  outline: 2px solid var(--ink);
-}
-
-.red {
-  left: 3px;
-  top: 6px;
+.red-dot {
   background: var(--red);
-  transform: rotate(-35deg);
-}
-
-.blue {
-  left: 3px;
-  bottom: 6px;
-  background: var(--blue);
-  transform: rotate(35deg);
-}
-
-.green {
-  right: 3px;
-  top: 6px;
-  background: var(--green);
-  transform: rotate(35deg);
-}
-
-.yellow {
-  right: 3px;
-  bottom: 6px;
-  background: var(--yellow);
-  transform: rotate(-35deg);
 }
 
 nav {
@@ -279,8 +258,6 @@ h3 {
 
 .stat-button:hover,
 .stat-button:focus-visible,
-.topic-chip:hover,
-.topic-chip:focus-visible,
 .filter-button:hover,
 .filter-button:focus-visible {
   border-color: var(--blue);
@@ -736,8 +713,7 @@ h3 {
   margin: -6px 0 24px;
 }
 
-.filter-button,
-.topic-chip {
+.filter-button {
   display: inline-flex;
   min-height: 40px;
   align-items: center;
@@ -755,6 +731,51 @@ h3 {
   border-color: var(--blue);
   color: #fff;
   background: var(--blue);
+}
+
+.events-section {
+  position: relative;
+}
+
+.events-soon {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.events-blur {
+  filter: blur(7px);
+  opacity: 0.62;
+  transform: scale(1.01);
+  pointer-events: none;
+  user-select: none;
+}
+
+.coming-soon {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  font-size: clamp(48px, 9vw, 116px);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 12px 40px rgba(255, 255, 255, 0.8);
+}
+
+.coming-soon::before {
+  position: absolute;
+  width: min(540px, 80vw);
+  height: 170px;
+  border: 1px solid rgba(224, 227, 231, 0.76);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 30px 90px rgba(32, 33, 36, 0.16);
+  backdrop-filter: blur(14px);
+  content: "";
+  z-index: -1;
 }
 
 .event-grid {
@@ -794,62 +815,6 @@ h3 {
   font-weight: 800;
 }
 
-.split {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.55fr) minmax(360px, 1fr);
-  gap: 36px;
-  align-items: start;
-  background: var(--soft);
-}
-
-.topic-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.topic-list span {
-  display: none;
-}
-
-.topic-chip.is-active {
-  border-color: var(--green);
-  color: #fff;
-  background: var(--green);
-}
-
-.lab-copy {
-  max-width: 480px;
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1.58;
-}
-
-.lab-card {
-  margin-top: 18px;
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-}
-
-.lab-card span {
-  display: inline-flex;
-  margin-bottom: 14px;
-  padding: 5px 9px;
-  border-radius: 8px;
-  color: #0f5f2b;
-  background: #dff4e6;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.lab-card p {
-  margin-bottom: 0;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
 .contact-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -876,12 +841,28 @@ h3 {
   width: min(100%, 340px);
 }
 
-.join-card img {
-  width: 100%;
-  height: auto;
+.community-card {
+  width: min(100%, 420px);
+  padding: 28px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background:
+    linear-gradient(135deg, rgba(66, 133, 244, 0.12), transparent 42%),
+    linear-gradient(315deg, rgba(52, 168, 83, 0.12), transparent 40%),
+    #fff;
+  box-shadow: 0 18px 54px rgba(32, 33, 36, 0.08);
+}
+
+.community-card h3 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.08;
+}
+
+.community-card p {
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .toast {
@@ -932,7 +913,6 @@ footer p {
 @media (max-width: 900px) {
   .hero,
   .about-grid,
-  .split,
   .contact-panel {
     grid-template-columns: 1fr;
   }
@@ -1029,8 +1009,7 @@ footer p {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .filter-button,
-  .topic-chip {
+  .filter-button {
     flex: 1 1 130px;
   }
 
