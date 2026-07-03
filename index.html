@@ -27,50 +27,137 @@
     <div class="scroll-meter" aria-hidden="true"></div>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="#top" aria-label="GDG Tulsa home">
-        <span class="mark" aria-hidden="true">
-          <span class="g-dot blue-dot"></span>
-          <span class="g-dot red-dot"></span>
-          <span class="g-dot yellow-dot"></span>
-          <span class="g-dot green-dot"></span>
-        </span>
+        <img class="brand-logo" src="favicon.svg" alt="">
         <span>
-          <strong>GDG Tulsa</strong>
-          <small>Tulsa, Oklahoma</small>
+          <strong>Google Developer Group Tulsa</strong>
         </span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#about">About</a>
-        <a href="#learn">Learn</a>
         <a href="#events">Events</a>
-        <a href="#join">Join</a>
+        <a href="#join">Community</a>
+        <a href="#learn">Resources</a>
+        <a href="#about">About</a>
+        <a href="#join">Partner</a>
       </nav>
+      <div class="header-actions">
+        <button class="theme-button" type="button" aria-label="Toggle theme">
+          <span aria-hidden="true">☼</span>
+        </button>
+        <a class="button primary header-join" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
+      </div>
     </header>
 
     <main id="top">
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Google Developer Group Tulsa</p>
-          <h1>Build with Google technology, right here in Tulsa.</h1>
+          <p class="eyebrow hero-pill">New community in Tulsa</p>
+          <h1>
+            Build with
+            <span class="google-word" aria-label="Google">
+              <span class="google-blue">G</span><span class="google-red">o</span><span class="google-yellow">o</span><span class="google-blue">g</span><span class="google-green">l</span><span class="google-red">e</span>
+            </span>
+            in Tulsa.
+          </h1>
           <p class="lead">
-            GDG Tulsa is a newly launched developer community bringing local builders together for practical learning,
-            hands-on workshops, demos, and conversations around modern Google tools.
+            GDG Tulsa brings local builders together for practical learning, hands-on workshops, demos,
+            and conversations around modern Google tools and technologies.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join the chapter</a>
-            <a class="button secondary" href="#events">See what we host</a>
+            <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener"><span aria-hidden="true">●●</span>Join GDG Tulsa</a>
+            <a class="button secondary" href="#events"><span aria-hidden="true">□</span>See Upcoming Events</a>
+          </div>
+          <div class="hero-feature-grid" aria-label="GDG Tulsa activities">
+            <article>
+              <span class="feature-icon blue-point">●●</span>
+              <strong>Workshops</strong>
+              <small>Hands-on learning</small>
+            </article>
+            <article>
+              <span class="feature-icon red-point">&lt;/&gt;</span>
+              <strong>Build Nights</strong>
+              <small>Code. Build. Ship.</small>
+            </article>
+            <article>
+              <span class="feature-icon green-point">☁</span>
+              <strong>AI & Cloud</strong>
+              <small>Modern Google tools</small>
+            </article>
+            <article>
+              <span class="feature-icon yellow-point">●●●</span>
+              <strong>Community</strong>
+              <small>Connect & grow</small>
+            </article>
+          </div>
+          <div class="hero-social-proof">
+            <div class="avatar-stack" aria-hidden="true">
+              <span style="--avatar:#fbbc04">Z</span>
+              <span style="--avatar:#34a853">G</span>
+              <span style="--avatar:#ea4335">D</span>
+              <span style="--avatar:#4285f4">T</span>
+              <span style="--avatar:#5f6368">+</span>
+            </div>
+            <p>Join developers, designers, and innovators across Tulsa. <strong>Everyone is welcome.</strong></p>
           </div>
         </div>
-        <div class="hero-art hero-symbol" aria-label="GDG Tulsa visual">
-          <div class="hero-symbol-card">
-            <span class="mark hero-mark" aria-hidden="true">
-              <span class="g-dot blue-dot"></span>
-              <span class="g-dot red-dot"></span>
-              <span class="g-dot yellow-dot"></span>
-              <span class="g-dot green-dot"></span>
-            </span>
-            <strong>GDG Tulsa</strong>
-            <small>Learn. Connect. Build. Lead.</small>
+        <div class="hero-art hero-scene" aria-label="GDG Tulsa animated hero visual">
+          <span class="hero-orbit blue-orbit" aria-hidden="true"></span>
+          <span class="hero-orbit yellow-orbit" aria-hidden="true"></span>
+          <span class="hero-orbit green-orbit" aria-hidden="true"></span>
+          <span class="dotted-field dotted-left" aria-hidden="true"></span>
+          <span class="dotted-field dotted-right" aria-hidden="true"></span>
+          <div class="code-card float-card">
+            <span class="code-badge">&lt;/&gt;</span>
+            <p>build something amazing</p>
+            <pre><code>import { Gemini } from 'google-ai';
+
+const idea = new Gemini({
+  model: 'gemini-1.5-flash',
+  prompt: 'What will we build
+  in Tulsa?'
+});</code></pre>
           </div>
+          <div class="tulsa-photo float-card" aria-label="Tulsa skyline">
+            <img src="tulsa-skyline.jpeg" alt="Downtown Tulsa skyline">
+          </div>
+          <div class="map-card float-card">
+            <div class="map-pin"></div>
+            <div class="map-lines"></div>
+            <div class="map-brand">
+              <img src="favicon.svg" alt="">
+              <span>Google Developer Groups<br><b>Tulsa</b></span>
+            </div>
+          </div>
+          <article class="workshop-card float-card">
+            <div>
+              <strong>Upcoming Workshop</strong>
+              <span class="calendar-dot">□</span>
+            </div>
+            <hr>
+            <div class="event-mini">
+              <span><b>MAY</b>24</span>
+              <p><strong>Build with Gemini API</strong><small>Hands-on workshop</small><small>Sat, May 24 · 10:00 AM</small><small>Tulsa, OK</small></p>
+            </div>
+          </article>
+          <article class="build-card float-card">
+            <div class="event-mini">
+              <span><b>JUN</b>07</span>
+              <p><strong>Firebase for Builders</strong><small>Live coding & demos</small><small>Sat, Jun 7 · 6:00 PM</small><small>Tulsa, OK</small></p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="hero-tools" aria-label="Supported by Google technologies">
+        <div class="community-powered">
+          <span class="heart-icon" aria-hidden="true">♡</span>
+          <p>Powered by community. Supported by Google.</p>
+        </div>
+        <div class="brand-strip">
+          <span class="google-mini"><b class="google-blue">G</b><b class="google-red">o</b><b class="google-yellow">o</b><b class="google-blue">g</b><b class="google-green">l</b><b class="google-red">e</b></span>
+          <span><b class="firebase-icon small-icon"></b>Firebase</span>
+          <span><b class="gemini-icon small-icon"></b>Gemini</span>
+          <span><b class="android-icon small-icon"></b>Android</span>
+          <span><b class="cloud-icon small-icon"></b>Google Cloud</span>
         </div>
       </section>
 
