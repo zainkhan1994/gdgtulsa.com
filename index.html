@@ -12,7 +12,18 @@
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
   </head>
-  <body>
+  <body class="intro-active">
+    <section class="intro-loader" aria-label="GDG Tulsa intro loading screen">
+      <div class="intro-video-shell">
+        <video class="intro-video" autoplay muted playsinline preload="auto">
+          <source src="gdg-tulsa-intro.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="intro-meta">
+        <span>GDG Tulsa</span>
+        <button class="intro-skip" type="button">Enter site</button>
+      </div>
+    </section>
     <div class="scroll-meter" aria-hidden="true"></div>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="#top" aria-label="GDG Tulsa home">
@@ -49,10 +60,17 @@
             <a class="button secondary" href="#events">See what we host</a>
           </div>
         </div>
-        <div class="hero-art hero-video" aria-label="GDG Tulsa intro video">
-          <video autoplay muted loop playsinline preload="metadata">
-            <source src="gdg-tulsa-intro.mp4" type="video/mp4">
-          </video>
+        <div class="hero-art hero-symbol" aria-label="GDG Tulsa visual">
+          <div class="hero-symbol-card">
+            <span class="mark hero-mark" aria-hidden="true">
+              <span class="g-dot blue-dot"></span>
+              <span class="g-dot red-dot"></span>
+              <span class="g-dot yellow-dot"></span>
+              <span class="g-dot green-dot"></span>
+            </span>
+            <strong>GDG Tulsa</strong>
+            <small>Learn. Connect. Build. Lead.</small>
+          </div>
         </div>
       </section>
 

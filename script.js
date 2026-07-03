@@ -2,8 +2,28 @@ const meter = document.querySelector(".scroll-meter");
 const toast = document.querySelector(".toast");
 const navLinks = [...document.querySelectorAll("nav a")];
 const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+const introLoader = document.querySelector(".intro-loader");
+const introVideo = document.querySelector(".intro-video");
+const introSkip = document.querySelector(".intro-skip");
+let introClosed = false;
+
+function closeIntro() {
+  if (introClosed) return;
+  introClosed = true;
+  document.body.classList.remove("intro-active");
+  document.body.classList.add("intro-complete");
+  window.setTimeout(() => introLoader?.remove(), 650);
+}
+
+if (introLoader && introVideo) {
+  introVideo.play().catch(() => {});
+  introVideo.addEventListener("ended", closeIntro);
+  introSkip?.addEventListener("click", closeIntro);
+  window.setTimeout(closeIntro, 7200);
+}
 
 function showToast(message) {
+  if (!toast) return;
   toast.textContent = message;
   toast.classList.add("is-visible");
   window.setTimeout(() => toast.classList.remove("is-visible"), 1800);
