@@ -138,9 +138,9 @@ nav a.is-active::after {
 .hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
-  gap: clamp(28px, 5vw, 72px);
-  align-items: center;
+  grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
+  gap: clamp(34px, 6vw, 86px);
+  align-items: end;
   padding: clamp(42px, 7vw, 86px) clamp(20px, 5vw, 64px) 46px;
   min-height: min(820px, calc(100vh - 76px));
   background:
@@ -219,44 +219,6 @@ h3 {
   margin-top: 30px;
 }
 
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  max-width: 620px;
-  margin-top: 26px;
-}
-
-.stat-button {
-  min-width: 0;
-  padding: 14px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--ink);
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-}
-
-.stat-button strong,
-.stat-button span {
-  display: block;
-}
-
-.stat-button strong {
-  font-size: 22px;
-}
-
-.stat-button span {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.stat-button:hover,
-.stat-button:focus-visible,
 .filter-button:hover,
 .filter-button:focus-visible {
   border-color: var(--blue);
@@ -301,10 +263,12 @@ h3 {
 .hero-art {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 16 / 10;
+  align-self: end;
+  aspect-ratio: 16 / 9;
   border: 1px solid rgba(32, 33, 36, 0.88);
   border-radius: 8px;
   background: var(--charcoal);
+  margin-top: clamp(42px, 8vw, 92px);
   box-shadow: 0 30px 90px rgba(32, 33, 36, 0.22);
   transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
   transition: transform 180ms ease, box-shadow 180ms ease;
@@ -321,14 +285,13 @@ h3 {
   content: "";
 }
 
-.hero-video iframe {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 178%;
+.hero-video video {
+  display: block;
+  width: 100%;
   height: 100%;
   border: 0;
-  transform: translate(-50%, -50%);
+  object-fit: contain;
+  background: #000;
 }
 
 .section {
@@ -959,9 +922,6 @@ footer p {
     justify-self: start;
   }
 
-  .hero-stats {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
