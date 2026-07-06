@@ -10,7 +10,7 @@
     <meta property="og:image" content="/header.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
-    <script src="script.js" defer></script>
+    <script type="module" src="script.js"></script>
   </head>
   <body class="intro-active">
     <section class="intro-loader" aria-label="GDG Tulsa intro loading screen">
@@ -34,6 +34,7 @@
       </a>
       <nav aria-label="Primary navigation">
         <a href="#events">Events</a>
+        <a href="#members">Members</a>
         <a href="#join">Community</a>
         <a href="#learn">Resources</a>
         <a href="#about">About</a>
@@ -43,6 +44,7 @@
         <button class="theme-button" type="button" aria-label="Toggle theme">
           <span aria-hidden="true">☼</span>
         </button>
+        <button class="button secondary header-member" type="button" data-open-auth="login">Member Sign In</button>
         <a class="button primary header-join" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
       </div>
     </header>
@@ -299,6 +301,50 @@ const idea = new Gemini({
         </div>
       </section>
 
+      <section id="members" class="section member-section is-locked" data-member-section>
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Members</p>
+            <h2>Member opportunities, events, and career resources.</h2>
+          </div>
+          <div class="member-heading-actions">
+            <button class="button secondary" type="button" data-open-auth="login">Sign in</button>
+            <button class="button primary" type="button" data-open-auth="register">Create account</button>
+          </div>
+        </div>
+
+        <div class="member-status-card">
+          <div>
+            <p class="status-kicker" data-member-kicker>Members only</p>
+            <h3 data-member-title>Unlock certifications, accelerator links, job leads, and member events.</h3>
+            <p data-member-copy>Register with the minimum needed details, confirm your email and terms, then sign in to see the full portal.</p>
+          </div>
+          <div class="member-profile-card" data-member-profile>
+            <span class="member-avatar" data-member-avatar>G</span>
+            <div>
+              <strong data-member-profile-name>Guest member</strong>
+              <small data-member-profile-email>Sign in to unlock the portal</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="exclusive-shell">
+          <div class="gated-overlay" data-gated-overlay>
+            <strong>Member content is protected</strong>
+            <p>Certifications, accelerators, Google opportunities, event registration, and office-hour scheduling unlock after confirmation.</p>
+            <button class="button primary" type="button" data-open-auth="register">Become a member</button>
+          </div>
+
+          <div class="member-action-strip">
+            <button class="button secondary" type="button" data-open-scheduler>Schedule time with me</button>
+            <a class="button secondary" href="admin.html" data-admin-only hidden>Admin Dashboard</a>
+            <button class="button secondary member-signout" type="button" data-member-signout hidden>Sign out</button>
+          </div>
+
+          <div class="member-feed" data-member-feed aria-live="polite"></div>
+        </div>
+      </section>
+
       <section id="join" class="section join-points-section">
         <div class="section-heading centered">
           <div>
@@ -346,6 +392,87 @@ const idea = new Gemini({
       </div>
       <p>Launching soon in Tulsa, Oklahoma.</p>
     </footer>
+    <div class="modal-backdrop" data-auth-modal hidden>
+      <section class="auth-panel" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <button class="icon-close" type="button" data-close-auth aria-label="Close member dialog">×</button>
+        <div class="auth-copy">
+          <p class="section-label">GDG Tulsa Members</p>
+          <h2 id="auth-title">Create your member account.</h2>
+          <p>We collect only what is needed for membership: name, email, and agreement to member terms.</p>
+        </div>
+        <div class="auth-tabs" role="tablist" aria-label="Member account options">
+          <button class="is-active" type="button" data-auth-tab="register">Register</button>
+          <button type="button" data-auth-tab="login">Sign in</button>
+        </div>
+        <form class="auth-form" data-auth-form="register">
+          <label>
+            Full name
+            <input type="text" name="name" autocomplete="name" required>
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" name="terms" required>
+            <span>I confirm my membership request and agree to GDG Tulsa member terms and event code of conduct.</span>
+          </label>
+          <button class="button primary" type="submit">Send confirmation email</button>
+        </form>
+        <form class="auth-form" data-auth-form="login" hidden>
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+          <button class="button primary" type="submit">Sign in</button>
+        </form>
+        <div class="confirm-panel" data-confirm-panel hidden>
+          <strong>Confirmation email sent</strong>
+          <p>Open the secure link from your inbox on this device. Once verified, this page will unlock the member portal automatically.</p>
+          <button class="button secondary" type="button" data-close-auth>I'll check my email</button>
+        </div>
+        <button class="google-auth-button" type="button" data-google-login>
+          <span aria-hidden="true">G</span>
+          Continue with Google
+        </button>
+      </section>
+    </div>
+    <div class="modal-backdrop" data-schedule-modal hidden>
+      <section class="auth-panel schedule-panel" role="dialog" aria-modal="true" aria-labelledby="schedule-title">
+        <button class="icon-close" type="button" data-close-scheduler aria-label="Close scheduler">×</button>
+        <div class="auth-copy">
+          <p class="section-label">Office Hours</p>
+          <h2 id="schedule-title">Schedule time with GDG Tulsa.</h2>
+          <p>Pick a member office-hour slot for certification help, project feedback, career prep, or community questions.</p>
+        </div>
+        <form class="auth-form" data-schedule-form>
+          <label>
+            Topic
+            <select name="topic" required>
+              <option value="">Choose a topic</option>
+              <option>Certification planning</option>
+              <option>Project feedback</option>
+              <option>Career and job prep</option>
+              <option>Startup or accelerator prep</option>
+            </select>
+          </label>
+          <label>
+            Preferred slot
+            <select name="slot" required>
+              <option value="">Choose a time</option>
+              <option>Tuesday, 4:00 PM</option>
+              <option>Wednesday, 12:30 PM</option>
+              <option>Thursday, 5:30 PM</option>
+            </select>
+          </label>
+          <label>
+            Notes
+            <textarea name="notes" rows="4" placeholder="What would be useful to cover?"></textarea>
+          </label>
+          <button class="button primary" type="submit">Request time</button>
+        </form>
+      </section>
+    </div>
     <div class="toast" role="status" aria-live="polite">Copied</div>
   </body>
 </html>

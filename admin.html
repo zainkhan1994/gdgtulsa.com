@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GDG Tulsa Admin | Members and Events</title>
+    <meta name="description" content="GDG Tulsa admin dashboard for member analytics, events, registrations, and sponsor tracking.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="script.js"></script>
+  </head>
+  <body class="admin-body">
+    <main class="admin-app" data-admin-dashboard>
+      <aside class="admin-sidebar" aria-label="Admin navigation">
+        <a class="admin-brand" href="index.html#top" aria-label="GDG Tulsa website">
+          <img src="favicon.svg" alt="">
+        </a>
+        <nav class="admin-side-nav" aria-label="Admin sections">
+          <a href="index.html#top">Home</a>
+          <button class="is-active" type="button" data-admin-tab="overview">Analytics</button>
+          <button type="button" data-admin-tab="events">Events</button>
+          <button type="button" data-admin-tab="emails">Emails</button>
+          <button type="button" data-admin-tab="members">Members</button>
+          <button type="button" data-admin-tab="settings">Settings</button>
+          <button type="button" data-admin-tab="sponsors">Sponsors</button>
+        </nav>
+      </aside>
+
+      <section class="admin-main">
+        <header class="admin-header">
+          <div>
+            <p class="section-label">Dashboard</p>
+            <h1>Analytics: GDG Tulsa</h1>
+          </div>
+          <div class="admin-header-actions">
+            <button class="button primary" type="button" data-admin-google-login>Admin Google Sign In</button>
+            <button class="button secondary member-signout" type="button" data-member-signout hidden>Sign out</button>
+            <a class="button secondary" href="index.html#members">Website</a>
+          </div>
+        </header>
+
+        <nav class="admin-tabs" aria-label="Analytics tabs">
+          <button class="is-active" type="button" data-admin-tab="overview">Overview</button>
+          <button type="button" data-admin-tab="members">Members</button>
+          <button type="button" data-admin-tab="events">Events</button>
+          <button type="button" data-admin-tab="registrations">Registrations</button>
+          <button type="button" data-admin-tab="tickets">Tickets</button>
+          <button type="button" data-admin-tab="sponsors">Sponsors</button>
+          <button type="button" data-admin-tab="website">Website</button>
+        </nav>
+
+        <section class="admin-filters" aria-label="Dashboard filters">
+          <label>
+            Imported
+            <span>
+              <button class="filter-button is-active" type="button">Yes</button>
+              <button class="filter-button" type="button">No</button>
+            </span>
+          </label>
+          <label>
+            Join date
+            <button class="filter-button is-active" type="button">Last 365 Days</button>
+          </label>
+          <label>
+            Event start date
+            <button class="filter-button" type="button">Is any time</button>
+          </label>
+        </section>
+
+        <section class="admin-panel is-active" data-admin-panel="overview">
+          <div class="admin-stat-grid">
+            <article>
+              <strong data-admin-total-members>39</strong>
+              <span>Chapter members all time</span>
+            </article>
+            <article>
+              <strong data-admin-new-members>0</strong>
+              <span>New member accounts</span>
+            </article>
+            <article>
+              <strong data-admin-confirmed-members>0</strong>
+              <span>Confirmed members</span>
+            </article>
+            <article>
+              <strong data-admin-registration-count>0</strong>
+              <span>Event registrations</span>
+            </article>
+          </div>
+
+          <div class="admin-overview-grid">
+            <article class="admin-chart-card">
+              <h2>Chapter member growth over time</h2>
+              <svg viewBox="0 0 720 320" role="img" aria-label="Line chart showing GDG Tulsa member growth">
+                <g class="chart-grid">
+                  <line x1="48" x2="696" y1="64" y2="64"></line>
+                  <line x1="48" x2="696" y1="128" y2="128"></line>
+                  <line x1="48" x2="696" y1="192" y2="192"></line>
+                  <line x1="48" x2="696" y1="256" y2="256"></line>
+                </g>
+                <polyline class="chart-line" points="48,246 178,190 286,116 416,84 548,58 696,24"></polyline>
+                <g class="chart-labels">
+                  <text x="48" y="300">January</text>
+                  <text x="178" y="300">February</text>
+                  <text x="286" y="300">March</text>
+                  <text x="416" y="300">April</text>
+                  <text x="548" y="300">May</text>
+                  <text x="696" y="300" text-anchor="end">June</text>
+                </g>
+              </svg>
+            </article>
+            <article class="admin-list-card">
+              <h2>Recent member activity</h2>
+              <ul data-admin-activity-list>
+                <li>No member activity yet.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="members">
+          <div class="admin-section-head">
+            <div>
+              <h2>Members</h2>
+              <p>Confirmed members can see protected resources, register for events, and request office hours.</p>
+            </div>
+            <button class="button primary" type="button" data-admin-export="members">Export CSV</button>
+          </div>
+          <div class="admin-table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Terms</th>
+                </tr>
+              </thead>
+              <tbody data-admin-members-table>
+                <tr>
+                  <td colspan="5">No members registered yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="events">
+          <div class="admin-section-head">
+            <div>
+              <h2>Events</h2>
+              <p>Member-only events and registration interest from the website.</p>
+            </div>
+            <a class="button secondary" href="index.html#members">Open portal</a>
+          </div>
+          <div class="admin-event-grid" data-admin-events-list>
+            <article>
+              <span>Jul 18</span>
+              <h3>Gemini build night</h3>
+              <p>Hands-on AI prototyping.</p>
+            </article>
+            <article>
+              <span>Aug 08</span>
+              <h3>Firebase for founders</h3>
+              <p>Auth, hosting, analytics, and deploy patterns.</p>
+            </article>
+            <article>
+              <span>Sep 12</span>
+              <h3>Google Cloud career lab</h3>
+              <p>Cert prep and role matching.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="registrations">
+          <div class="admin-section-head">
+            <div>
+              <h2>Registrations</h2>
+              <p>Event registrations and office-hour requests submitted by confirmed members.</p>
+            </div>
+            <button class="button primary" type="button" data-admin-export="registrations">Export CSV</button>
+          </div>
+          <div class="admin-table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Email</th>
+                  <th>Request</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody data-admin-registrations-table>
+                <tr>
+                  <td colspan="5">No registrations yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="emails">
+          <div class="admin-section-head">
+            <div>
+              <h2>Emails</h2>
+              <p>Confirmation, event registration, and office-hour messages are ready to connect to an email provider.</p>
+            </div>
+          </div>
+          <div class="admin-card-row">
+            <article>
+              <span>Confirmation</span>
+              <h3>Member confirmation email</h3>
+              <p>Sent after registration with terms confirmation.</p>
+            </article>
+            <article>
+              <span>Events</span>
+              <h3>Registration receipt</h3>
+              <p>Sent after a member reserves a spot.</p>
+            </article>
+            <article>
+              <span>Office Hours</span>
+              <h3>Scheduling request</h3>
+              <p>Sent to the organizer when a member asks for time.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="tickets">
+          <div class="admin-section-head">
+            <div>
+              <h2>Tickets</h2>
+              <p>Free member registrations are tracked as event tickets.</p>
+            </div>
+          </div>
+          <div class="admin-stat-grid compact">
+            <article>
+              <strong data-admin-ticket-count>0</strong>
+              <span>Total tickets reserved</span>
+            </article>
+            <article>
+              <strong>$0</strong>
+              <span>Member ticket price</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="sponsors">
+          <div class="admin-section-head">
+            <div>
+              <h2>Sponsors</h2>
+              <p>Track sponsor outreach and partner opportunities for GDG Tulsa events.</p>
+            </div>
+          </div>
+          <div class="admin-card-row">
+            <article>
+              <span>Google Cloud</span>
+              <h3>Workshop support</h3>
+              <p>Potential content and speaker support.</p>
+            </article>
+            <article>
+              <span>Tulsa Partners</span>
+              <h3>Venue and hiring board</h3>
+              <p>Local partners for space, jobs, and mentorship.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="settings">
+          <div class="admin-section-head">
+            <div>
+              <h2>Settings</h2>
+              <p>Membership defaults, terms requirements, and privacy posture.</p>
+            </div>
+          </div>
+          <div class="admin-card-row">
+            <article>
+              <span>Privacy</span>
+              <h3>Minimal collection</h3>
+              <p>Name, email, terms confirmation, event registrations, and schedule requests.</p>
+            </article>
+            <article>
+              <span>Auth</span>
+              <h3>Email confirmation and Google OAuth</h3>
+              <p>Ready for a production provider such as Firebase Authentication.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-admin-panel="website">
+          <div class="admin-section-head">
+            <div>
+              <h2>Website</h2>
+              <p>Public site and member portal links.</p>
+            </div>
+            <a class="button primary" href="index.html#members">Open member section</a>
+          </div>
+        </section>
+      </section>
+    </main>
+    <div class="toast" role="status" aria-live="polite">Copied</div>
+  </body>
+</html>
