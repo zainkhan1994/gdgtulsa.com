@@ -202,6 +202,40 @@ function emailLinkSettings() {
   };
 }
 
+function formatAuthError(error) {
+  const code = error?.code || "";
+  const message = error?.message || "Please try again.";
+  const knownMessages = {
+    "auth/operation-not-allowed": "Firebase Authentication is blocking this method. Enable Email/Password with email-link sign-in and Google sign-in in the Firebase Console.",
+    "auth/unauthorized-domain": `Firebase is blocking ${window.location.hostname}. Add this domain in Firebase Authentication > Settings > Authorized domains.`,
+    "auth/invalid-api-key": "Firebase rejected the API key. Check firebase-config.js.",
+    "auth/network-request-failed": "Firebase could not be reached. Check the network connection and try again.",
+    "auth/popup-blocked": "The Google sign-in popup was blocked. Allow popups for this site and try again.",
+    "auth/popup-closed-by-user": "The Google sign-in popup was closed before the account was selected."
+  };
+  return knownMessages[code] || message.replace(/^Firebase:\s*/i, "");
+}
+
+async function withFormStatus(form, pendingText, callback) {
+  const button = form?.querySelector("button[type='submit']");
+  const originalText = button?.textContent;
+  if (button) {
+    button.disabled = true;
+    button.textContent = pendingText;
+  }
+  try {
+    await callback();
+  } catch (error) {
+    console.error(error);
+    showToast(formatAuthError(error));
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+
 async function setupFirebase() {
   if (!firebaseReady) {
     state.authReady = true;
@@ -348,9 +382,11 @@ async function registerMember(form) {
     termsAcceptedAt: new Date().toISOString()
   };
   writeJSON(storageKeys.pendingMember, pending);
-  await firebaseApi.sendSignInLinkToEmail(firebaseApi.auth, email, emailLinkSettings());
-  showConfirmationPanel();
-  showToast(`Confirmation email sent to ${email}.`);
+  await withFormStatus(form, "Sending...", async () => {
+    await firebaseApi.sendSignInLinkToEmail(firebaseApi.auth, email, emailLinkSettings());
+    showConfirmationPanel();
+    showToast(`Confirmation email sent to ${email}.`);
+  });
 }
 
 async function loginMember(form) {
@@ -365,9 +401,11 @@ async function loginMember(form) {
     return;
   }
   writeJSON(storageKeys.pendingMember, { email });
-  await firebaseApi.sendSignInLinkToEmail(firebaseApi.auth, email, emailLinkSettings());
-  showConfirmationPanel();
-  showToast(`Secure sign-in link sent to ${email}.`);
+  await withFormStatus(form, "Sending...", async () => {
+    await firebaseApi.sendSignInLinkToEmail(firebaseApi.auth, email, emailLinkSettings());
+    showConfirmationPanel();
+    showToast(`Secure sign-in link sent to ${email}.`);
+  });
 }
 
 async function continueWithGoogle({ adminLogin = false } = {}) {
@@ -391,14 +429,19 @@ async function continueWithGoogle({ adminLogin = false } = {}) {
     writeJSON(storageKeys.pendingGoogleTerms, new Date().toISOString());
   }
 
-  const credential = await firebaseApi.signInWithPopup(firebaseApi.auth, firebaseApi.googleProvider);
-  state.currentMember = await saveMemberFromFirebaseUser(credential.user);
-  state.admin = isAdminEmail(credential.user.email);
-  closeAuth();
-  await loadProtectedMemberContent();
-  renderAll();
-  await renderAdminDashboard();
-  showToast(state.admin ? "Admin signed in with Google." : "Signed in with Google.");
+  try {
+    const credential = await firebaseApi.signInWithPopup(firebaseApi.auth, firebaseApi.googleProvider);
+    state.currentMember = await saveMemberFromFirebaseUser(credential.user);
+    state.admin = isAdminEmail(credential.user.email);
+    closeAuth();
+    await loadProtectedMemberContent();
+    renderAll();
+    await renderAdminDashboard();
+    showToast(state.admin ? "Admin signed in with Google." : "Signed in with Google.");
+  } catch (error) {
+    console.error(error);
+    showToast(formatAuthError(error));
+  }
 }
 
 async function signOutMember() {

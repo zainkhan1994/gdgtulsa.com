@@ -1259,40 +1259,43 @@ h3 {
 .tool-row b {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(32, 33, 36, 0.12);
+  border-radius: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-shadow: none;
 }
 
 .gemini-icon {
-  background: conic-gradient(from 45deg, var(--blue), #9aa0ff, var(--green), var(--blue));
+  background-image: url("assets/logos/gemini.svg");
 }
 
 .studio-icon {
-  background: linear-gradient(135deg, var(--blue), #8ab4f8);
+  background-image: url("assets/logos/ai-studio.svg");
 }
 
 .cloud-icon {
-  background: linear-gradient(135deg, var(--blue) 0 35%, var(--red) 36% 52%, var(--yellow) 53% 70%, var(--green) 71%);
+  background-image: url("assets/logos/google-cloud.png");
 }
 
 .firebase-icon {
-  background: linear-gradient(135deg, #ffca28, #f57c00);
+  background-image: url("assets/logos/firebase.svg");
 }
 
 .android-icon {
-  background: linear-gradient(135deg, #3ddc84, #188038);
+  background-image: url("assets/logos/android.png");
 }
 
 .web-icon {
-  background: linear-gradient(135deg, #174ea6, var(--blue));
+  background-image: url("assets/logos/google-chrome.svg");
 }
 
 .maps-icon {
-  background: linear-gradient(135deg, var(--green), var(--blue), var(--yellow), var(--red));
+  background-image: url("assets/logos/google-maps.png");
 }
 
 .analytics-icon {
-  background: linear-gradient(135deg, #fbbc04, #f29900);
+  background-image: url("assets/logos/google-analytics.svg");
 }
 
 .text-link {
