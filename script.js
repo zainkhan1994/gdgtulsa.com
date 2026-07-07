@@ -8,7 +8,6 @@ const sections = navLinks.map((link) => document.querySelector(link.getAttribute
 const introLoader = document.querySelector(".intro-loader");
 const introVideo = document.querySelector(".intro-video");
 const introSkip = document.querySelector(".intro-skip");
-const themeButton = document.querySelector(".theme-button");
 const memberSection = document.querySelector("[data-member-section]");
 const memberFeed = document.querySelector("[data-member-feed]");
 const authModal = document.querySelector("[data-auth-modal]");
@@ -91,10 +90,6 @@ if (introLoader && introVideo) {
   document.addEventListener("pointerdown", tryAutoplay, { once: true });
   window.setTimeout(closeIntro, 11200);
 }
-
-themeButton?.addEventListener("click", () => {
-  document.body.classList.toggle("is-dark");
-});
 
 function showToast(message) {
   if (!toast) return;
@@ -852,6 +847,20 @@ document.addEventListener("click", async (event) => {
   if (target.closest("[data-google-login]")) await continueWithGoogle();
   if (target.closest("[data-admin-google-login]")) await continueWithGoogle({ adminLogin: true });
   if (target.closest("[data-member-signout]")) await signOutMember();
+
+  const eventCategory = target.closest("[data-event-category]");
+  if (eventCategory) {
+    const category = eventCategory.dataset.eventCategory;
+    document.querySelectorAll("[data-event-category]").forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.eventCategory === category);
+    });
+    document.querySelectorAll("[data-event-card]").forEach((card) => {
+      card.classList.toggle("is-active", card.dataset.eventCard === category);
+    });
+    document.querySelectorAll("[data-event-detail]").forEach((panel) => {
+      panel.classList.toggle("is-active", panel.dataset.eventDetail === category);
+    });
+  }
 
   const memberResource = target.closest("[data-requires-member]");
   if (memberResource) {

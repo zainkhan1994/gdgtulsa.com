@@ -260,37 +260,99 @@ const idea = new Gemini({
         <div class="section-heading">
           <div>
             <p class="section-label">Events</p>
-            <h2>Upcoming GDG Tulsa events.</h2>
+            <h2>Choose the kind of GDG Tulsa event you want to attend.</h2>
           </div>
           <a class="text-link" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">View official events</a>
         </div>
-        <div class="events-soon">
-          <div class="events-blur" aria-hidden="true">
-            <div class="filter-bar">
-              <span class="filter-button is-active">All</span>
-              <span class="filter-button">AI</span>
-              <span class="filter-button">Web</span>
-              <span class="filter-button">Community</span>
+
+        <div class="event-category-layout">
+          <div class="filter-bar event-category-tabs" role="tablist" aria-label="Event categories">
+            <button class="filter-button is-active" type="button" data-event-category="workshops">Workshops</button>
+            <button class="filter-button" type="button" data-event-category="build-ai">Build with AI</button>
+            <button class="filter-button" type="button" data-event-category="devfest">DevFest</button>
+          </div>
+
+          <div class="event-grid event-category-grid">
+            <article class="event-card event-category-card is-active" data-event-card="workshops">
+              <span class="tag">Hands-on</span>
+              <h3>Workshops</h3>
+              <p>Practical sessions for Firebase, Web, Cloud, Android, Gemini, and product-building skills.</p>
+              <button class="row-link" type="button" data-event-category="workshops">View workshop plan</button>
+            </article>
+            <article class="event-card event-category-card" data-event-card="build-ai">
+              <span class="tag ai-tag">Featured</span>
+              <h3>Build with AI</h3>
+              <p>A Google-branded build night format for learning AI by making useful demos with local builders.</p>
+              <button class="row-link" type="button" data-event-category="build-ai">View Build with AI</button>
+            </article>
+            <article class="event-card event-category-card" data-event-card="devfest">
+              <span class="tag devfest-tag">Annual</span>
+              <h3>DevFest</h3>
+              <p>The bigger GDG Tulsa gathering: speakers, technical tracks, demos, sponsors, and community showcases.</p>
+              <button class="row-link" type="button" data-event-category="devfest">View DevFest plan</button>
+            </article>
+          </div>
+
+          <div class="event-detail-panel is-active" data-event-detail="workshops">
+            <div>
+              <p class="section-label">Workshops</p>
+              <h3>Short, useful sessions where people leave with something built.</h3>
+              <p>Workshops focus on applied skills: a deployed Firebase app, a Gemini prompt workflow, an Android feature, or a Cloud pattern people can reuse after the event.</p>
             </div>
-            <div class="event-grid">
-              <article class="event-card">
-                <span class="tag">Workshop</span>
-                <h3>Gemini build night</h3>
-                <p>Hands-on AI prototyping with practical demos and local project ideas.</p>
+            <ul class="event-detail-list">
+              <li><strong>Format</strong><span>60-120 minute guided builds with starter code and helpers in the room.</span></li>
+              <li><strong>Audience</strong><span>Students, developers, founders, designers, and curious first-time builders.</span></li>
+              <li><strong>Outcome</strong><span>A working demo, resource links, and a next step into the member portal.</span></li>
+            </ul>
+          </div>
+
+          <div class="event-detail-panel build-ai-panel" data-event-detail="build-ai">
+            <div class="build-ai-copy">
+              <p class="section-label">Build with AI</p>
+              <h3>Learn AI by building real projects with the GDG Tulsa community.</h3>
+              <p>Build with AI is the polished Google event format for hands-on AI learning. For Tulsa, the experience should feel practical and welcoming: clear demos, local project ideas, guided build time, and a path for members to keep shipping afterward.</p>
+              <div class="build-ai-points">
+                <span>Connect with local developers and technologists.</span>
+                <span>Learn through hands-on workshops and talks.</span>
+                <span>Grow by applying AI to useful Tulsa projects.</span>
+              </div>
+            </div>
+            <figure class="build-ai-lockup">
+              <img src="assets/bwai/build-with-ai-lockup.png" alt="Build with AI primary logo lockup">
+            </figure>
+            <div class="brand-guide-strip">
+              <article>
+                <strong>Brand cues</strong>
+                <p>Use Google core colors, clear space around the lockup, and bold left-aligned messaging.</p>
               </article>
-              <article class="event-card">
-                <span class="tag">Cloud</span>
-                <h3>Ship your first app</h3>
-                <p>Deploy a small project with Firebase, Cloud, and clean web patterns.</p>
+              <article>
+                <strong>Event shape</strong>
+                <p>Keynote demo, guided build sprint, project share-outs, and member follow-up.</p>
               </article>
-              <article class="event-card">
-                <span class="tag">Community</span>
-                <h3>Tulsa developer meetup</h3>
-                <p>Connect with builders, students, founders, and mentors across Tulsa.</p>
+              <article>
+                <strong>Good fit for</strong>
+                <p>Gemini API, AI Studio, Firebase, Cloud, Vertex AI, and useful local prototypes.</p>
               </article>
+            </div>
+            <div class="build-ai-guide-images" aria-label="Selected Build with AI brand guide references">
+              <img src="assets/bwai/build-with-ai-colors.png" alt="Build with AI color palette">
+              <img src="assets/bwai/gdg-messaging.png" alt="GDG narrative and messaging">
+              <img src="assets/bwai/build-with-ai-icons.png" alt="Build with AI icon style sheet">
             </div>
           </div>
-          <div class="coming-soon" aria-label="Events coming soon">Coming soon</div>
+
+          <div class="event-detail-panel" data-event-detail="devfest">
+            <div>
+              <p class="section-label">DevFest</p>
+              <h3>The annual tentpole event for Tulsa developers and technology partners.</h3>
+              <p>DevFest is built for a bigger room: technical talks, hands-on labs, community demos, career conversations, and sponsor activations with a strong GDG identity.</p>
+            </div>
+            <ul class="event-detail-list">
+              <li><strong>Tracks</strong><span>AI, Cloud, Web, Android, Firebase, product, and career growth.</span></li>
+              <li><strong>Experience</strong><span>Speaker sessions, demo tables, mentor time, and a community showcase.</span></li>
+              <li><strong>Next step</strong><span>Use member registration for RSVPs, event reminders, and post-event resources.</span></li>
+            </ul>
+          </div>
         </div>
       </section>
 
