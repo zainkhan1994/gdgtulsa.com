@@ -5,9 +5,6 @@ const meter = document.querySelector(".scroll-meter");
 const toast = document.querySelector(".toast");
 const navLinks = [...document.querySelectorAll(".site-header nav a[href^='#']")];
 const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
-const introLoader = document.querySelector(".intro-loader");
-const introVideo = document.querySelector(".intro-video");
-const introSkip = document.querySelector(".intro-skip");
 const memberSection = document.querySelector("[data-member-section]");
 const memberFeed = document.querySelector("[data-member-feed]");
 const authModal = document.querySelector("[data-auth-modal]");
@@ -52,44 +49,6 @@ const state = {
 };
 
 let firebaseApi = null;
-let introClosed = false;
-let autoplayStarted = false;
-
-function closeIntro() {
-  if (introClosed) return;
-  introClosed = true;
-  document.body.classList.remove("intro-active");
-  document.body.classList.add("intro-complete");
-  window.setTimeout(() => introLoader?.remove(), 650);
-}
-
-if (introLoader && introVideo) {
-  introVideo.muted = true;
-  introVideo.defaultMuted = true;
-  introVideo.playsInline = true;
-  introVideo.setAttribute("muted", "");
-  introVideo.setAttribute("playsinline", "");
-  introVideo.setAttribute("webkit-playsinline", "");
-
-  const tryAutoplay = () => {
-    if (autoplayStarted || introClosed) return;
-    introVideo.play()
-      .then(() => {
-        autoplayStarted = true;
-      })
-      .catch(() => {});
-  };
-
-  tryAutoplay();
-  requestAnimationFrame(tryAutoplay);
-  introVideo.addEventListener("loadedmetadata", tryAutoplay);
-  introVideo.addEventListener("canplay", tryAutoplay);
-  introVideo.addEventListener("ended", closeIntro);
-  introSkip?.addEventListener("click", closeIntro);
-  document.addEventListener("visibilitychange", tryAutoplay);
-  document.addEventListener("pointerdown", tryAutoplay, { once: true });
-  window.setTimeout(closeIntro, 11200);
-}
 
 function showToast(message) {
   if (!toast) return;
