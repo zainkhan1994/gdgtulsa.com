@@ -12,18 +12,7 @@
     <link rel="stylesheet" href="styles.css">
     <script type="module" src="script.js"></script>
   </head>
-  <body class="intro-active">
-    <section class="intro-loader" aria-label="GDG Tulsa intro loading screen">
-      <div class="intro-video-shell">
-        <video class="intro-video" autoplay muted playsinline preload="auto">
-          <source src="gdg-tulsa-intro.mp4" type="video/mp4">
-        </video>
-      </div>
-      <div class="intro-meta">
-        <span>GDG Tulsa</span>
-        <button class="intro-skip" type="button">Enter site</button>
-      </div>
-    </section>
+  <body>
     <div class="scroll-meter" aria-hidden="true"></div>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="#top" aria-label="GDG Tulsa home">
@@ -44,6 +33,11 @@
 
     <main id="top">
       <section class="hero">
+        <div class="hero-video-background" aria-hidden="true">
+          <video class="hero-bg-video" autoplay muted playsinline loop preload="auto">
+            <source src="gdg-tulsa-intro.mp4" type="video/mp4">
+          </video>
+        </div>
         <div class="hero-copy">
           <p class="eyebrow hero-pill">New community in Tulsa</p>
           <h1>
