@@ -11,6 +11,7 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script type="module" src="script.js"></script>
+    <script src="globe.js?v=2" defer></script>
   </head>
   <body>
     <div class="scroll-meter" aria-hidden="true"></div>
@@ -24,21 +25,17 @@
       <nav aria-label="Primary navigation">
         <a href="#events">Events</a>
         <a href="bwai.html">BWAI</a>
+        <a href="#devfest">DevFest</a>
+        <a href="#team">Team</a>
         <a href="#members">Members</a>
         <a href="#join">Community</a>
         <a href="#learn">Resources</a>
-        <a href="#about">About</a>
-        <a href="#join">Partner</a>
+        <a href="about-gdg.html">About GDGs</a>
       </nav>
     </header>
 
     <main id="top">
       <section class="hero">
-        <div class="hero-video-background" aria-hidden="true">
-          <video class="hero-bg-video" autoplay muted playsinline loop preload="auto">
-            <source src="gdg-tulsa-intro.mp4" type="video/mp4">
-          </video>
-        </div>
         <div class="hero-copy">
           <p class="eyebrow hero-pill">New community in Tulsa</p>
           <h1>
@@ -58,22 +55,30 @@
           </div>
           <div class="hero-feature-grid" aria-label="GDG Tulsa activities">
             <article>
-              <span class="feature-icon blue-point">●●</span>
+              <span class="feature-icon blue-point" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6v16H6a2 2 0 0 0-2 2V5Z"/><path d="M20 5a2 2 0 0 0-2-2h-6v16h6a2 2 0 0 1 2 2V5Z"/></svg>
+              </span>
               <strong>Workshops</strong>
               <small>Hands-on learning</small>
             </article>
             <article>
-              <span class="feature-icon red-point">&lt;/&gt;</span>
+              <span class="feature-icon red-point" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/></svg>
+              </span>
               <strong>Build Nights</strong>
               <small>Code. Build. Ship.</small>
             </article>
             <article>
-              <span class="feature-icon green-point">☁</span>
+              <span class="feature-icon green-point" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0 0-9h-.9A6 6 0 1 0 6 15.5"/><path d="M12 8v8"/><path d="m8.5 11.5 3.5-3 3.5 3"/></svg>
+              </span>
               <strong>AI & Cloud</strong>
               <small>Modern Google tools</small>
             </article>
             <article>
-              <span class="feature-icon yellow-point">●●●</span>
+              <span class="feature-icon yellow-point" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6"/><path d="M18.5 20a5 5 0 0 0-3-4.5"/></svg>
+              </span>
               <strong>Community</strong>
               <small>Connect & grow</small>
             </article>
@@ -106,8 +111,10 @@ const idea = new Gemini({
   in Tulsa?'
 });</code></pre>
           </div>
-          <div class="tulsa-photo float-card" aria-label="Tulsa skyline">
-            <img src="tulsa-skyline.jpeg" alt="Downtown Tulsa skyline">
+          <div class="tulsa-photo float-card" aria-label="GDG Tulsa intro">
+            <video class="tulsa-video" autoplay muted playsinline loop preload="metadata" poster="tulsa-skyline.jpeg">
+              <source src="gdg-tulsa-intro.mp4" type="video/mp4">
+            </video>
           </div>
           <div class="map-card float-card">
             <div class="map-pin"></div>
@@ -151,10 +158,34 @@ const idea = new Gemini({
         </div>
       </section>
 
+      <section class="globe-section" aria-label="Global GDG network">
+        <div class="globe-stage">
+          <canvas class="globe-canvas" data-globe aria-hidden="true"></canvas>
+        </div>
+        <div class="globe-copy">
+          <p class="globe-eyebrow">Part of a global community</p>
+          <h2>Join a global network<br>of innovators.</h2>
+          <p class="globe-lead">
+            GDG Tulsa is one node in a worldwide network of Google Developer Groups —
+            hundreds of cities, one community. Right here in <strong>Tulsa</strong>, that
+            global energy becomes local: workshops, build nights, and people to build with.
+          </p>
+          <div class="globe-actions">
+            <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Find your community</a>
+            <a class="button secondary globe-secondary" href="#events">Enter the community hub</a>
+          </div>
+          <div class="globe-stats">
+            <div><strong>230+</strong><span>cities activated</span></div>
+            <div><strong>1</strong><span>Tulsa, Oklahoma</span></div>
+            <div><strong>∞</strong><span>things to build</span></div>
+          </div>
+        </div>
+      </section>
+
       <section id="about" class="section about-grid">
         <div>
           <p class="section-label">Why GDG Tulsa</p>
-          <h2>For developers, students, founders, and curious builders.</h2>
+          <h2>For developers, students, founders, and <span class="accent-green">curious builders</span>.</h2>
           <p>
             GDG Tulsa is part of the global Google Developer Groups community: local groups focused on helping
             people connect, learn, and grow alongside Google technologies and experts.
@@ -183,7 +214,7 @@ const idea = new Gemini({
         <div class="section-heading centered">
           <div>
             <p class="section-label">What you can learn</p>
-            <h2>Google tools, taught through real projects.</h2>
+            <h2>Google tools, taught through <span class="accent-blue">real projects</span>.</h2>
             <p>
               GDG Tulsa turns Google’s developer ecosystem into practical sessions you can actually use:
               prototype with AI, deploy to the cloud, analyze usage, and ship polished apps.
@@ -245,10 +276,6 @@ const idea = new Gemini({
             <span><b class="analytics-icon"></b>Analytics</span>
           </div>
         </div>
-      </section>
-
-      <section class="banner">
-        <img src="gdg-tulsa-brand-banner.png" alt="GDG Tulsa visual identity banner">
       </section>
 
       <section id="events" class="section events-section">
@@ -329,6 +356,168 @@ const idea = new Gemini({
         </div>
       </section>
 
+      <section id="bwai" class="section bwai-home-section" aria-label="Build with AI">
+        <div class="bwai-home-inner">
+          <div class="bwai-home-copy">
+            <p class="section-label bwai-home-label">Flagship program</p>
+            <h2>Build with AI <span class="bwai-sparkle" aria-hidden="true">✨</span></h2>
+            <p class="bwai-home-lead">
+              Hands-on AI training, right here in Tulsa. Get real-world experience with Google's
+              latest AI tools and technologies through in-person workshops, tech talks, and build sessions.
+            </p>
+            <div class="bwai-home-tools" aria-label="AI tools you'll use">
+              <img src="assets/logos/gemini.svg" alt="Gemini">
+              <img src="assets/logos/ai-studio.svg" alt="AI Studio">
+              <img src="assets/logos/google-cloud.png" alt="Google Cloud">
+              <img src="assets/logos/firebase.svg" alt="Firebase">
+              <img src="assets/logos/android.png" alt="Android">
+            </div>
+            <div class="bwai-home-features">
+              <article>
+                <span class="bwai-home-icon green">◍</span>
+                <strong>Practical workshops</strong>
+                <small>Build real projects with Google's latest AI tools.</small>
+              </article>
+              <article>
+                <span class="bwai-home-icon blue">⬢</span>
+                <strong>Modern AI stack</strong>
+                <small>Gemini, AI Studio, and the tools shaping what's next.</small>
+              </article>
+              <article>
+                <span class="bwai-home-icon red">◉</span>
+                <strong>Peer solutions</strong>
+                <small>Build side-by-side with community members and experts.</small>
+              </article>
+            </div>
+            <div class="bwai-home-actions">
+              <a class="button primary" href="bwai.html">Open Build with AI</a>
+              <a class="button secondary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Find a session near you</a>
+            </div>
+          </div>
+          <div class="bwai-home-visual">
+            <img class="bwai-home-gif" src="BWAI26_Intro_Title_01.gif" alt="Build with AI 2026" width="960" height="540" loading="lazy" decoding="async">
+            <div class="bwai-home-statcard">
+              <div><strong>178K</strong><span>participants</span></div>
+              <div><strong>230</strong><span>cities</span></div>
+              <div><strong>2,258</strong><span>projects</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="devfest" class="section devfest-section" aria-label="DevFest Tulsa">
+        <div class="devfest-inner">
+          <div class="devfest-head">
+            <p class="section-label devfest-label">The annual tentpole</p>
+            <h2>DevFest Tulsa</h2>
+            <p class="devfest-lead">
+              Once a year, the whole community comes together for our biggest event: speaker
+              sessions, technical tracks, hands-on labs, demos, and sponsor showcases — built for
+              a bigger room with a strong GDG identity.
+            </p>
+          </div>
+          <div class="devfest-grid">
+            <article class="devfest-card">
+              <span class="devfest-icon blue">🎤</span>
+              <h3>Speaker sessions</h3>
+              <p>Google Developer Experts and local leaders on AI, Cloud, Web, and Android.</p>
+            </article>
+            <article class="devfest-card">
+              <span class="devfest-icon green">🧪</span>
+              <h3>Hands-on labs</h3>
+              <p>Guided, deep-dive builds where you leave with something working and reusable.</p>
+            </article>
+            <article class="devfest-card">
+              <span class="devfest-icon yellow">🚀</span>
+              <h3>Community demos</h3>
+              <p>Local builders showcase projects, side projects, and startups to the room.</p>
+            </article>
+            <article class="devfest-card">
+              <span class="devfest-icon red">🤝</span>
+              <h3>Sponsors &amp; careers</h3>
+              <p>Meet partners hiring in Tulsa and connect over career conversations.</p>
+            </article>
+          </div>
+          <div class="devfest-tracks" aria-label="DevFest tracks">
+            <span>AI</span><span>Cloud</span><span>Web</span><span>Android</span>
+            <span>Firebase</span><span>Product</span><span>Careers</span>
+          </div>
+          <div class="devfest-actions">
+            <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Get DevFest updates</a>
+            <a class="button secondary devfest-secondary" href="#join">Become a sponsor</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="team" class="section team-section" aria-label="The GDG Tulsa team">
+        <div class="section-heading centered">
+          <div>
+            <p class="section-label">The team</p>
+            <h2>Built by <span class="accent-green">people</span>, not just a page.</h2>
+          </div>
+        </div>
+        <div class="team-rows">
+          <article class="team-row">
+            <div class="team-name">
+              <p class="team-role-kicker">Founder &amp; Organizer</p>
+              <h3>Zain</h3>
+              <a class="text-link" href="organizer.html">Meet the organizer</a>
+            </div>
+            <a class="team-card team-card-green" href="organizer.html">
+              <span class="team-blob blob-a" aria-hidden="true"></span>
+              <span class="team-blob blob-b" aria-hidden="true"></span>
+              <p class="team-card-kicker">TL;DR</p>
+              <p class="team-card-copy">Sets the vision, recruits the speakers, and keeps GDG Tulsa consistently shipping events.</p>
+              <p class="team-card-foot">Google Developer Expert</p>
+            </a>
+          </article>
+
+          <article class="team-row reverse">
+            <div class="team-name">
+              <p class="team-role-kicker">Marketing Coordinator</p>
+              <h3>Kyle</h3>
+            </div>
+            <div class="team-card team-card-red">
+              <span class="team-blob blob-a" aria-hidden="true"></span>
+              <span class="team-blob blob-b" aria-hidden="true"></span>
+              <p class="team-card-kicker">TL;DR</p>
+              <p class="team-card-copy">Gets the word out — campaigns, socials, and making sure Tulsa knows what's happening.</p>
+              <p class="team-card-foot">Marketing &amp; community reach</p>
+            </div>
+          </article>
+
+          <article class="team-row">
+            <div class="team-name">
+              <p class="team-role-kicker">DevFest Coordinator</p>
+              <h3 class="vacant">Vacant</h3>
+              <a class="text-link" href="mailto:zain@gdgtulsa.com?subject=DevFest%20Coordinator">This seat is open — apply</a>
+            </div>
+            <a class="team-card team-card-yellow" href="mailto:zain@gdgtulsa.com?subject=DevFest%20Coordinator">
+              <span class="team-blob blob-a" aria-hidden="true"></span>
+              <span class="team-blob blob-b" aria-hidden="true"></span>
+              <p class="team-card-kicker">Your move</p>
+              <p class="team-card-copy">Own Tulsa's biggest developer event of the year — speakers, tracks, sponsors, and the room itself.</p>
+              <p class="team-card-foot">Apply to join the team →</p>
+            </a>
+          </article>
+
+          <article class="team-row reverse">
+            <div class="team-name">
+              <p class="team-role-kicker">BWAI Coordinator</p>
+              <h3 class="vacant">Vacant</h3>
+              <a class="text-link" href="mailto:zain@gdgtulsa.com?subject=BWAI%20Coordinator">This seat is open — apply</a>
+            </div>
+            <a class="team-card team-card-blue" href="mailto:zain@gdgtulsa.com?subject=BWAI%20Coordinator">
+              <span class="team-blob blob-a" aria-hidden="true"></span>
+              <span class="team-blob blob-b" aria-hidden="true"></span>
+              <p class="team-card-kicker">Your move</p>
+              <p class="team-card-copy">Run the flagship Build with AI program — hands-on sessions where Tulsa learns by shipping.</p>
+              <p class="team-card-foot">Apply to join the team →</p>
+            </a>
+          </article>
+        </div>
+      </section>
+
       <section id="members" class="section member-section is-locked" data-member-section>
         <div class="section-heading">
           <div>
@@ -377,7 +566,7 @@ const idea = new Gemini({
         <div class="section-heading centered">
           <div>
             <p class="section-label">Why Join GDG Tulsa</p>
-            <h2>Grow with people building what is next.</h2>
+            <h2>Grow with people <span class="accent-blue">building</span> what is <span class="accent-green">next</span>.</h2>
           </div>
         </div>
         <div class="join-points">
