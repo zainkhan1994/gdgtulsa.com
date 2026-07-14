@@ -833,15 +833,10 @@ h3 {
   font-size: 24px;
 }
 
-.small-icon {
-  display: inline-block;
+.brand-strip img {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
-  box-shadow: none;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
+  object-fit: contain;
 }
 
 .section {
@@ -1136,91 +1131,6 @@ h3 {
 
 .learn-card a::after {
   content: "  ↗";
-}
-
-.tool-cloud {
-  margin-top: 42px;
-  padding: 34px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background:
-    linear-gradient(100deg, rgba(251, 188, 4, 0.12), transparent 32%),
-    linear-gradient(255deg, rgba(66, 133, 244, 0.12), transparent 36%),
-    #fff;
-}
-
-.tool-intro {
-  max-width: 720px;
-  margin: 0 auto 28px;
-  text-align: center;
-}
-
-.tool-intro h3 {
-  font-size: clamp(25px, 3vw, 34px);
-}
-
-.tool-intro p {
-  margin-bottom: 0;
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-.tool-row {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.tool-row span {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.tool-row b {
-  width: 44px;
-  height: 44px;
-  border-radius: 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  box-shadow: none;
-}
-
-.gemini-icon {
-  background-image: url("assets/logos/gemini.svg");
-}
-
-.studio-icon {
-  background-image: url("assets/logos/ai-studio.svg");
-}
-
-.cloud-icon {
-  background-image: url("assets/logos/google-cloud.png");
-}
-
-.firebase-icon {
-  background-image: url("assets/logos/firebase.svg");
-}
-
-.android-icon {
-  background-image: url("assets/logos/android.png");
-}
-
-.web-icon {
-  background-image: url("assets/logos/google-chrome.svg");
-}
-
-.maps-icon {
-  background-image: url("assets/logos/google-maps.png");
-}
-
-.analytics-icon {
-  background-image: url("assets/logos/google-analytics.svg");
 }
 
 .text-link {
@@ -3211,10 +3121,6 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  .tool-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .join-points {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3398,14 +3304,6 @@ tr:last-child td {
 
   .mockup {
     min-height: 240px;
-  }
-
-  .tool-cloud {
-    padding: 24px 14px;
-  }
-
-  .tool-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .join-points {
