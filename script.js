@@ -899,3 +899,26 @@ if (productCard) {
     });
   });
 }
+
+// Animated-tile readiness: module scripts run after DOM parse, so the
+// entrance transition starts on the first frame after styles resolve
+requestAnimationFrame(() => document.body.classList.add("ready"));
+
+// Ambient video: play only in viewport; honor prefers-reduced-motion
+const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+document.querySelectorAll("video[loop]").forEach((video) => {
+  if (reduceMotionQuery.matches) {
+    video.pause();
+    video.removeAttribute("autoplay");
+    return;
+  }
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) void video.play().catch(() => {});
+        else video.pause();
+      });
+    }, { threshold: 0.1 });
+    observer.observe(video);
+  }
+});

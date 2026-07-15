@@ -4615,3 +4615,142 @@ a.team-card:hover {
     width: 64px;
   }
 }
+
+/* =====================================================================
+   Animated tile motion (gfe-animated-tile style)
+   GPU-accelerated transforms, 0.2s ease feedback, dynamic layering,
+   ready-state entrance sync, reduced-motion safe.
+   ===================================================================== */
+.hero-feature-grid article,
+.join-point,
+.learn-card,
+.community-card,
+.step-card,
+.devfest-card,
+.bwai-home-features article,
+.gdg-about-card,
+.badge-grid figure,
+.cred-featured,
+.product-item,
+.event-card,
+.event-detail-panel {
+  backface-visibility: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.hero-feature-grid article,
+.join-point,
+.community-card,
+.step-card,
+.devfest-card,
+.bwai-home-features article,
+.gdg-about-card,
+.badge-grid figure {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Tossed-tile idle arrangement once the page is ready */
+body.ready .community-card:nth-child(odd),
+body.ready .step-card:nth-child(even) {
+  transform: translate3d(0, 0, 0) rotate(-0.75deg);
+}
+
+body.ready .community-card:nth-child(even),
+body.ready .step-card:nth-child(odd) {
+  transform: translate3d(0, 0, 0) rotate(0.75deg);
+}
+
+/* Hover: hardware-accelerated lift with a slight counter-rotation */
+.hero-feature-grid article:hover,
+.join-point:hover,
+.bwai-home-features article:hover,
+.badge-grid figure:hover,
+.gdg-about-card:hover {
+  z-index: 6;
+  transform: translate3d(0, -6px, 0) rotate(-0.6deg) scale(1.015);
+  box-shadow: 0 24px 54px rgba(32, 33, 36, 0.16);
+}
+
+.hero-feature-grid article:nth-child(even):hover,
+.join-point:nth-child(even):hover,
+.bwai-home-features article:nth-child(even):hover,
+.badge-grid figure:nth-child(even):hover {
+  transform: translate3d(0, -6px, 0) rotate(0.6deg) scale(1.015);
+}
+
+body.ready .community-card:hover,
+body.ready .step-card:hover,
+.community-card:hover,
+.step-card:hover {
+  z-index: 6;
+  transform: translate3d(0, -8px, 0) rotate(0deg) scale(1.02);
+  box-shadow: 0 28px 60px rgba(32, 33, 36, 0.18);
+}
+
+.devfest-card:hover {
+  z-index: 6;
+  transform: translate3d(0, -6px, 0) rotate(-0.6deg);
+}
+
+.devfest-card:nth-child(even):hover {
+  transform: translate3d(0, -6px, 0) rotate(0.6deg);
+}
+
+/* Event cards keep their pointer-tracking 3D tilt; add layering + lift shadow */
+.event-card:hover {
+  z-index: 6;
+  box-shadow: 0 24px 54px rgba(32, 33, 36, 0.14);
+}
+
+/* Entrance sync: cards settle in once assets are ready */
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.ready) .community-card,
+  body:not(.ready) .step-card,
+  body:not(.ready) .hero-feature-grid article {
+    transform: translate3d(0, 10px, 0);
+    opacity: 0.001;
+  }
+  body.ready .hero-feature-grid article {
+    opacity: 1;
+  }
+  body.ready .community-card,
+  body.ready .step-card {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-feature-grid article,
+  .join-point,
+  .learn-card,
+  .community-card,
+  .step-card,
+  .devfest-card,
+  .bwai-home-features article,
+  .gdg-about-card,
+  .badge-grid figure,
+  .cred-featured,
+  .product-item,
+  .event-card,
+  .team-card {
+    transition: none;
+  }
+  body.ready .community-card,
+  body.ready .step-card,
+  .hero-feature-grid article:hover,
+  .join-point:hover,
+  .community-card:hover,
+  .step-card:hover,
+  .devfest-card:hover,
+  .bwai-home-features article:hover,
+  .badge-grid figure:hover,
+  .gdg-about-card:hover {
+    transform: none;
+  }
+}
