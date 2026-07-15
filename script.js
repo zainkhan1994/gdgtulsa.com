@@ -873,3 +873,29 @@ window.addEventListener("resize", updateScrollState);
 renderAll();
 updateScrollState();
 void setupFirebase();
+
+// Workspace-style product row: click an icon to open its detail card
+const productCard = document.querySelector("[data-product-card]");
+if (productCard) {
+  const cardIcon = productCard.querySelector("[data-product-card-icon]");
+  const cardName = productCard.querySelector("[data-product-card-name]");
+  const cardDesc = productCard.querySelector("[data-product-card-desc]");
+  const cardLink = productCard.querySelector("[data-product-card-link]");
+  document.querySelectorAll("[data-product]").forEach((item) => {
+    item.addEventListener("click", () => {
+      const isSame = !productCard.hidden && cardName.textContent === item.dataset.name;
+      if (isSame) {
+        productCard.hidden = true;
+        item.classList.remove("is-active");
+        return;
+      }
+      document.querySelectorAll("[data-product]").forEach((b) => b.classList.remove("is-active"));
+      item.classList.add("is-active");
+      cardIcon.src = item.dataset.icon;
+      cardName.textContent = item.dataset.name;
+      cardDesc.textContent = item.dataset.desc;
+      cardLink.href = item.dataset.link;
+      productCard.hidden = false;
+    });
+  });
+}
