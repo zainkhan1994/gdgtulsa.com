@@ -872,6 +872,7 @@ window.addEventListener("scroll", updateScrollState, { passive: true });
 window.addEventListener("resize", updateScrollState);
 renderAll();
 updateScrollState();
+<<<<<<< HEAD
 void setupFirebase();
 
 // Workspace-style product row: click an icon to open its detail card
@@ -922,3 +923,18 @@ document.querySelectorAll("video[loop]").forEach((video) => {
     observer.observe(video);
   }
 });
+
+function scheduleFirebaseSetup() {
+  const run = () => {
+    void setupFirebase();
+  };
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(run, { timeout: 2200 });
+    return;
+  }
+
+  window.setTimeout(run, 0);
+}
+
+scheduleFirebaseSetup();
