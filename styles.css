@@ -4734,7 +4734,6 @@ body.ready .step-card:hover,
   body:not(.ready) .step-card,
   body:not(.ready) .hero-feature-grid article {
     transform: translate3d(0, 10px, 0);
-    opacity: 0.001;
   }
   body.ready .hero-feature-grid article {
     opacity: 1;
