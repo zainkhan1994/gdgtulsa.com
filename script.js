@@ -872,7 +872,6 @@ window.addEventListener("scroll", updateScrollState, { passive: true });
 window.addEventListener("resize", updateScrollState);
 renderAll();
 updateScrollState();
-<<<<<<< HEAD
 void setupFirebase();
 
 // Workspace-style product row: click an icon to open its detail card
