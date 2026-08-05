@@ -1,0 +1,292 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-95.9927516, 36.1563122] },
+      "properties": {
+        "id": "tulsa-intro-2026-08-06",
+        "kind": "event",
+        "category": "local",
+        "title": "Intro to Google Developer Group",
+        "chapterName": "GDG Tulsa with Techlahoma",
+        "city": "Tulsa",
+        "country": "United States",
+        "location": "Tulsa, Oklahoma; details sent to confirmed guests",
+        "mode": "In person",
+        "registrationStatus": "waitlist",
+        "startsAt": "2026-08-06T18:00:00-05:00",
+        "endsAt": "2026-08-06T20:00:00-05:00",
+        "timeZone": "America/Chicago",
+        "url": "https://luma.com/j0vrcn5h",
+        "sourceUrl": "https://luma.com/j0vrcn5h",
+        "coordinateSource": "Nominatim city result for Tulsa, Oklahoma",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-95.987359, 36.164522] },
+      "properties": {
+        "id": "tulsa-grow-google-ai-2026-08-13",
+        "kind": "event",
+        "category": "workshop",
+        "title": "Make AI Work for You",
+        "chapterName": "Grow with Google · OSU-Tulsa",
+        "city": "Tulsa",
+        "country": "United States",
+        "location": "OSU-Tulsa, North Hall 150, 700 N Greenwood Ave",
+        "mode": "In person",
+        "startsAt": "2026-08-13T08:30:00-05:00",
+        "endsAt": "2026-08-13T10:00:00-05:00",
+        "timeZone": "America/Chicago",
+        "url": "https://g.co/grow/Tulsa",
+        "sourceUrl": "https://events.tulsa.okstate.edu/event/make-ai-work-for-you-workshop-grow-with-google",
+        "coordinateSource": "Nominatim exact street-address result for 700 North Greenwood Avenue",
+        "verifiedAt": "2026-08-01"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-117.8727028, 33.6087402] },
+      "properties": {
+        "id": "newport-gail-2026-09-19",
+        "kind": "event",
+        "category": "workshop",
+        "title": "GAIL Workshop: A Deep Dive",
+        "chapterName": "GDG Newport Beach",
+        "city": "Newport Beach",
+        "country": "United States",
+        "location": "Newport Beach Civic Center",
+        "mode": "In person",
+        "startsAt": "2026-09-19T08:00:00-07:00",
+        "endsAt": "2026-09-19T18:00:00-07:00",
+        "timeZone": "America/Los_Angeles",
+        "url": "https://gdg.community.dev/events/details/google-gdg-newport-beach-presents-gail-workshop-a-deep-dive-with-norbert-kremer/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-newport-beach-presents-gail-workshop-a-deep-dive-with-norbert-kremer/",
+        "coordinateSource": "Nominatim venue result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-122.8022451, 49.193358] },
+      "properties": {
+        "id": "surrey-agents-2026-09-25",
+        "kind": "event",
+        "category": "build-with-ai",
+        "title": "Scalability — Custom Agents",
+        "chapterName": "GDG Surrey",
+        "city": "Surrey",
+        "country": "Canada",
+        "location": "15105 105 Avenue, Surrey",
+        "mode": "In person",
+        "startsAt": "2026-09-25T17:30:00-07:00",
+        "endsAt": "2026-09-26T20:30:00-07:00",
+        "timeZone": "America/Vancouver",
+        "url": "https://gdg.community.dev/events/details/google-gdg-surrey-presents-scalability-custom-agents-build-with-ai/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-surrey-presents-scalability-custom-agents-build-with-ai/",
+        "coordinateSource": "Nominatim street-address result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-71.07064, 42.3699854] },
+      "properties": {
+        "id": "boston-devfest-2026-09-26",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest: AI & Tech Innovations",
+        "chapterName": "GDG Cloud Boston",
+        "city": "Cambridge",
+        "country": "United States",
+        "location": "Hult International Business School",
+        "mode": "In person",
+        "startsAt": "2026-09-26T09:00:00-04:00",
+        "endsAt": "2026-09-26T17:00:00-04:00",
+        "timeZone": "America/New_York",
+        "url": "https://gdg.community.dev/events/details/google-gdg-cloud-boston-presents-gdg-cloud-boston-devfest-ai-amp-tech-innovations/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-boston-presents-gdg-cloud-boston-devfest-ai-amp-tech-innovations/",
+        "coordinateSource": "Nominatim venue result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.732088, 59.9247431] },
+      "properties": {
+        "id": "oslo-secure-ai-2026-09-16",
+        "kind": "event",
+        "category": "workshop",
+        "title": "Building Secure AI Locally",
+        "chapterName": "GDG Cloud Oslo",
+        "city": "Oslo",
+        "country": "Norway",
+        "location": "Miles Oslo AS, Bislettgata 4",
+        "mode": "In person",
+        "startsAt": "2026-09-16T16:30:00+02:00",
+        "endsAt": "2026-09-16T19:30:00+02:00",
+        "timeZone": "Europe/Oslo",
+        "url": "https://gdg.community.dev/events/details/google-gdg-cloud-oslo-norway-presents-building-secure-ai-locally-hands-on-hack-along-with-google-gemma/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-cloud-oslo-norway-presents-building-secure-ai-locally-hands-on-hack-along-with-google-gemma/",
+        "coordinateSource": "Nominatim street result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [5.22274, 7.6232482] },
+      "properties": {
+        "id": "ado-ekiti-devfest-2026-10-02",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest Ado-Ekiti 2026",
+        "chapterName": "GDG Ado-Ekiti",
+        "city": "Ado-Ekiti",
+        "country": "Nigeria",
+        "location": "Obafemi Awolowo Civic Convention Center",
+        "mode": "In person",
+        "startsAt": "2026-10-02T09:00:00+01:00",
+        "endsAt": "2026-10-03T16:00:00+01:00",
+        "timeZone": "Africa/Lagos",
+        "url": "https://gdg.community.dev/events/details/google-gdg-ado-ekiti-presents-devfest-ado-ekiti-2026/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-ado-ekiti-presents-devfest-ado-ekiti-2026/",
+        "coordinateSource": "Nominatim city result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.5250339, 38.3964248] },
+      "properties": {
+        "id": "alicante-devfest-2026-10-15",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest 2026 — Alicante",
+        "chapterName": "GDG Alicante",
+        "city": "San Vicente del Raspeig",
+        "country": "Spain",
+        "location": "University of Alicante",
+        "mode": "In person",
+        "startsAt": "2026-10-15T17:00:00+02:00",
+        "endsAt": "2026-10-15T21:30:00+02:00",
+        "timeZone": "Europe/Madrid",
+        "url": "https://gdg.community.dev/events/details/google-gdg-alicante-presents-devfest-2026-alicante/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-alicante-presents-devfest-2026-alicante/",
+        "coordinateSource": "Nominatim city result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [14.4212535, 50.0874654] },
+      "properties": {
+        "id": "prague-devfest-2026-10-30",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest.cz 2026",
+        "chapterName": "GDG Prague",
+        "city": "Prague",
+        "country": "Czechia",
+        "location": "Prague — venue to be announced",
+        "mode": "In person",
+        "startsAt": "2026-10-30T07:30:00+01:00",
+        "endsAt": "2026-10-30T22:00:00+01:00",
+        "timeZone": "Europe/Prague",
+        "url": "https://gdg.community.dev/events/details/google-gdg-prague-presents-devfestcz-2026/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-prague-presents-devfestcz-2026/",
+        "coordinateSource": "Nominatim city result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.3855534, 49.0261991] },
+      "properties": {
+        "id": "karlsruhe-devfest-2026-11-07",
+        "kind": "event",
+        "category": "devfest",
+        "title": "GDG DevFest Karlsruhe 2026",
+        "chapterName": "GDG Karlsruhe",
+        "city": "Karlsruhe",
+        "country": "Germany",
+        "location": "DHBW Karlsruhe",
+        "mode": "In person",
+        "startsAt": "2026-11-07T09:00:00+01:00",
+        "endsAt": "2026-11-07T22:00:00+01:00",
+        "timeZone": "Europe/Berlin",
+        "url": "https://gdg.community.dev/events/details/google-gdg-karlsruhe-presents-gdg-devfest-karlsruhe-2026/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-karlsruhe-presents-gdg-devfest-karlsruhe-2026/",
+        "coordinateSource": "Nominatim venue result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [2.2008168, 48.9062074] },
+      "properties": {
+        "id": "paris-devfest-2026-11-27",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest Paris 2026",
+        "chapterName": "GDG Paris",
+        "city": "Nanterre",
+        "country": "France",
+        "location": "La Fabrique de la Connaissance",
+        "mode": "In person",
+        "startsAt": "2026-11-27T08:00:00+01:00",
+        "endsAt": "2026-11-27T19:00:00+01:00",
+        "timeZone": "Europe/Paris",
+        "url": "https://gdg.community.dev/events/details/google-gdg-paris-presents-devfest-paris-2026/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-paris-presents-devfest-paris-2026/",
+        "coordinateSource": "Nominatim venue result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [121.4700152, 31.2312707] },
+      "properties": {
+        "id": "shanghai-devfest-2026-11-07",
+        "kind": "event",
+        "category": "devfest",
+        "title": "Google DevFest 2026 Shanghai",
+        "chapterName": "GDG Shanghai",
+        "city": "Shanghai",
+        "country": "China",
+        "location": "Shanghai — venue details on official listing",
+        "mode": "In person",
+        "startsAt": "2026-11-07T09:00:00+08:00",
+        "endsAt": "2026-11-07T18:00:00+08:00",
+        "timeZone": "Asia/Shanghai",
+        "url": "https://gdg.community.dev/events/details/google-gdg-shanghai-presents-google-devfest-2026-shanghai/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-shanghai-presents-google-devfest-2026-shanghai/",
+        "coordinateSource": "Nominatim city result",
+        "verifiedAt": "2026-07-31"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [31.2407984, 30.0478647] },
+      "properties": {
+        "id": "cairo-devfest-2026-12-19",
+        "kind": "event",
+        "category": "devfest",
+        "title": "DevFest Cairo 2026",
+        "chapterName": "GDG Cairo",
+        "city": "Cairo",
+        "country": "Egypt",
+        "location": "The GrEEK Campus Downtown",
+        "mode": "In person",
+        "startsAt": "2026-12-19T09:00:00+02:00",
+        "endsAt": "2026-12-19T20:30:00+02:00",
+        "timeZone": "Africa/Cairo",
+        "url": "https://gdg.community.dev/events/details/google-gdg-cairo-presents-devfest-cairo-2026/",
+        "sourceUrl": "https://gdg.community.dev/events/details/google-gdg-cairo-presents-devfest-cairo-2026/",
+        "coordinateSource": "Nominatim Bab El-Louk neighborhood result",
+        "verifiedAt": "2026-07-31"
+      }
+    }
+  ]
+}

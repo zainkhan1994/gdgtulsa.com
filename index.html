@@ -9,9 +9,12 @@
     <meta property="og:description" content="A Google Developer Group for Tulsa builders. Learn, build, and connect around AI, Cloud, Web, Android, Gemini, Firebase, and more.">
     <meta property="og:image" content="/gdg-tulsa-brand-banner.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="vendor/maplibre-gl.css?v=5.24.0">
     <link rel="stylesheet" href="styles.css?v=9f6eb8838a80f4595c71e34ef51a47cb7a5128b6">
+    <link rel="stylesheet" href="globe-explorer.css?v=20260805-interactive-globe">
     <script type="module" src="script.js?v=9f6eb8838a80f4595c71e34ef51a47cb7a5128b6"></script>
-    <script src="globe.js?v=9f6eb8838a80f4595c71e34ef51a47cb7a5128b6" defer></script>
+    <script src="vendor/maplibre-gl.js?v=5.24.0" defer></script>
+    <script src="globe.js?v=20260805-interactive-globe" defer></script>
   </head>
   <body>
     <div class="scroll-meter" aria-hidden="true"></div>
@@ -134,24 +137,91 @@ const idea = new Gemini({
         </div>
       </section>
 
-      <section class="globe-section" aria-label="Global GDG network">
-        <div class="globe-stage">
-          <canvas class="globe-canvas" data-globe aria-hidden="true"></canvas>
-        </div>
-        <div class="globe-copy">
-          <p class="globe-eyebrow">Part of a global community</p>
-          <h2>Join a global network<br>of innovators.</h2>
-          <p class="globe-lead">
-            GDG Tulsa is one node in a worldwide network of Google Developer Groups —
-            hundreds of cities, one community. Right here in <strong>Tulsa</strong>, that
-            global energy becomes local: workshops, build nights, and people to build with.
-          </p>
-          <div class="globe-actions">
-            <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Find your community</a>
-            <a class="button secondary globe-secondary" href="#events">Enter the community hub</a>
+      <section id="explore" class="globe-explorer" aria-labelledby="explorer-title">
+        <div class="globe-explorer-map-frame" data-globe-frame>
+          <div
+            id="community-globe"
+            class="community-globe"
+            role="region"
+            aria-label="Interactive globe of verified upcoming GDG events"
+            aria-describedby="globe-instructions"
+          >
+            <div class="globe-loading" data-globe-loading>
+              <span class="globe-loader" aria-hidden="true"></span>
+              <span>Preparing the event globe…</span>
+            </div>
           </div>
-          
+        </div>
 
+        <div class="globe-explorer-heading">
+          <div>
+            <p class="globe-explorer-eyebrow">A global community, made local</p>
+            <h2 id="explorer-title">Explore what GDG communities are building.</h2>
+          </div>
+          <p>Drag the globe, pick an event, or search by city. Start in Tulsa, then see what other GDG chapters have scheduled.</p>
+        </div>
+
+        <div class="globe-explorer-shell" data-community-explorer>
+          <aside class="event-panel" data-event-panel aria-label="Verified upcoming GDG events">
+            <div class="field-group">
+              <label for="event-search">Find an event or city</label>
+              <div class="search-field">
+                <span aria-hidden="true">⌕</span>
+                <input id="event-search" type="search" placeholder="Search events, cities, chapters…" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="event-filters" aria-label="Filter events">
+              <button type="button" class="filter-chip is-active" data-event-filter="all" aria-pressed="true">All</button>
+              <button type="button" class="filter-chip" data-event-filter="local" aria-pressed="false">Tulsa</button>
+              <button type="button" class="filter-chip" data-event-filter="build-with-ai" aria-pressed="false">Build with AI</button>
+              <button type="button" class="filter-chip" data-event-filter="devfest" aria-pressed="false">DevFest</button>
+              <button type="button" class="filter-chip" data-event-filter="workshop" aria-pressed="false">Workshops</button>
+            </div>
+
+            <p id="event-status" class="result-status" role="status" aria-live="polite">Loading verified events…</p>
+            <ol id="event-list" class="event-list" aria-label="Event results"></ol>
+            <a class="event-panel-cta" href="https://gdg.community.dev/events/" target="_blank" rel="noopener noreferrer">
+              Browse all official GDG events <span aria-hidden="true">↗</span>
+            </a>
+            <noscript>
+              <p class="fallback-note">JavaScript is needed for filtering. Browse the complete catalog on the <a href="https://gdg.community.dev/events/">official GDG events site</a>.</p>
+            </noscript>
+          </aside>
+
+          <div class="globe-column">
+            <div class="globe-ui-frame" data-globe-ui-frame>
+              <p id="globe-instructions" class="sr-only">
+                Drag to rotate and use the controls to move or zoom. The event list provides the same choices without dragging.
+              </p>
+
+              <div class="globe-controls" aria-label="Globe controls">
+                <button type="button" data-globe-action="rotate-left" aria-label="Rotate globe left. Hold to keep orbiting." title="Hold to orbit left">←</button>
+                <button type="button" data-globe-action="rotate-right" aria-label="Rotate globe right. Hold to keep orbiting." title="Hold to orbit right">→</button>
+                <button type="button" data-globe-action="zoom-in" aria-label="Zoom in">+</button>
+                <button type="button" data-globe-action="zoom-out" aria-label="Zoom out">−</button>
+                <button type="button" data-globe-action="reset">Tulsa</button>
+                <button type="button" data-globe-action="motion" aria-pressed="false">Pause</button>
+              </div>
+
+              <div class="map-key" aria-label="Map key">
+                <span><i class="key-dot key-local" aria-hidden="true"></i>Tulsa</span>
+                <span><i class="key-dot key-ai" aria-hidden="true"></i>Build with AI</span>
+                <span><i class="key-dot key-devfest" aria-hidden="true"></i>DevFest</span>
+                <span><i class="key-dot key-workshop" aria-hidden="true"></i>Workshop</span>
+              </div>
+            </div>
+
+            <article id="selected-event" class="selected-event" aria-live="polite" aria-atomic="true">
+              <p class="card-kicker">Selected event</p>
+              <h3>Choose an event to explore</h3>
+              <p>Details from each organizer’s public listing will appear here.</p>
+            </article>
+
+            <p class="data-note">
+              <span data-event-snapshot-note>This verified snapshot was updated August 1, 2026. It is not a complete live feed.</span>
+              <a href="https://gdg.community.dev/events/" target="_blank" rel="noopener noreferrer">Browse all official GDG events <span aria-hidden="true">↗</span></a>
+            </p>
           </div>
         </div>
       </section>
