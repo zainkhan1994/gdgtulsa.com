@@ -3141,6 +3141,11 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  /* When stacked, lead with the Build with AI hero, not the Communities list. */
+  .bwai-main-content {
+    order: -1;
+  }
+
   .bwai-feature-grid,
   .bwai-impact-stats,
   .bwai-bottom-cards {
