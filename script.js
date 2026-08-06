@@ -808,18 +808,7 @@ document.addEventListener("click", async (event) => {
   if (target.closest("[data-member-signout]")) await signOutMember();
 
   const eventCategory = target.closest("[data-event-category]");
-  if (eventCategory) {
-    const category = eventCategory.dataset.eventCategory;
-    document.querySelectorAll("[data-event-category]").forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.eventCategory === category);
-    });
-    document.querySelectorAll("[data-event-card]").forEach((card) => {
-      card.classList.toggle("is-active", card.dataset.eventCard === category);
-    });
-    document.querySelectorAll("[data-event-detail]").forEach((panel) => {
-      panel.classList.toggle("is-active", panel.dataset.eventDetail === category);
-    });
-  }
+  if (eventCategory) setEventCategory(eventCategory.dataset.eventCategory);
 
   const memberResource = target.closest("[data-requires-member]");
   if (memberResource) {
@@ -837,6 +826,26 @@ document.addEventListener("click", async (event) => {
   if (adminTab) setAdminTab(adminTab.dataset.adminTab);
   const exportButton = target.closest("[data-admin-export]");
   if (exportButton) exportCSV(exportButton.dataset.adminExport);
+});
+
+function setEventCategory(category) {
+  if (!category) return;
+  document.querySelectorAll("[data-event-category]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.eventCategory === category);
+  });
+  document.querySelectorAll("[data-event-card]").forEach((card) => {
+    card.classList.toggle("is-active", card.dataset.eventCard === category);
+  });
+  document.querySelectorAll("[data-event-detail]").forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.eventDetail === category);
+  });
+  const select = document.querySelector("[data-event-select]");
+  if (select && select.value !== category) select.value = category;
+}
+
+document.addEventListener("change", (event) => {
+  const select = event.target.closest?.("[data-event-select]");
+  if (select) setEventCategory(select.value);
 });
 
 document.addEventListener("submit", async (event) => {

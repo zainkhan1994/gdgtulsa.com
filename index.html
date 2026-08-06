@@ -23,25 +23,37 @@
         <img class="brand-logo brand-logo--wordmark" src="assets/logos/google-for-developers.png" alt="Google for Developers">
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
-        <div class="nav-column">
-          <span>Events</span>
-          <a href="#events">BWAI</a>
-          <a href="#events">DevFest</a>
-          <a href="#events">Hackathons</a>
-          <a href="#events">Workshops</a>
-          <a href="#events">In-Person</a>
-          <a href="#events">Virtual</a>
+        <div class="nav-item">
+          <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Events
+            <svg class="nav-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-menu">
+            <a href="#events">Workshops</a>
+            <a href="#events">BWAI</a>
+            <a href="#events">DevFest</a>
+            <a href="#events">Hackathons</a>
+            <a href="#events">In-Person</a>
+            <a href="#events">Virtual</a>
+          </div>
         </div>
-        <div class="nav-column">
-          <span>Resources</span>
-          <a href="#learn">Programs</a>
-          <a href="#members">Members</a>
+        <div class="nav-item">
+          <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">Resources
+            <svg class="nav-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-menu">
+            <a href="#learn">Programs</a>
+            <a href="#members">Members</a>
+          </div>
         </div>
-        <div class="nav-column">
-          <span>About</span>
-          <a href="#about">Community</a>
-          <a href="#team">Team</a>
-          <a href="#members">Members</a>
+        <div class="nav-item">
+          <button class="nav-trigger" type="button" aria-haspopup="true" aria-expanded="false">About
+            <svg class="nav-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="nav-menu">
+            <a href="#about">Community</a>
+            <a href="#team">Team</a>
+            <a href="#members">Members</a>
+          </div>
         </div>
       </nav>
       <a class="brand brand--image brand--right" href="#members" aria-label="GDG Tulsa community">
@@ -56,7 +68,9 @@
           <h1>
             Build with
             <span class="google-word" aria-label="Google">
-              <span class="google-blue">G</span><span class="google-red">o</span><span class="google-yellow">o</span><span class="google-blue">g</span><span class="google-green">l</span><span class="google-red">e</span>
+              <img class="google-logo-img" src="assets/logos/google.png" alt="Google"
+                   onerror="this.style.display='none';var f=document.getElementById('googleWordText');if(f)f.style.display='inline-flex';">
+              <span class="google-word-text" id="googleWordText" style="display:none" aria-hidden="true"><span class="google-blue">G</span><span class="google-red">o</span><span class="google-yellow">o</span><span class="google-blue">g</span><span class="google-green">l</span><span class="google-red">e</span></span>
             </span>
             in Tulsa.
           </h1>
@@ -109,10 +123,6 @@
                 allowfullscreen
                 loading="lazy"></iframe>
             </div>
-            <div class="hero-video-meta">
-              <strong>Featured event story</strong>
-              <p>Looping community highlight from GDG Tulsa.</p>
-            </div>
           </article>
           <article class="hero-video-card hero-video-card--secondary">
             <div class="hero-video-frame hero-video-frame--small">
@@ -122,10 +132,6 @@
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowfullscreen
                 loading="lazy"></iframe>
-            </div>
-            <div class="hero-video-meta">
-              <strong>Short highlight</strong>
-              <p>Another looped community clip to keep the hero moving.</p>
             </div>
           </article>
         </div>
@@ -316,29 +322,17 @@
         </div>
 
         <div class="events-panel">
-          <div class="event-directory" aria-label="GDG Tulsa event navigation">
-            <article class="event-directory-column">
-              <span>Events</span>
-              <button class="filter-button is-active" type="button" data-event-category="workshops">Workshops</button>
-              <button class="filter-button" type="button" data-event-category="bwai">BWAI</button>
-              <button class="filter-button" type="button" data-event-category="devfest">DevFest</button>
-              <button class="filter-button" type="button" data-event-category="hackathons">Hackathons</button>
-              <div class="event-directory-subitems" aria-label="Workshop types">
-                <span>In-Person</span>
-                <span>Virtual</span>
-              </div>
-            </article>
-            <article class="event-directory-column">
-              <span>Resources</span>
-              <a href="#learn">Programs</a>
-              <a href="#members">Members</a>
-            </article>
-            <article class="event-directory-column">
-              <span>About</span>
-              <a href="#about">Community</a>
-              <a href="#team">Team</a>
-              <a href="#members">Members</a>
-            </article>
+          <div class="event-dropdown-bar">
+            <label class="event-dropdown">
+              <span class="event-dropdown-label">Event type</span>
+              <select data-event-select aria-label="Choose an event type">
+                <option value="workshops" selected>Workshops</option>
+                <option value="bwai">BWAI</option>
+                <option value="devfest">DevFest</option>
+                <option value="hackathons">Hackathons</option>
+              </select>
+              <svg class="event-dropdown-chevron" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </label>
           </div>
 
           <div class="event-grid event-category-grid">
