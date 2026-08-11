@@ -1227,6 +1227,20 @@ h3 {
   justify-self: start;
 }
 
+.event-cat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.event-cat-icon.yellow { color: #7a5900; background: #fff3c4; }
+.event-cat-icon.blue { color: #174ea6; background: #e8f0fe; }
+.event-cat-icon.green { color: #188038; background: #e6f4ea; }
+.event-cat-icon.purple { color: #7b1fa2; background: #f3e8ff; }
+
 .event-category-card .row-link {
   align-self: end;
   justify-self: start;
@@ -3886,6 +3900,12 @@ tr:last-child td {
   border: 2px solid currentColor;
 }
 
+.role-badge-img {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 6px;
+}
+
 .role-badge.orange { color: #f9ab00; }
 .role-badge.blue { color: #4285f4; }
 .role-badge.green { color: #34a853; }
@@ -3910,7 +3930,7 @@ tr:last-child td {
 
 .get-involved-card:nth-child(1) .text-link { color: #f9ab00; }
 .get-involved-card:nth-child(2) .text-link { color: #4285f4; }
-.get-involved-card:nth-child(3) .text-link { color: #34a853; }
+.get-involved-card:nth-child(3) .text-link { color: #f9ab00; }
 
 .get-involved-action {
   border: 0;
