@@ -839,13 +839,15 @@ function setEventCategory(category) {
   document.querySelectorAll("[data-event-detail]").forEach((panel) => {
     panel.classList.toggle("is-active", panel.dataset.eventDetail === category);
   });
-  const select = document.querySelector("[data-event-select]");
-  if (select && select.value !== category) select.value = category;
 }
 
-document.addEventListener("change", (event) => {
-  const select = event.target.closest?.("[data-event-select]");
-  if (select) setEventCategory(select.value);
+// The event cards are the category selector, so keep them keyboard-operable.
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest?.("[data-event-category][role='button']");
+  if (!card) return;
+  event.preventDefault();
+  setEventCategory(card.dataset.eventCategory);
 });
 
 document.addEventListener("submit", async (event) => {

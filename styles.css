@@ -1236,6 +1236,55 @@ h3 {
   border-radius: 50%;
 }
 
+/* Cards act as the event-type selector, so make the affordance obvious. */
+.event-category-card[role="button"],
+.event-card-link {
+  cursor: pointer;
+}
+
+.event-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.event-category-card[role="button"]:focus-visible,
+.event-card-link:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+/* Hackathons is not running yet: blur the preview and label it. */
+.event-category-card.is-coming-soon {
+  position: relative;
+  cursor: default;
+}
+
+.event-card-blurred {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  filter: blur(5px);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(32, 33, 36, 0.12);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .event-cat-icon.yellow { color: #7a5900; background: #fff3c4; }
 .event-cat-icon.blue { color: #174ea6; background: #e8f0fe; }
 .event-cat-icon.green { color: #188038; background: #e6f4ea; }
@@ -3930,7 +3979,7 @@ tr:last-child td {
 
 .get-involved-card:nth-child(1) .text-link { color: #f9ab00; }
 .get-involved-card:nth-child(2) .text-link { color: #4285f4; }
-.get-involved-card:nth-child(3) .text-link { color: #f9ab00; }
+.get-involved-card:nth-child(3) .text-link { color: #34a853; }
 
 .get-involved-action {
   border: 0;
@@ -5082,65 +5131,6 @@ body.ready .step-card:hover,
 .events-panel {
   display: grid;
   gap: 22px;
-}
-
-.event-dropdown-bar {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.event-dropdown {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 260px;
-  padding: 12px 46px 12px 20px;
-  border: 1px solid rgba(224, 227, 231, 0.9);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 32px rgba(32, 33, 36, 0.08);
-  cursor: pointer;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.event-dropdown:focus-within {
-  border-color: rgba(66, 133, 244, 0.55);
-  box-shadow: 0 14px 36px rgba(66, 133, 244, 0.16);
-}
-
-.event-dropdown-label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.event-dropdown select {
-  appearance: none;
-  -webkit-appearance: none;
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 17px;
-  font-weight: 800;
-  cursor: pointer;
-  outline: none;
-}
-
-.event-dropdown-chevron {
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
 }
 
 .event-category-grid {
