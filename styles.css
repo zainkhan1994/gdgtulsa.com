@@ -2720,6 +2720,7 @@ tr:last-child td {
 
 .bwai-hero-section,
 .bwai-about-section,
+.bwai-video-section,
 .bwai-expect-section,
 .bwai-feature-section,
 .bwai-impact-section,
@@ -2846,6 +2847,28 @@ tr:last-child td {
   margin: 0;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.bwai-video-section {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.bwai-video-section h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.bwai-video-section > p {
+  margin: 0 0 20px;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bwai-video-section .hero-video-frame {
+  width: min(780px, 100%);
+  margin: 0 auto;
 }
 
 .bwai-expect-section {
