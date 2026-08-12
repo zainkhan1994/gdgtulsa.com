@@ -860,9 +860,7 @@ h3 {
 .learn-card,
 .join-point,
 .event-card {
-  animation: riseIn 700ms ease both;
-  animation-timeline: view();
-  animation-range: entry 0% cover 28%;
+  animation: riseIn 500ms ease both;
 }
 
 .about-grid {
@@ -1769,6 +1767,97 @@ footer span {
   margin-top: 4px;
   max-width: 360px;
   line-height: 1.5;
+}
+
+.site-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+}
+
+.site-footer-inner {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 2fr;
+  gap: clamp(28px, 5vw, 64px);
+  padding: clamp(40px, 6vw, 64px) clamp(20px, 5vw, 64px) 40px;
+}
+
+.site-footer-brand {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.site-footer-logo {
+  height: 34px;
+  width: auto;
+}
+
+.site-footer-brand p {
+  margin: 0;
+  max-width: 320px;
+  color: #c8ccd1;
+  line-height: 1.5;
+}
+
+.site-footer-brand .button {
+  justify-self: start;
+}
+
+.site-footer-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.site-footer-col {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.site-footer-heading {
+  margin: 0 0 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.site-footer-col a {
+  color: #c8ccd1;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.site-footer-col a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.site-footer-bottom {
+  padding: 18px clamp(20px, 5vw, 64px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8b9099;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .site-footer-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .site-footer-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .site-footer-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 footer p {
@@ -5449,5 +5538,133 @@ body.ready .step-card:hover,
 
   .events-section .event-card {
     min-height: 0;
+  }
+}
+
+/* =====================================================================
+   "New community in Tulsa" pill — pops in, holds, fades out, repeats.
+   ===================================================================== */
+@keyframes pillPop {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  6%,
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  66% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+.hero-pill {
+  animation: pillPop 5s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-pill {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* =====================================================================
+   Mobile header — two compact rows (brands, then nav) instead of a tall
+   centred stack, which left large gaps between each element.
+   ===================================================================== */
+@media (max-width: 900px) {
+  .site-header.site-header--mega {
+    grid-template-columns: auto auto;
+    grid-template-areas:
+      "brandleft brandright"
+      "nav nav";
+    justify-items: stretch;
+    align-items: center;
+    gap: 10px 12px;
+    min-height: 0;
+    padding: 10px 14px;
+  }
+
+  .site-header--mega .brand--left {
+    grid-area: brandleft;
+    justify-self: start;
+  }
+
+  .site-header--mega .brand--right {
+    grid-area: brandright;
+    justify-self: end;
+  }
+
+  .site-header--mega .site-nav {
+    grid-area: nav;
+    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-header--mega .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header--mega .brand-logo--wordmark,
+  .site-header--mega .brand-logo--community {
+    width: auto;
+    max-width: none;
+    height: 26px;
+  }
+
+  .site-header--mega .nav-trigger {
+    padding: 6px 10px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .site-header--mega .nav-menu {
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+  }
+
+  .site-header--mega .nav-item:hover .nav-menu,
+  .site-header--mega .nav-item:focus-within .nav-menu {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 40px clamp(16px, 5vw, 24px);
+  }
+
+  /* Two wide lockups can't share a phone-width row; keep the GDG one. */
+  .site-header--mega .brand--left {
+    display: none;
+  }
+
+  .site-header.site-header--mega {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "brandright"
+      "nav";
+  }
+
+  .site-header--mega .brand--right {
+    justify-self: start;
+  }
+
+  .site-header--mega .brand-logo--community {
+    height: 24px;
+  }
+
+  .site-header--mega .site-nav {
+    justify-content: flex-start;
   }
 }
