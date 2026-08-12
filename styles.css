@@ -2723,11 +2723,14 @@ tr:last-child td {
 }
 
 .bwai-shell {
+  width: min(1360px, calc(100% - 48px));
+  margin: 24px auto;
+}
+
+.bwai-shell--split {
   display: grid;
   grid-template-columns: minmax(280px, 30%) minmax(0, 70%);
   gap: 24px;
-  width: min(1360px, calc(100% - 48px));
-  margin: 24px auto;
 }
 
 .bwai-sidebar {
@@ -2805,9 +2808,12 @@ tr:last-child td {
 }
 
 .bwai-hero-section,
+.bwai-about-section,
+.bwai-video-section,
 .bwai-expect-section,
 .bwai-feature-section,
 .bwai-impact-section,
+.bwai-related-section,
 .bwai-join-section {
   position: relative;
   border-radius: 12px;
@@ -2827,30 +2833,40 @@ tr:last-child td {
   border-radius: 80px 0 0 0;
 }
 
-.bwai-hero-head {
-  display: inline-flex;
+.bwai-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+  gap: 28px;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.bwai-mark {
-  width: 44px;
-  height: 32px;
-}
-
-.bwai-hero-head a {
-  color: #fbbc04;
-  font-weight: 700;
-  text-decoration: none;
 }
 
 .bwai-hero-banner {
   display: block;
-  width: min(540px, 100%);
-  margin: 0 0 12px;
+  width: 100%;
+  margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 8px;
+}
+
+.bwai-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.bwai-hero-actions .button {
+  min-height: 46px;
+  padding: 0 20px;
+}
+
+.bwai-tools-label {
+  margin: 0 0 10px;
+  color: #9aa0a6;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .bwai-hero-section h1,
@@ -2887,6 +2903,61 @@ tr:last-child td {
   padding: 9px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
+}
+
+.bwai-about-section {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.bwai-about-section h2 {
+  margin: 0 0 16px;
+  font-size: 32px;
+}
+
+.bwai-about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.bwai-about-grid article {
+  display: grid;
+  gap: 8px;
+}
+
+.bwai-about-grid h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #174ea6;
+}
+
+.bwai-about-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bwai-video-section {
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.bwai-video-section h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.bwai-video-section > p {
+  margin: 0 0 20px;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bwai-video-section .hero-video-frame {
+  width: min(780px, 100%);
+  margin: 0 auto;
 }
 
 .bwai-expect-section {
@@ -2966,16 +3037,48 @@ tr:last-child td {
 }
 
 .bwai-dark-banner {
+  display: block;
   border-radius: 12px;
   padding: 18px 24px;
   text-align: center;
+  text-decoration: none;
+  transition: background-color 180ms ease;
+}
+
+.bwai-dark-banner span {
+  display: block;
   font-size: clamp(26px, 3vw, 42px);
   font-weight: 800;
+}
+
+.bwai-dark-banner small {
+  display: block;
+  margin-top: 6px;
+  color: #9aa0a6;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.bwai-dark-banner:hover {
+  background: #2b2c2f;
+}
+
+.bwai-dark-banner:hover small {
+  color: #fbbc04;
 }
 
 .bwai-impact-section {
   display: grid;
   gap: 18px;
+}
+
+.bwai-impact-section .bwai-impact-eyebrow {
+  margin: 0;
+  color: #9aa0a6;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .bwai-impact-section p {
@@ -3017,51 +3120,26 @@ tr:last-child td {
   border-radius: 10px;
 }
 
-.bwai-bottom-cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.bwai-bottom-cards article {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 10px;
-  background: #1a73e8;
-}
-
-.bwai-bottom-cards strong {
-  font-size: 16px;
-}
-
-.bwai-bottom-cards p {
-  margin: 0;
-  color: #fff;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.bwai-avatars {
-  display: flex;
-}
-
-.bwai-avatars span {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  margin-left: -6px;
-  border: 2px solid #1a73e8;
-  border-radius: 50%;
+.bwai-related-section {
+  border: 1px solid var(--line);
   background: #fff;
-  color: #1a73e8;
-  font-size: 12px;
-  font-weight: 800;
 }
 
-.bwai-avatars span:first-child {
-  margin-left: 0;
+.bwai-related-section h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.bwai-related-section > p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bwai-related-section .community-cards {
+  width: 100%;
+  margin: 24px 0 0;
 }
 
 .bwai-join-section {
@@ -3251,18 +3329,19 @@ tr:last-child td {
     width: min(100% - 36px, 720px);
   }
 
-  .bwai-shell {
+  .bwai-shell--split {
     grid-template-columns: 1fr;
   }
 
   /* When stacked, lead with the Build with AI hero, not the Communities list. */
-  .bwai-main-content {
+  .bwai-shell--split .bwai-main-content {
     order: -1;
   }
 
+  .bwai-hero-grid,
+  .bwai-about-grid,
   .bwai-feature-grid,
-  .bwai-impact-stats,
-  .bwai-bottom-cards {
+  .bwai-impact-stats {
     grid-template-columns: 1fr;
   }
 }
@@ -3447,9 +3526,11 @@ tr:last-child td {
 
   .bwai-sidebar,
   .bwai-hero-section,
+  .bwai-about-section,
   .bwai-expect-section,
   .bwai-feature-section,
   .bwai-impact-section,
+  .bwai-related-section,
   .bwai-join-section {
     padding: 16px;
   }
