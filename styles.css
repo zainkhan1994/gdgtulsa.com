@@ -1236,55 +1236,6 @@ h3 {
   border-radius: 50%;
 }
 
-/* Cards act as the event-type selector, so make the affordance obvious. */
-.event-category-card[role="button"],
-.event-card-link {
-  cursor: pointer;
-}
-
-.event-card-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.event-category-card[role="button"]:focus-visible,
-.event-card-link:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 3px;
-}
-
-/* Hackathons is not running yet: blur the preview and label it. */
-.event-category-card.is-coming-soon {
-  position: relative;
-  cursor: default;
-}
-
-.event-card-blurred {
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  filter: blur(5px);
-  opacity: 0.55;
-  pointer-events: none;
-  user-select: none;
-}
-
-.coming-soon-badge {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px 20px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 10px 30px rgba(32, 33, 36, 0.12);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
 .event-cat-icon.yellow { color: #7a5900; background: #fff3c4; }
 .event-cat-icon.blue { color: #174ea6; background: #e8f0fe; }
 .event-cat-icon.green { color: #188038; background: #e6f4ea; }
@@ -5234,5 +5185,180 @@ body.ready .step-card:hover,
   .event-directory .filter-button,
   .event-directory-subitems span {
     font-size: 15px;
+  }
+}
+
+
+/* =====================================================================
+   Events — GDG brand-guide dark template: black canvas, colour-outlined
+   cards, monoline globe/people glyphs. Palette from the guide's swatches.
+   ===================================================================== */
+.events-section {
+  color: #fff;
+  background: #1e1e1e;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.events-inner {
+  width: min(1400px, 100%);
+  margin: 0 auto;
+}
+
+.events-title {
+  margin: 0 0 clamp(28px, 4vw, 56px);
+  color: #fff;
+  font-size: clamp(44px, 6vw, 84px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.events-section .event-category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.events-section .event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-height: 430px;
+  padding: 26px 24px;
+  border: 1.5px solid var(--card-color);
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+  text-decoration: none;
+  transform: none;
+}
+
+.event-card--blue { --card-color: #57caff; }
+.event-card--yellow { --card-color: #f9ab00; }
+.event-card--pink { --card-color: #ff7daf; }
+.event-card--green { --card-color: #5cdb6d; }
+
+.events-section .event-card:hover,
+.events-section .event-card.is-active {
+  border-color: var(--card-color);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.events-section .event-card-link:hover {
+  transform: translateY(-3px);
+}
+
+.events-section .event-card-link:focus-visible {
+  outline: 2px solid var(--card-color);
+  outline-offset: 3px;
+}
+
+.events-section .event-cat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid var(--card-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--card-color);
+}
+
+.events-section .tag {
+  align-self: flex-start;
+  margin: 0;
+  padding: 5px 15px;
+  border: 1.5px solid var(--card-color);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--card-color);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.events-section .event-card h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 25px;
+  line-height: 1.15;
+}
+
+.events-section .event-card p,
+.events-section .event-card-note {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.events-section .event-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.events-section .event-mini-card {
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.events-section .event-mini-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.events-section .event-mini-card p {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Monoline glyph pairing that anchors every card in the brand system. */
+.event-card-glyphs {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 30px;
+  color: var(--card-color);
+}
+
+.glyph-globe {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+}
+
+.glyph-people {
+  width: 86px;
+  height: 52px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .events-section .event-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .events-section .event-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .events-section .event-card {
+    min-height: 0;
   }
 }

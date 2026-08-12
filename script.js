@@ -807,9 +807,6 @@ document.addEventListener("click", async (event) => {
   if (target.closest("[data-admin-google-login]")) await continueWithGoogle({ adminLogin: true });
   if (target.closest("[data-member-signout]")) await signOutMember();
 
-  const eventCategory = target.closest("[data-event-category]");
-  if (eventCategory) setEventCategory(eventCategory.dataset.eventCategory);
-
   const memberResource = target.closest("[data-requires-member]");
   if (memberResource) {
     const member = requireConfirmedMember();
@@ -828,27 +825,6 @@ document.addEventListener("click", async (event) => {
   if (exportButton) exportCSV(exportButton.dataset.adminExport);
 });
 
-function setEventCategory(category) {
-  if (!category) return;
-  document.querySelectorAll("[data-event-category]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.eventCategory === category);
-  });
-  document.querySelectorAll("[data-event-card]").forEach((card) => {
-    card.classList.toggle("is-active", card.dataset.eventCard === category);
-  });
-  document.querySelectorAll("[data-event-detail]").forEach((panel) => {
-    panel.classList.toggle("is-active", panel.dataset.eventDetail === category);
-  });
-}
-
-// The event cards are the category selector, so keep them keyboard-operable.
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Enter" && event.key !== " ") return;
-  const card = event.target.closest?.("[data-event-category][role='button']");
-  if (!card) return;
-  event.preventDefault();
-  setEventCategory(card.dataset.eventCategory);
-});
 
 document.addEventListener("submit", async (event) => {
   const form = event.target;
