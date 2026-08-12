@@ -3847,6 +3847,14 @@ tr:last-child td {
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* Standalone devfest.html reuses .devfest-section boxed inside the bwai-style page shell. */
+.devfest-page-hero {
+  border-top: 0;
+  border-radius: 12px;
+  padding: clamp(20px, 4vw, 34px);
+  overflow: hidden;
+}
+
 /* Get Involved — GDG brand guide "Developer Profile Badge" roles: Speaker / Member / Organizer. */
 .get-involved-section {
   color: #fff;
