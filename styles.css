@@ -1792,7 +1792,6 @@ footer span {
 .site-footer-logo {
   height: 34px;
   width: auto;
-  filter: brightness(0) invert(1);
 }
 
 .site-footer-brand p {
@@ -5458,5 +5457,133 @@ body.ready .step-card:hover,
 
   .events-section .event-card {
     min-height: 0;
+  }
+}
+
+/* =====================================================================
+   "New community in Tulsa" pill — pops in, holds, fades out, repeats.
+   ===================================================================== */
+@keyframes pillPop {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  6%,
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  66% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+.hero-pill {
+  animation: pillPop 5s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-pill {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* =====================================================================
+   Mobile header — two compact rows (brands, then nav) instead of a tall
+   centred stack, which left large gaps between each element.
+   ===================================================================== */
+@media (max-width: 900px) {
+  .site-header.site-header--mega {
+    grid-template-columns: auto auto;
+    grid-template-areas:
+      "brandleft brandright"
+      "nav nav";
+    justify-items: stretch;
+    align-items: center;
+    gap: 10px 12px;
+    min-height: 0;
+    padding: 10px 14px;
+  }
+
+  .site-header--mega .brand--left {
+    grid-area: brandleft;
+    justify-self: start;
+  }
+
+  .site-header--mega .brand--right {
+    grid-area: brandright;
+    justify-self: end;
+  }
+
+  .site-header--mega .site-nav {
+    grid-area: nav;
+    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-header--mega .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header--mega .brand-logo--wordmark,
+  .site-header--mega .brand-logo--community {
+    width: auto;
+    max-width: none;
+    height: 26px;
+  }
+
+  .site-header--mega .nav-trigger {
+    padding: 6px 10px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .site-header--mega .nav-menu {
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+  }
+
+  .site-header--mega .nav-item:hover .nav-menu,
+  .site-header--mega .nav-item:focus-within .nav-menu {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 40px clamp(16px, 5vw, 24px);
+  }
+
+  /* Two wide lockups can't share a phone-width row; keep the GDG one. */
+  .site-header--mega .brand--left {
+    display: none;
+  }
+
+  .site-header.site-header--mega {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "brandright"
+      "nav";
+  }
+
+  .site-header--mega .brand--right {
+    justify-self: start;
+  }
+
+  .site-header--mega .brand-logo--community {
+    height: 24px;
+  }
+
+  .site-header--mega .site-nav {
+    justify-content: flex-start;
   }
 }
