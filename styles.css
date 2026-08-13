@@ -2694,74 +2694,6 @@ tr:last-child td {
   margin: 24px auto;
 }
 
-.bwai-shell--split {
-  display: grid;
-  grid-template-columns: minmax(280px, 30%) minmax(0, 70%);
-  gap: 24px;
-}
-
-.bwai-sidebar {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.bwai-sidebar h2 {
-  margin: 0;
-  font-size: 30px;
-}
-
-.bwai-community-card {
-  display: grid;
-  gap: 10px;
-  padding: 16px;
-  border: 1px solid #d8dce1;
-  border-radius: 10px;
-  background: var(--surface);
-}
-
-.bwai-community-card h3 {
-  margin: 0;
-  font-size: 19px;
-}
-
-.bwai-community-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.bwai-community-card a {
-  justify-self: start;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: #202124;
-  color: #fff;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.bwai-community-logo {
-  display: inline-flex;
-  justify-self: start;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(66, 133, 244, 0.14);
-  color: var(--on-blue);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.bwai-community-meta {
-  font-weight: 700;
-}
-
 .bwai-main-content {
   display: grid;
   gap: 22px;
@@ -3305,15 +3237,6 @@ tr:last-child td {
     width: min(100% - 36px, 720px);
   }
 
-  .bwai-shell--split {
-    grid-template-columns: 1fr;
-  }
-
-  /* When stacked, lead with the Build with AI hero, not the Communities list. */
-.bwai-shell--split .bwai-main-content {
-    order: -1;
-  }
-
   .bwai-hero-grid,
 .bwai-about-grid,
 .bwai-feature-grid,
@@ -3495,8 +3418,7 @@ tr:last-child td {
     gap: 14px;
   }
 
-  .bwai-sidebar,
-.bwai-hero-section,
+  .bwai-hero-section,
 .bwai-about-section,
 .bwai-expect-section,
 .bwai-feature-section,
