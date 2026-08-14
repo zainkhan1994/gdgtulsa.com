@@ -4890,7 +4890,8 @@ body:not(.ready) .hero-feature-grid article {
 }
 
 .nav-item:hover .nav-trigger,
-.nav-item:focus-within .nav-trigger {
+.nav-item:focus-within .nav-trigger,
+.nav-item.is-open .nav-trigger {
   background: rgba(66, 133, 244, 0.1);
   color: #1a73e8;
 }
@@ -4900,7 +4901,8 @@ body:not(.ready) .hero-feature-grid article {
 }
 
 .nav-item:hover .nav-chevron,
-.nav-item:focus-within .nav-chevron {
+.nav-item:focus-within .nav-chevron,
+.nav-item.is-open .nav-chevron {
   transform: rotate(180deg);
 }
 
@@ -4925,7 +4927,8 @@ body:not(.ready) .hero-feature-grid article {
 }
 
 .nav-item:hover .nav-menu,
-.nav-item:focus-within .nav-menu {
+.nav-item:focus-within .nav-menu,
+.nav-item.is-open .nav-menu {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -5397,13 +5400,23 @@ body:not(.ready) .hero-feature-grid article {
   }
 
   .site-header--mega .nav-menu {
-    left: 50%;
-    transform: translateX(-50%) translateY(6px);
+    /* .site-nav scrolls horizontally on mobile (overflow-x: auto), which
+       clips any absolutely-positioned child on the Y axis too. Escape that
+       clipping context with position: fixed; JS sets --nav-menu-top to the
+       header's actual bottom edge when a menu opens. */
+    position: fixed;
+    top: var(--nav-menu-top, 64px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    min-width: 0;
+    transform: translateY(6px);
   }
 
   .site-header--mega .nav-item:hover .nav-menu,
-.site-header--mega .nav-item:focus-within .nav-menu {
-    transform: translateX(-50%) translateY(0);
+  .site-header--mega .nav-item:focus-within .nav-menu,
+  .site-header--mega .nav-item.is-open .nav-menu {
+    transform: translateY(0);
   }
 }
 

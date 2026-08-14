@@ -11,6 +11,50 @@ const authModal = document.querySelector("[data-auth-modal]");
 const scheduleModal = document.querySelector("[data-schedule-modal]");
 const adminDashboard = document.querySelector("[data-admin-dashboard]");
 
+// Mega nav dropdowns: previously CSS-only (:hover / :focus-within), which is
+// unreliable on touch devices and in Safari (clicking a <button> doesn't
+// always move focus there, so :focus-within never fires — the reported bug
+// where "Events" needed several taps/clicks before the menu showed).
+// Explicit click handling fixes it on every input type.
+(function initMegaNav() {
+  const megaHeader = document.querySelector(".site-header--mega");
+  const navItems = [...document.querySelectorAll(".site-header--mega .nav-item")];
+  if (!megaHeader || !navItems.length) return;
+
+  const mobileNavQuery = window.matchMedia("(max-width: 900px)");
+
+  function closeNavItems(except) {
+    navItems.forEach((item) => {
+      if (item === except) return;
+      item.classList.remove("is-open");
+      item.querySelector(".nav-trigger")?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  navItems.forEach((item) => {
+    const trigger = item.querySelector(".nav-trigger");
+    const menu = item.querySelector(".nav-menu");
+    if (!trigger || !menu) return;
+
+    trigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = item.classList.contains("is-open");
+      closeNavItems(isOpen ? null : item);
+      item.classList.toggle("is-open", !isOpen);
+      trigger.setAttribute("aria-expanded", String(!isOpen));
+      if (!isOpen && mobileNavQuery.matches) {
+        const headerBottom = megaHeader.getBoundingClientRect().bottom;
+        menu.style.setProperty("--nav-menu-top", `${headerBottom + 8}px`);
+      }
+    });
+  });
+
+  document.addEventListener("click", () => closeNavItems(null));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeNavItems(null);
+  });
+})();
+
 const storageKeys = {
   pendingMember: "gdgTulsaPendingMember",
   pendingGoogleTerms: "gdgTulsaPendingGoogleTerms",
