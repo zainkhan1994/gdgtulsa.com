@@ -1,0 +1,14 @@
+{
+  "consolidated_from_versions": [
+    "ai_google_full_scrape_20260418",
+    "ai_google_full_scrape_20260418_v2",
+    "ai_google_full_scrape_20260418_v3",
+    "ai_google_full_scrape_20260418_v4",
+    "ai_google_full_scrape_20260418_v5"
+  ],
+  "tree_map_source": "/Users/xainkhan/Documents/ai_google_full_scrape_20260418_v3/tree/tree_map.txt",
+  "rendered_nav_links_count": 401,
+  "all_urls_count": 4054,
+  "content_pages": 23,
+  "media_assets": 3214
+}

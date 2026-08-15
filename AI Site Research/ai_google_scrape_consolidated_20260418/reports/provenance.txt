@@ -1,0 +1,16 @@
+Consolidation provenance
+=======================
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v2
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v3
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v4
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v5
+
+Manifests used:
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418/media/media_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v2/media/media_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v3/media/media_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v4/media/media_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v4/media_rendered/media_rendered_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v5/media/media_manifest.csv
+- /Users/xainkhan/Documents/ai_google_full_scrape_20260418_v5/media_rendered/media_rendered_manifest.csv
