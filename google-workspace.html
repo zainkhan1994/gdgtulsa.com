@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Google Workspace | GDG Tulsa</title>
+    <meta name="description" content="A tour of Google Workspace — Gmail, Docs, Drive, Calendar, Meet, and the AI built into all of them — the productivity half of the Google ecosystem GDG Tulsa teaches.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
+    <style>
+      .ws-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 60px 20px 20px;
+      }
+
+      .ws-crumb {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+
+      .ws-crumb a {
+        color: var(--blue);
+        text-decoration: none;
+      }
+
+      .ws-hero {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+
+      .ws-hero img.ws-lockup {
+        height: 34px;
+        margin-bottom: 18px;
+      }
+
+      .ws-hero h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        margin-bottom: 10px;
+      }
+
+      .ws-hero p {
+        color: var(--muted);
+        font-size: 15px;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .ws-hero-video-wrap {
+        position: relative;
+        max-width: 900px;
+        margin: 34px auto 0;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+        background: #08090c;
+      }
+
+      .ws-hero-video-wrap video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .ws-hero-video-wrap::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: 24px;
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.25);
+      }
+
+      .ws-section-label {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 56px 0 18px;
+      }
+
+      .ws-section-label:first-of-type {
+        margin-top: 0;
+      }
+
+      .ws-app-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .ws-app-card {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 22px;
+        border-radius: 16px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        transition: transform 200ms ease, border-color 200ms ease;
+      }
+
+      .ws-app-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+
+      .ws-app-card img {
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+      }
+
+      img[src$="notebooklm.svg"] {
+        filter: invert(1) brightness(1.3);
+      }
+
+      .ws-app-card h3 {
+        font-size: 17px;
+        margin-bottom: 4px;
+      }
+
+      .ws-app-card p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .ws-all-tools {
+        text-align: center;
+        padding: 44px 30px;
+        border-radius: 22px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        margin-bottom: 20px;
+      }
+
+      .ws-all-tools h2 {
+        font-size: clamp(22px, 3vw, 28px);
+        margin-bottom: 36px;
+      }
+
+      .ws-all-tools-cols {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 28px;
+        text-align: left;
+        margin-bottom: 40px;
+      }
+
+      .ws-all-tools-cols h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .ws-all-tools-cols p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .ws-all-tools-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-bottom: 22px;
+      }
+
+      .ws-all-tools-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px 22px;
+      }
+
+      .ws-tool {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 68px;
+      }
+
+      .ws-tool img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+      }
+
+      .ws-tool span {
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .ws-tool-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(66, 133, 244, 0.16);
+        color: var(--blue);
+        font-weight: 700;
+        font-size: 15px;
+      }
+
+      @media (max-width: 760px) {
+        .ws-all-tools-cols {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .ws-feature-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 14px;
+      }
+
+      .ws-feature-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding: 20px 14px;
+        border-radius: 14px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+      }
+
+      .ws-feature-chip img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .ws-feature-chip span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .ws-carousel-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .ws-carousel {
+        display: flex;
+        gap: 22px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        padding: 6px 6px 18px;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      .ws-carousel::-webkit-scrollbar {
+        display: none;
+      }
+
+      .ws-car-card {
+        flex: 0 0 auto;
+        width: 320px;
+        scroll-snap-align: start;
+      }
+
+      .ws-car-shot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 230px;
+        padding: 22px;
+        border-radius: 18px;
+        background: #f1f3f4;
+        border: 1px solid var(--line);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        transition: transform 220ms ease, box-shadow 220ms ease;
+      }
+
+      .ws-car-card:hover .ws-car-shot {
+        transform: translateY(-6px);
+        box-shadow: 0 28px 54px rgba(0, 0, 0, 0.35);
+      }
+
+      .ws-car-shot img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .ws-car-caption {
+        padding: 16px 4px 0;
+      }
+
+      .ws-car-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px 5px 6px;
+        border-radius: 999px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+
+      .ws-car-tag img {
+        width: 16px;
+        height: 16px;
+      }
+
+      .ws-car-caption h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      .ws-car-caption p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .ws-car-nav {
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .ws-car-nav:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+
+      @media (max-width: 640px) {
+        .ws-car-nav {
+          display: none;
+        }
+      }
+
+      .ws-trust {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 34px;
+        padding: 30px;
+        border-radius: 16px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+      }
+
+      .ws-trust img {
+        height: 30px;
+        max-width: 130px;
+        object-fit: contain;
+        filter: grayscale(1) brightness(1.8);
+        opacity: 0.75;
+      }
+
+      .ws-cta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-top: 56px;
+        padding: clamp(30px, 4vw, 48px);
+        border-radius: 22px;
+        color: #fff;
+        background: linear-gradient(135deg, #1a73e8, #0b57d0);
+      }
+
+      .ws-cta h2 {
+        margin-bottom: 6px;
+        color: #fff;
+      }
+
+      .ws-cta p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      @media (max-width: 760px) {
+        .ws-app-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .ws-gallery {
+          columns: 2 200px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .ws-app-grid {
+          grid-template-columns: 1fr;
+        }
+        .ws-gallery {
+          columns: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Site header">
+      <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
+        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <span>
+          <strong>Google Developer Group Tulsa</strong>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="index.html#events">Events</a>
+        <a href="bwai.html">Build with AI</a>
+        <a href="devfest.html">DevFest</a>
+        <a href="hackathons.html">Hackathons</a>
+        <a href="google-ecosystem.html">Google Ecosystem</a>
+        <a href="google-workspace.html" aria-current="page">Google Workspace</a>
+        <a href="ai-stack.html">AI Stack</a>
+        <a href="about-gdg.html">About GDGs</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <div class="ws-wrap">
+        <p class="ws-crumb"><a href="google-ecosystem.html">Google Ecosystem</a> / Google Workspace</p>
+
+        <div class="ws-hero">
+          <img class="ws-lockup" src="assets/workspace/logos/logo-google-workspace.svg" alt="Google Workspace">
+          <h1>Run your work on Google Workspace</h1>
+          <p>Gmail, Docs, Sheets, Drive, Calendar, and Meet — connected by Gemini. This is the productivity side of the Google stack GDG Tulsa builds with, the same apps most of our members already have open every day.</p>
+          <div class="ws-hero-video-wrap">
+            <video autoplay muted loop playsinline preload="auto" poster="assets/workspace/video/workspace-hero-poster.jpg" aria-label="A demo of Gemini inside Google Workspace, from search to a generated document with images.">
+              <source src="assets/workspace/video/workspace-hero.webm" type="video/webm">
+              <source src="assets/workspace/video/workspace-hero.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+
+        <p class="ws-section-label">The apps</p>
+        <div class="ws-app-grid">
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/gmail.svg" alt="">
+            <div>
+              <h3>Gmail</h3>
+              <p>Email with AI-drafted replies, smart summaries, and privacy that's never used for advertising.</p>
+            </div>
+          </article>
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/docs.svg" alt="">
+            <div>
+              <h3>Docs</h3>
+              <p>Real-time collaborative writing, now with Gemini for summarizing, drafting, and proofreading.</p>
+            </div>
+          </article>
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/drive.svg" alt="">
+            <div>
+              <h3>Drive</h3>
+              <p>Cloud storage with smart search that finds files by content, owner, or type in seconds.</p>
+            </div>
+          </article>
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/calendar.svg" alt="">
+            <div>
+              <h3>Calendar</h3>
+              <p>Scheduling that syncs across your whole team and every other Workspace app.</p>
+            </div>
+          </article>
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/meet.svg" alt="">
+            <div>
+              <h3>Meet</h3>
+              <p>Video calls with live captions, AI-generated notes, and action items pulled automatically.</p>
+            </div>
+          </article>
+          <article class="ws-app-card">
+            <img src="assets/workspace/icons/notebooklm.svg" alt="">
+            <div>
+              <h3>NotebookLM</h3>
+              <p>An AI research notebook that grounds every answer in the sources you actually upload.</p>
+            </div>
+          </article>
+        </div>
+
+        <section class="ws-all-tools">
+          <h2>All the tools you need and a few more we think you'll love.</h2>
+          <div class="ws-all-tools-cols">
+            <div>
+              <h3>Personalized AI built-in</h3>
+              <p>Do your best work faster with intelligent tools that bring the context of your work to you.</p>
+            </div>
+            <div>
+              <h3>Tools born in the Cloud</h3>
+              <p>Collaborate in real time, from any device, across tools that are always up to date.</p>
+            </div>
+            <div>
+              <h3>Enterprise-grade security</h3>
+              <p>Protect your emails, files, and meetings with AI-powered security and compliance controls.</p>
+            </div>
+          </div>
+
+          <p class="ws-all-tools-label">Google Workspace includes:</p>
+          <div class="ws-all-tools-row">
+            <div class="ws-tool"><img src="assets/workspace/icons/gmail-full.png" alt=""><span>Gmail</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/drive-full.png" alt=""><span>Drive</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/meet-full.png" alt=""><span>Meet</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/calendar-full.png" alt=""><span>Calendar</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/chat.png" alt=""><span>Chat</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/gemini-app.png" alt=""><span>Gemini</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/docs.svg" alt=""><span>Docs</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/sheets.png" alt=""><span>Sheets</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/slides.png" alt=""><span>Slides</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/vids.svg" alt=""><span>Vids</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/keep.png" alt=""><span>Keep</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/sites.png" alt=""><span>Sites</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/forms.png" alt=""><span>Forms</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/tasks.png" alt=""><span>Tasks</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/notebooklm.svg" alt=""><span>Gemini Notebook</span></div>
+            <div class="ws-tool"><img src="assets/workspace/icons/appsheet.png" alt=""><span>AppSheet</span></div>
+          </div>
+        </section>
+
+        <p class="ws-section-label">Built in</p>
+        <div class="ws-feature-row">
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/draft-proofread.svg" alt="">
+            <span>AI drafting &amp; proofreading</span>
+          </div>
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/security-badge.svg" alt="">
+            <span>Privacy-first by default</span>
+          </div>
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/security.svg" alt="">
+            <span>Enterprise-grade security</span>
+          </div>
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/language.svg" alt="">
+            <span>Works in your language</span>
+          </div>
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/web.svg" alt="">
+            <span>Runs anywhere, on the web</span>
+          </div>
+          <div class="ws-feature-chip">
+            <img src="assets/workspace/icons/settings.svg" alt="">
+            <span>Admin controls that scale</span>
+          </div>
+        </div>
+
+        <p class="ws-section-label">See it in action</p>
+        <div class="ws-carousel-wrap">
+          <button type="button" class="ws-car-nav prev" aria-label="Scroll left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="ws-carousel" id="wsCarousel">
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot3.webp" alt="Meet automatically generating action items and a call summary, with an option to save the summary to Docs."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/meet-full.png" alt="">Meet</span>
+                <h3>AI notes, automatically</h3>
+                <p>Gemini listens in on your Meet calls and turns the conversation into action items and a saved summary — nobody has to take notes.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot9.webp" alt="Gmail showing a built-in privacy notice confirming email content is never used for advertising."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
+                <h3>Privacy, built in</h3>
+                <p>Every message is protected by default — your content stays secure and is never used for advertising.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot2.webp" alt="A Sheets inventory tracker with an analysis panel, next to the same data surfaced in Gmail on mobile."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/drive-full.png" alt="">Sheets + Gmail</span>
+                <h3>Your data, everywhere</h3>
+                <p>A live inventory tracker in Sheets, with the same numbers surfacing right inside Gmail on your phone.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot13.webp" alt="Google Drive smart search filtering files by owner and keyword, next to a storage usage panel."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/drive-full.png" alt="">Drive</span>
+                <h3>Find anything in seconds</h3>
+                <p>Smart search filters by type, owner, or keyword — no more digging through nested folders.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot10.webp" alt="Gemini in Slides drafting a full agenda slide from a single prompt."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/gemini-app.png" alt="">Slides</span>
+                <h3>Let Gemini build the draft</h3>
+                <p>Describe the deck you need and Gemini drafts a full agenda slide to start from.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot.webp" alt="Gemini in Docs summarizing a set of meeting notes on request."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/docs.svg" alt="">Docs</span>
+                <h3>Summarize, instantly</h3>
+                <p>Ask Gemini to condense a page of notes into a clean, shareable summary.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot4.webp" alt="A Calendar event with a Join with Google Meet button, next to the Workspace app launcher grid."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/calendar-full.png" alt="">Calendar</span>
+                <h3>One click into everything</h3>
+                <p>Join a meeting straight from the event, or jump to any other Workspace app from the launcher.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot15.webp" alt="A shared team brainstorm table in Sheets next to a live Meet call gallery view."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/meet-full.png" alt="">Sheets + Meet</span>
+                <h3>Brainstorm together, live</h3>
+                <p>A shared voting table in Sheets sits right next to the live call — ideas and decisions in the same window.</p>
+              </div>
+            </article>
+            <article class="ws-car-card">
+              <div class="ws-car-shot"><img src="assets/workspace/shots/shot12.webp" alt="A full Gmail inbox interface with mail, chats, spaces, and meetings organized in one sidebar."></div>
+              <div class="ws-car-caption">
+                <span class="ws-car-tag"><img src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
+                <h3>Inbox that stays organized</h3>
+                <p>Mail, chats, spaces, and meetings live in one sidebar, so nothing gets lost.</p>
+              </div>
+            </article>
+          </div>
+          <button type="button" class="ws-car-nav next" aria-label="Scroll right">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+
+        <p class="ws-section-label">Businesses running on Workspace</p>
+        <div class="ws-trust">
+          <img src="assets/workspace/logos/customer-bushel.webp" alt="Bushel">
+          <img src="assets/workspace/logos/customer-bhi.webp" alt="BHI">
+          <img src="assets/workspace/logos/customer-rspca.webp" alt="RSPCA">
+          <img src="assets/workspace/logos/customer-customink.webp" alt="Custom Ink">
+        </div>
+
+        <div class="ws-cta">
+          <div>
+            <h2>Bring Workspace into your next build.</h2>
+            <p>Every GDG Tulsa event runs on these same tools — come see how they fit with Gemini and the rest of the AI stack.</p>
+          </div>
+          <a class="button primary large" href="ai-stack.html" style="background:#fff; color:#0b57d0; border-color:#fff;">See the AI Stack</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bwai-footer">
+      <h2>Stay connected</h2>
+      <div class="bwai-social-row" aria-label="Connect with GDG Tulsa">
+        <a href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">GDG Community Page</a>
+        <a href="mailto:zain@gdgtulsa.com">Email the Organizers</a>
+      </div>
+      <div class="bwai-footer-links">
+        <div><a href="index.html#events">Events</a><a href="bwai.html">Build with AI</a></div>
+        <div><a href="devfest.html">DevFest</a><a href="hackathons.html">Hackathons</a></div>
+        <div><a href="google-ecosystem.html">Google Ecosystem</a><a href="google-workspace.html">Google Workspace</a></div>
+        <div><a href="ai-stack.html">AI Stack</a><a href="about-gdg.html">About GDGs</a></div>
+      </div>
+      <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
+    </footer>
+
+    <script>
+      (function () {
+        var track = document.getElementById("wsCarousel");
+        if (!track) return;
+        var prevBtn = document.querySelector(".ws-car-nav.prev");
+        var nextBtn = document.querySelector(".ws-car-nav.next");
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        function cardStep() {
+          var card = track.querySelector(".ws-car-card");
+          if (!card) return 340;
+          var style = window.getComputedStyle(track);
+          return card.getBoundingClientRect().width + parseFloat(style.gap || 22);
+        }
+
+        function scrollByCards(n) {
+          track.scrollBy({ left: cardStep() * n, behavior: "smooth" });
+        }
+
+        nextBtn && nextBtn.addEventListener("click", function () { scrollByCards(1); });
+        prevBtn && prevBtn.addEventListener("click", function () { scrollByCards(-1); });
+
+        if (!reduceMotion) {
+          var paused = false;
+          ["mouseenter", "touchstart", "focusin"].forEach(function (evt) {
+            track.addEventListener(evt, function () { paused = true; });
+          });
+          ["mouseleave", "touchend", "focusout"].forEach(function (evt) {
+            track.addEventListener(evt, function () { paused = false; });
+          });
+
+          setInterval(function () {
+            if (paused) return;
+            var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+            if (atEnd) {
+              track.scrollTo({ left: 0, behavior: "smooth" });
+            } else {
+              scrollByCards(1);
+            }
+          }, 3200);
+        }
+      })();
+    </script>
+  </body>
+</html>

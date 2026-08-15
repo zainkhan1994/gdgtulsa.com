@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Google AI Stack | GDG Tulsa</title>
+    <meta name="description" content="A map of Google's full-stack AI ecosystem — models, video, design, coding, agents, and research tools — all radiating from the Google G, the way GDG Tulsa teaches it.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
+    <style>
+      .stack-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 60px 20px 20px;
+      }
+
+      .stack-head {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .stack-head h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        margin-bottom: 8px;
+        background: linear-gradient(90deg, #4285f4, #a142f4, #ea4335, #fbbc04, #34a853);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .stack-head p {
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .stack-hint {
+        text-align: center;
+        margin: 4px 0 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+
+      .diagram-scroll {
+        overflow-x: auto;
+        margin-top: 20px;
+      }
+
+      .diagram {
+        position: relative;
+        width: 1100px;
+        height: 1000px;
+        margin: 0 auto;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 50% 48%, rgba(66, 133, 244, 0.16), transparent 45%),
+          radial-gradient(circle at 20% 15%, rgba(161, 66, 244, 0.12), transparent 40%),
+          radial-gradient(circle at 85% 85%, rgba(52, 168, 83, 0.12), transparent 40%),
+          #08090c;
+        border: 1px solid var(--line);
+      }
+
+      .diagram svg.connectors {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .diagram svg.connectors path {
+        fill: none;
+        stroke-width: 1.6;
+        opacity: 0.55;
+      }
+
+      .diagram svg.connectors path.glow {
+        stroke-width: 6;
+        opacity: 0.12;
+        filter: blur(1px);
+      }
+
+      .diagram svg.connectors path.leaf-line {
+        opacity: 0;
+        transition: opacity 220ms ease;
+      }
+
+      .diagram svg.connectors path.leaf-line.is-visible {
+        opacity: 0.55;
+      }
+
+      .diagram svg.connectors path.leaf-line.glow.is-visible {
+        opacity: 0.14;
+      }
+
+      .g-center {
+        position: absolute;
+        left: 550px;
+        top: 460px;
+        transform: translate(-50%, -50%);
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle, #16181d 0%, #0c0d10 70%);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 0 60px rgba(66, 133, 244, 0.35), 0 0 120px rgba(161, 66, 244, 0.2);
+        z-index: 3;
+      }
+
+      .g-center img {
+        width: 58px;
+        height: 58px;
+      }
+
+      .hub-btn {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        width: 96px;
+        text-align: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+        z-index: 3;
+      }
+
+      .hub-btn .hub-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--soft);
+        border: 1.5px solid var(--hub-color, var(--blue));
+        box-shadow: 0 0 22px color-mix(in srgb, var(--hub-color, var(--blue)) 55%, transparent);
+        color: var(--hub-color, var(--blue));
+        transition: transform 180ms ease, box-shadow 180ms ease;
+      }
+
+      .hub-btn:hover .hub-icon,
+      .hub-btn.is-active .hub-icon {
+        transform: scale(1.1);
+        box-shadow: 0 0 34px color-mix(in srgb, var(--hub-color, var(--blue)) 80%, transparent);
+      }
+
+      .hub-btn.is-active .hub-icon {
+        background: color-mix(in srgb, var(--hub-color, var(--blue)) 18%, var(--soft));
+      }
+
+      .hub-btn span {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .leaf-card {
+        display: none;
+        position: absolute;
+        width: 240px;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--leaf-color, var(--blue));
+        transform: translateY(-50%);
+        z-index: 2;
+        animation: leafIn 220ms ease both;
+      }
+
+      .leaf-card.is-visible {
+        display: flex;
+      }
+
+      @keyframes leafIn {
+        from { opacity: 0; transform: translateY(-50%) translateX(-6px); }
+        to { opacity: 1; transform: translateY(-50%) translateX(0); }
+      }
+
+      .leaf-card.right {
+        text-align: right;
+        border-left: none;
+        border-right: 3px solid var(--leaf-color, var(--blue));
+        flex-direction: row-reverse;
+      }
+
+      .leaf-card.right.is-visible {
+        animation-name: leafInRight;
+      }
+
+      @keyframes leafInRight {
+        from { opacity: 0; transform: translateY(-50%) translateX(6px); }
+        to { opacity: 1; transform: translateY(-50%) translateX(0); }
+      }
+
+      .leaf-icon {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        color: var(--leaf-color, var(--blue));
+        overflow: hidden;
+      }
+
+      .leaf-icon.transparent-icon {
+        background: color-mix(in srgb, var(--leaf-color, var(--blue)) 16%, transparent);
+      }
+
+      .leaf-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 5px;
+      }
+
+      .leaf-icon svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .leaf-card strong {
+        display: block;
+        font-size: 13.5px;
+        margin-bottom: 3px;
+        color: var(--leaf-color, var(--ink));
+      }
+
+      .leaf-card p {
+        margin: 0;
+        font-size: 11.5px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+
+      @media (max-width: 760px) {
+        .diagram-scroll::after {
+          content: "Scroll to see the full diagram →";
+          display: block;
+          text-align: center;
+          font-size: 12px;
+          color: var(--muted);
+          margin-top: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Site header">
+      <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
+        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <span>
+          <strong>Google Developer Group Tulsa</strong>
+        </span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="index.html#events">Events</a>
+        <a href="bwai.html">Build with AI</a>
+        <a href="devfest.html">DevFest</a>
+        <a href="hackathons.html">Hackathons</a>
+        <a href="google-ecosystem.html">Google Ecosystem</a>
+        <a href="google-workspace.html">Google Workspace</a>
+        <a href="ai-stack.html" aria-current="page">AI Stack</a>
+        <a href="about-gdg.html">About GDGs</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <div class="stack-wrap">
+        <div class="stack-head">
+          <h1>Google's Full-Stack AI Ecosystem</h1>
+          <p>From research, to design, to development — everything radiates from one G.</p>
+        </div>
+        <p class="stack-hint">Click a category bubble to reveal its tools.</p>
+
+        <div class="diagram-scroll">
+          <div class="diagram">
+            <svg class="connectors" viewBox="0 0 1100 1000" preserveAspectRatio="none">
+              <!-- G to hubs (always visible) -->
+              <path class="glow" stroke="#4285f4" d="M550,460 L330,220"/>
+              <path stroke="#4285f4" d="M550,460 L330,220"/>
+              <path class="glow" stroke="#ea4879" d="M550,460 L300,560"/>
+              <path stroke="#ea4879" d="M550,460 L300,560"/>
+              <path class="glow" stroke="#20c997" d="M550,460 L350,780"/>
+              <path stroke="#20c997" d="M550,460 L350,780"/>
+              <path class="glow" stroke="#a142f4" d="M550,460 L770,180"/>
+              <path stroke="#a142f4" d="M550,460 L770,180"/>
+              <path class="glow" stroke="#34a853" d="M550,460 L800,430"/>
+              <path stroke="#34a853" d="M550,460 L800,430"/>
+              <path class="glow" stroke="#22d3ee" d="M550,460 L760,690"/>
+              <path stroke="#22d3ee" d="M550,460 L760,690"/>
+
+              <!-- hubs to leaves: Models (5) -->
+              <path class="leaf-line glow" data-group="models" stroke="#4285f4" d="M330,220 L270,70"/>
+              <path class="leaf-line" data-group="models" stroke="#4285f4" d="M330,220 L270,70"/>
+              <path class="leaf-line glow" data-group="models" stroke="#4285f4" d="M330,220 L270,160"/>
+              <path class="leaf-line" data-group="models" stroke="#4285f4" d="M330,220 L270,160"/>
+              <path class="leaf-line glow" data-group="models" stroke="#4285f4" d="M330,220 L270,250"/>
+              <path class="leaf-line" data-group="models" stroke="#4285f4" d="M330,220 L270,250"/>
+              <path class="leaf-line glow" data-group="models" stroke="#4285f4" d="M330,220 L270,340"/>
+              <path class="leaf-line" data-group="models" stroke="#4285f4" d="M330,220 L270,340"/>
+              <path class="leaf-line glow" data-group="models" stroke="#4285f4" d="M330,220 L270,430"/>
+              <path class="leaf-line" data-group="models" stroke="#4285f4" d="M330,220 L270,430"/>
+
+              <!-- Video (3) -->
+              <path class="leaf-line glow" data-group="video" stroke="#ea4879" d="M300,560 L270,510"/>
+              <path class="leaf-line" data-group="video" stroke="#ea4879" d="M300,560 L270,510"/>
+              <path class="leaf-line glow" data-group="video" stroke="#ea4879" d="M300,560 L270,590"/>
+              <path class="leaf-line" data-group="video" stroke="#ea4879" d="M300,560 L270,590"/>
+              <path class="leaf-line glow" data-group="video" stroke="#ea4879" d="M300,560 L270,670"/>
+              <path class="leaf-line" data-group="video" stroke="#ea4879" d="M300,560 L270,670"/>
+
+              <!-- Coding (3) -->
+              <path class="leaf-line glow" data-group="coding" stroke="#20c997" d="M350,780 L270,730"/>
+              <path class="leaf-line" data-group="coding" stroke="#20c997" d="M350,780 L270,730"/>
+              <path class="leaf-line glow" data-group="coding" stroke="#20c997" d="M350,780 L270,810"/>
+              <path class="leaf-line" data-group="coding" stroke="#20c997" d="M350,780 L270,810"/>
+              <path class="leaf-line glow" data-group="coding" stroke="#20c997" d="M350,780 L270,890"/>
+              <path class="leaf-line" data-group="coding" stroke="#20c997" d="M350,780 L270,890"/>
+
+              <!-- Design (3) -->
+              <path class="leaf-line glow" data-group="design" stroke="#a142f4" d="M770,180 L830,70"/>
+              <path class="leaf-line" data-group="design" stroke="#a142f4" d="M770,180 L830,70"/>
+              <path class="leaf-line glow" data-group="design" stroke="#a142f4" d="M770,180 L830,160"/>
+              <path class="leaf-line" data-group="design" stroke="#a142f4" d="M770,180 L830,160"/>
+              <path class="leaf-line glow" data-group="design" stroke="#a142f4" d="M770,180 L830,250"/>
+              <path class="leaf-line" data-group="design" stroke="#a142f4" d="M770,180 L830,250"/>
+
+              <!-- Research (3) -->
+              <path class="leaf-line glow" data-group="research" stroke="#34a853" d="M800,430 L830,340"/>
+              <path class="leaf-line" data-group="research" stroke="#34a853" d="M800,430 L830,340"/>
+              <path class="leaf-line glow" data-group="research" stroke="#34a853" d="M800,430 L830,430"/>
+              <path class="leaf-line" data-group="research" stroke="#34a853" d="M800,430 L830,430"/>
+              <path class="leaf-line glow" data-group="research" stroke="#34a853" d="M800,430 L830,520"/>
+              <path class="leaf-line" data-group="research" stroke="#34a853" d="M800,430 L830,520"/>
+
+              <!-- AI Agents (3) -->
+              <path class="leaf-line glow" data-group="agents" stroke="#22d3ee" d="M760,690 L830,600"/>
+              <path class="leaf-line" data-group="agents" stroke="#22d3ee" d="M760,690 L830,600"/>
+              <path class="leaf-line glow" data-group="agents" stroke="#22d3ee" d="M760,690 L830,690"/>
+              <path class="leaf-line" data-group="agents" stroke="#22d3ee" d="M760,690 L830,690"/>
+              <path class="leaf-line glow" data-group="agents" stroke="#22d3ee" d="M760,690 L830,780"/>
+              <path class="leaf-line" data-group="agents" stroke="#22d3ee" d="M760,690 L830,780"/>
+            </svg>
+
+            <div class="g-center">
+              <img src="assets/logos/Google__G__logo.svg" onerror="this.src='assets/logos/google.svg'" alt="Google">
+            </div>
+
+            <!-- Hub buttons -->
+            <button type="button" class="hub-btn" data-group="models" style="left:330px; top:220px; --hub-color:#4285f4">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg>
+              </span>
+              <span>Models</span>
+            </button>
+            <button type="button" class="hub-btn" data-group="video" style="left:300px; top:560px; --hub-color:#ea4879">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+              </span>
+              <span>Video</span>
+            </button>
+            <button type="button" class="hub-btn" data-group="coding" style="left:350px; top:780px; --hub-color:#20c997">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
+              </span>
+              <span>Coding</span>
+            </button>
+            <button type="button" class="hub-btn" data-group="design" style="left:770px; top:180px; --hub-color:#a142f4">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+              </span>
+              <span>Design</span>
+            </button>
+            <button type="button" class="hub-btn" data-group="research" style="left:800px; top:430px; --hub-color:#34a853">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              <span>Research</span>
+            </button>
+            <button type="button" class="hub-btn" data-group="agents" style="left:760px; top:690px; --hub-color:#22d3ee">
+              <span class="hub-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><path d="M8 16h.01"/><path d="M16 16h.01"/></svg>
+              </span>
+              <span>AI Agents</span>
+            </button>
+
+            <!-- Left column: Models group -->
+            <div class="leaf-card" data-group="models" style="left:40px; top:70px; --leaf-color:#4285f4">
+              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <div>
+                <strong>Gemini 3 Flash</strong>
+                <p>Google's frontier model tuned for speed and efficiency.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="models" style="left:40px; top:160px; --leaf-color:#4285f4">
+              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <div>
+                <strong>Gemini 3 Flash Lite</strong>
+                <p>An even lighter, faster build for high-volume tasks.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="models" style="left:40px; top:250px; --leaf-color:#4285f4">
+              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <div>
+                <strong>Gemini 3 Pro</strong>
+                <p>Google's most capable reasoning model.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="models" style="left:40px; top:340px; --leaf-color:#4285f4">
+              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <div>
+                <strong>Gemini</strong>
+                <p>The consumer app — chat, plan, and reason day to day.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="models" style="left:40px; top:430px; --leaf-color:#4285f4">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 6 10 6 13a6 6 0 0 0 12 0c0-3-2-7-6-11Z"/></svg>
+              </span>
+              <div>
+                <strong>Gemma</strong>
+                <p>Open-weight models built from Gemini research.</p>
+              </div>
+            </div>
+
+            <!-- Left column: Video group -->
+            <div class="leaf-card" data-group="video" style="left:40px; top:510px; --leaf-color:#ea4879">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+              </span>
+              <div>
+                <strong>Veo 3.1</strong>
+                <p>Text-to-video generation with high-fidelity output.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="video" style="left:40px; top:590px; --leaf-color:#ea4879">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7L8 5Z"/></svg>
+              </span>
+              <div>
+                <strong>Flow</strong>
+                <p>A cinematic tool for building scenes and clips with AI.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="video" style="left:40px; top:670px; --leaf-color:#ea4879">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 8 2-4h3l-1 4Zm5 0 1-4h3l-1 4Zm5 0 1-4h3l-2 4Z"/><rect x="3" y="8" width="18" height="12" rx="2"/></svg>
+              </span>
+              <div>
+                <strong>Google Vids</strong>
+                <p>AI-assisted video creation built for work.</p>
+              </div>
+            </div>
+
+            <!-- Left column: Coding group -->
+            <div class="leaf-card" data-group="coding" style="left:40px; top:730px; --leaf-color:#20c997">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg>
+              </span>
+              <div>
+                <strong>Gemini CLI</strong>
+                <p>An open-source agent that brings Gemini into your terminal.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="coding" style="left:40px; top:810px; --leaf-color:#20c997">
+              <span class="leaf-icon"><img src="assets/logos/products/antigravity.png" alt=""></span>
+              <div>
+                <strong>Antigravity</strong>
+                <p>An AI-powered IDE with autonomous coding agents.</p>
+              </div>
+            </div>
+            <div class="leaf-card" data-group="coding" style="left:40px; top:890px; --leaf-color:#20c997">
+              <span class="leaf-icon"><img src="assets/logos/products/jules.png" alt=""></span>
+              <div>
+                <strong>Jules</strong>
+                <p>An async coding assistant that works across your repos.</p>
+              </div>
+            </div>
+
+            <!-- Right column: Design group -->
+            <div class="leaf-card right" data-group="design" style="left:830px; top:70px; --leaf-color:#a142f4">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </span>
+              <div>
+                <strong>Stitch</strong>
+                <p>Turns prompts into working UI designs.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="design" style="left:830px; top:160px; --leaf-color:#a142f4">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+              </span>
+              <div>
+                <strong>Whisk</strong>
+                <p>Turns images into prompts to remix and visualize ideas.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="design" style="left:830px; top:250px; --leaf-color:#a142f4">
+              <span class="leaf-icon transparent-icon" style="font-size:16px">🍌</span>
+              <div>
+                <strong>Nano Banana</strong>
+                <p>Image generation powered by Gemini's reasoning.</p>
+              </div>
+            </div>
+
+            <!-- Right column: Research group -->
+            <div class="leaf-card right" data-group="research" style="left:830px; top:340px; --leaf-color:#34a853">
+              <span class="leaf-icon"><img src="assets/logos/products/notebooklm.svg" alt=""></span>
+              <div>
+                <strong>NotebookLM</strong>
+                <p>An AI research assistant that organizes your sources.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="research" style="left:830px; top:430px; --leaf-color:#34a853">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 3.6 10.8c-.6.5-.6 1.2-.6 2.2h-6c0-1-.1-1.7-.6-2.2A6 6 0 0 1 12 3Z"/></svg>
+              </span>
+              <div>
+                <strong>Pomelli</strong>
+                <p>Generates on-brand marketing ideas and campaigns.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="research" style="left:830px; top:520px; --leaf-color:#34a853">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+              </span>
+              <div>
+                <strong>AI Mode</strong>
+                <p>Advanced, multimodal reasoning inside Google Search.</p>
+              </div>
+            </div>
+
+            <!-- Right column: AI Agents group -->
+            <div class="leaf-card right" data-group="agents" style="left:830px; top:600px; --leaf-color:#22d3ee">
+              <span class="leaf-icon"><img src="assets/logos/products/adk.png" alt=""></span>
+              <div>
+                <strong>Google ADK</strong>
+                <p>A framework for building scalable, production-ready AI agents.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="agents" style="left:830px; top:690px; --leaf-color:#22d3ee">
+              <span class="leaf-icon"><img src="assets/logos/products/a2a.svg" alt=""></span>
+              <div>
+                <strong>Google A2A</strong>
+                <p>An open protocol for agent-to-agent communication across frameworks.</p>
+              </div>
+            </div>
+            <div class="leaf-card right" data-group="agents" style="left:830px; top:780px; --leaf-color:#22d3ee">
+              <span class="leaf-icon transparent-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><circle cx="11" cy="15" r="2.5"/><path d="m14.5 18.5-2-2"/></svg>
+              </span>
+              <div>
+                <strong>FileSearch API</strong>
+                <p>A ready-made, configurable RAG pipeline available straight from the API.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bwai-footer">
+      <h2>Stay connected</h2>
+      <div class="bwai-social-row" aria-label="Connect with GDG Tulsa">
+        <a href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">GDG Community Page</a>
+        <a href="mailto:zain@gdgtulsa.com">Email the Organizers</a>
+      </div>
+      <div class="bwai-footer-links">
+        <div><a href="index.html#events">Events</a><a href="bwai.html">Build with AI</a></div>
+        <div><a href="devfest.html">DevFest</a><a href="hackathons.html">Hackathons</a></div>
+        <div><a href="google-ecosystem.html">Google Ecosystem</a><a href="ai-stack.html">AI Stack</a></div>
+        <div><a href="about-gdg.html">About GDGs</a><a href="index.html#get-involved">Partner</a></div>
+      </div>
+      <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
+    </footer>
+
+    <script>
+      (function () {
+        var hubs = document.querySelectorAll(".hub-btn");
+        var current = null;
+        function setActive(group) {
+          document.querySelectorAll(".leaf-card, .leaf-line").forEach(function (el) {
+            el.classList.toggle("is-visible", el.dataset.group === group);
+          });
+          hubs.forEach(function (b) {
+            b.classList.toggle("is-active", b.dataset.group === group);
+          });
+        }
+        hubs.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var group = btn.dataset.group;
+            current = current === group ? null : group;
+            setActive(current);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

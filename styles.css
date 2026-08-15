@@ -5450,3 +5450,16 @@ body:not(.ready) .hero-feature-grid article {
     justify-content: flex-start;
   }
 }
+
+/* Keep the primary nav links on one line now that more inner pages have
+   been added (Google Ecosystem, AI Stack) — without this, flexbox shrinks
+   each <a> until its text wraps mid-word. */
+.site-header nav a {
+  white-space: nowrap;
+}
+
+@media (min-width: 901px) {
+  .site-header nav {
+    gap: clamp(12px, 1.8vw, 30px);
+  }
+}
