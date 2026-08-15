@@ -3073,8 +3073,9 @@ tr:last-child td {
 }
 
 .bwai-join-badge img {
-  width: 58px;
-  height: 42px;
+  width: 56px;
+  height: auto;
+  object-fit: contain;
 }
 
 .bwai-join-badge span {
