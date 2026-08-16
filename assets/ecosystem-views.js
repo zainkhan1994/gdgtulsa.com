@@ -52,7 +52,7 @@
   ];
 
   function renderOrbit(mount) {
-    var SIZE=620, C=SIZE/2, RC=112, RI=190, RO=268, ns='http://www.w3.org/2000/svg';
+    var SIZE=920, C=SIZE/2, RC=155, RI=295, RO=430, ns='http://www.w3.org/2000/svg';
     var selected=null;
 
     var svg=document.createElementNS(ns,'svg');
