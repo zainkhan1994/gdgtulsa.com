@@ -245,14 +245,119 @@
         color: var(--muted);
       }
 
+      /* ── Mobile card layout ── */
+      .stack-mobile { display: none; }
+
       @media (max-width: 760px) {
-        .diagram-scroll::after {
-          content: "Scroll to see the full diagram →";
-          display: block;
-          text-align: center;
-          font-size: 12px;
+        .diagram-scroll { display: none; }
+        .stack-hint { display: none; }
+        .stack-mobile { display: block; }
+
+        .stack-accordion {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 24px;
+        }
+        .stack-acc-item {
+          background: var(--surface);
+          border: 1px solid var(--line);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .stack-acc-trigger {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 16px 18px;
+          background: none;
+          border: 0;
+          cursor: pointer;
+          font: inherit;
+          text-align: left;
+          color: var(--ink);
+        }
+        .stack-acc-trigger .hub-icon {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--soft);
+          border: 1.5px solid var(--acc-color, var(--blue));
+          color: var(--acc-color, var(--blue));
+          box-shadow: 0 0 14px color-mix(in srgb, var(--acc-color, var(--blue)) 40%, transparent);
+        }
+        .stack-acc-trigger strong {
+          font-size: 1rem;
+          font-weight: 700;
+          flex: 1;
+        }
+        .stack-acc-chevron {
+          width: 18px;
+          height: 18px;
+          flex-shrink: 0;
+          transition: transform .22s ease;
           color: var(--muted);
-          margin-top: 8px;
+        }
+        .stack-acc-item.is-open .stack-acc-chevron {
+          transform: rotate(180deg);
+        }
+        .stack-acc-body {
+          display: none;
+          padding: 0 18px 16px;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .stack-acc-item.is-open .stack-acc-body {
+          display: flex;
+        }
+        .stack-acc-tool {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px 14px;
+          background: var(--bg);
+          border: 1px solid var(--line);
+          border-left: 3px solid var(--acc-color, var(--blue));
+          border-radius: 10px;
+        }
+        .stack-acc-tool .leaf-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: color-mix(in srgb, var(--acc-color, var(--blue)) 16%, transparent);
+          color: var(--acc-color, var(--blue));
+          overflow: hidden;
+        }
+        .stack-acc-tool .leaf-icon img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 4px;
+        }
+        .stack-acc-tool .leaf-icon svg {
+          width: 16px;
+          height: 16px;
+        }
+        .stack-acc-tool strong {
+          display: block;
+          font-size: .9rem;
+          color: var(--acc-color, var(--ink));
+          margin-bottom: 2px;
+        }
+        .stack-acc-tool p {
+          margin: 0;
+          font-size: .8rem;
+          line-height: 1.4;
+          color: var(--muted);
         }
       }
     </style>
@@ -571,6 +676,95 @@
           </div>
         </div>
       </div>
+
+      <!-- Mobile accordion (shown instead of diagram on small screens) -->
+      <div class="stack-mobile">
+        <div class="stack-accordion">
+
+          <div class="stack-acc-item" style="--acc-color:#4285f4">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg></span>
+              <strong>Models</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash</strong><p>Google's frontier model tuned for speed and efficiency.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash Lite</strong><p>An even lighter, faster build for high-volume tasks.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Pro</strong><p>Google's most capable reasoning model.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini</strong><p>The consumer app — chat, plan, and reason day to day.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 6 10 6 13a6 6 0 0 0 12 0c0-3-2-7-6-11Z"/></svg></span><div><strong>Gemma</strong><p>Open-weight models built from Gemini research.</p></div></div>
+            </div>
+          </div>
+
+          <div class="stack-acc-item" style="--acc-color:#ea4879">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></span>
+              <strong>Video</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></span><div><strong>Veo 3.1</strong><p>Text-to-video generation with high-fidelity output.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7L8 5Z"/></svg></span><div><strong>Flow</strong><p>A cinematic tool for building scenes and clips with AI.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/workspace/icons/vids.svg" alt=""></span><div><strong>Google Vids</strong><p>AI-assisted video creation built for work.</p></div></div>
+            </div>
+          </div>
+
+          <div class="stack-acc-item" style="--acc-color:#20c997">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg></span>
+              <strong>Coding</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg></span><div><strong>Gemini CLI</strong><p>An open-source agent that brings Gemini into your terminal.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/antigravity.png" alt=""></span><div><strong>Antigravity</strong><p>An AI-powered IDE with autonomous coding agents.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/jules.png" alt=""></span><div><strong>Jules</strong><p>An async coding assistant that works across your repos.</p></div></div>
+            </div>
+          </div>
+
+          <div class="stack-acc-item" style="--acc-color:#a142f4">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg></span>
+              <strong>Design</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><div><strong>Stitch</strong><p>Turns prompts into working UI designs.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg></span><div><strong>Whisk</strong><p>Turns images into prompts to remix and visualize ideas.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon" style="font-size:16px">🍌</span><div><strong>Nano Banana</strong><p>Image generation powered by Gemini's reasoning.</p></div></div>
+            </div>
+          </div>
+
+          <div class="stack-acc-item" style="--acc-color:#34a853">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+              <strong>Research</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/notebooklm.svg" alt=""></span><div><strong>NotebookLM</strong><p>An AI research assistant that organizes your sources.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 3.6 10.8c-.6.5-.6 1.2-.6 2.2h-6c0-1-.1-1.7-.6-2.2A6 6 0 0 1 12 3Z"/></svg></span><div><strong>Pomelli</strong><p>Generates on-brand marketing ideas and campaigns.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg></span><div><strong>AI Mode</strong><p>Advanced, multimodal reasoning inside Google Search.</p></div></div>
+            </div>
+          </div>
+
+          <div class="stack-acc-item" style="--acc-color:#22d3ee">
+            <button class="stack-acc-trigger" type="button" aria-expanded="false">
+              <span class="hub-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><path d="M8 16h.01"/><path d="M16 16h.01"/></svg></span>
+              <strong>AI Agents</strong>
+              <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="stack-acc-body">
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/adk.png" alt=""></span><div><strong>Google ADK</strong><p>A framework for building scalable, production-ready AI agents.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/a2a.svg" alt=""></span><div><strong>Google A2A</strong><p>An open protocol for agent-to-agent communication across frameworks.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><circle cx="11" cy="15" r="2.5"/><path d="m14.5 18.5-2-2"/></svg></span><div><strong>FileSearch API</strong><p>A ready-made, configurable RAG pipeline from the API.</p></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      </div>
     </main>
 
     <footer class="bwai-footer">
@@ -589,6 +783,25 @@
     </footer>
 
     <script>
+      /* Mobile accordion */
+      (function () {
+        document.querySelectorAll(".stack-acc-trigger").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var item = btn.closest(".stack-acc-item");
+            var open = item.classList.contains("is-open");
+            document.querySelectorAll(".stack-acc-item.is-open").forEach(function (el) {
+              el.classList.remove("is-open");
+              el.querySelector(".stack-acc-trigger").setAttribute("aria-expanded", "false");
+            });
+            if (!open) {
+              item.classList.add("is-open");
+              btn.setAttribute("aria-expanded", "true");
+            }
+          });
+        });
+      })();
+
+      /* Desktop diagram */
       (function () {
         var hubs = document.querySelectorAll(".hub-btn");
         var current = null;
@@ -607,6 +820,7 @@
             setActive(current);
           });
         });
+      })();
       })();
     </script>
   </body>
