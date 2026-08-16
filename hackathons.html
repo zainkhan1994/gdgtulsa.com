@@ -7,6 +7,47 @@
     <meta name="description" content="Hackathons by GDG Tulsa: Google Solution Challenge, Build with AI hackathons, and MLH-partnered local hack nights built around real Google technology.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
+    <style>
+      /* ── Google AI Marketing bands ── */
+      .gai-band{position:relative;overflow:hidden;padding:clamp(56px,10vw,112px) clamp(24px,6vw,80px);color:#fff}
+      .band-red   {background:linear-gradient(135deg,#9f0e0e 0%,#ea4335 65%,#ff5f52 100%)}
+      .band-blue  {background:linear-gradient(135deg,#1558d6 0%,#4285f4 55%,#0d9ecb 100%)}
+      .band-green {background:linear-gradient(135deg,#065f32 0%,#34a853 65%,#0d7a4d 100%)}
+      .gai-inner{position:relative;z-index:2;max-width:1100px;margin:0 auto}
+      .gai-display{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:800;line-height:1.04;margin:0 0 24px}
+      .gai-sub{font-size:clamp(.95rem,2vw,1.2rem);opacity:.88;line-height:1.6;max-width:640px;margin:0 0 40px}
+      .gai-split{display:grid;grid-template-columns:1fr 1fr;gap:40px 64px;align-items:end}
+      .gai-split-label{font-size:1rem;font-weight:700;opacity:.82;margin-bottom:14px}
+      .gai-split-intro{font-size:clamp(.9rem,1.8vw,1.05rem);line-height:1.6;opacity:.88}
+      .gai-split-headline{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;line-height:1.06;margin:0 0 18px}
+      .gai-split-body{font-size:clamp(.88rem,1.6vw,1rem);line-height:1.65;opacity:.88}
+
+      /* Floating shapes */
+      .gai-shapes{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+      .s3{position:absolute;animation:s3f var(--dur,8s) ease-in-out infinite var(--delay,0s)}
+      @keyframes s3f{0%,100%{transform:translateY(0) rotate(var(--r0,0deg))}50%{transform:translateY(var(--dy,-18px)) rotate(var(--r1,6deg))}}
+      .s3-sphere{border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.65) 0%,rgba(255,255,255,.15) 40%,rgba(0,0,0,.1) 100%);box-shadow:inset -6px -10px 20px rgba(0,0,0,.18),0 12px 30px rgba(0,0,0,.28)}
+
+      /* Pill formula cards (page 32) */
+      .hack-formula{padding:56px clamp(24px,6vw,80px)}
+      .formula-list{display:grid;gap:14px;max-width:1100px;margin:0 auto}
+      .formula-card{border:2px solid var(--line);border-radius:999px;padding:20px 36px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;transition:border-color .2s}
+      .formula-card:hover{border-color:var(--red)}
+      .formula-card strong{font-size:1rem;font-weight:700;white-space:nowrap}
+      .formula-card .acc{font-style:normal}
+      .formula-card p{margin:0;font-size:.88rem;color:var(--muted);line-height:1.5}
+      .formula-hdr{max-width:1100px;margin:0 auto 24px;font-size:clamp(1.4rem,3vw,2rem);font-weight:800}
+      .formula-lbl{max-width:1100px;margin:0 auto 8px;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+      /* Tool chips row */
+      .hack-tool-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+      .hack-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);font-size:.8rem;font-weight:600}
+
+      @media(max-width:640px){
+        .gai-split{grid-template-columns:1fr}
+        .formula-card{border-radius:16px;padding:16px 20px}
+      }
+    </style>
   </head>
   <body class="bwai-body">
     <header class="site-header" aria-label="Site header">
@@ -29,6 +70,63 @@
         <a href="ai-stack.html">AI Stack</a>
       </nav>
     </header>
+
+    <!-- ══ HERO BAND — Red, page 28 style ══ -->
+    <section class="gai-band band-red" aria-label="Hackathons overview">
+      <div class="gai-shapes" aria-hidden="true">
+        <div class="s3 s3-sphere" style="width:130px;height:130px;background-color:rgba(255,100,80,.5);top:6%;right:10%;--dur:8s;--dy:-22px;--r1:8deg"></div>
+        <div class="s3 s3-sphere" style="width:65px;height:65px;background-color:rgba(255,80,60,.4);bottom:14%;left:5%;--dur:6s;--delay:-3s;--dy:-12px;--r1:-6deg"></div>
+        <svg class="s3" style="width:85px;top:8%;right:28%;--dur:9s;--delay:-5s;--dy:-16px;--r1:10deg" viewBox="0 0 100 100">
+          <polygon points="50,8 92,88 8,88" fill="rgba(255,255,255,.2)" filter="drop-shadow(0 6px 16px rgba(0,0,0,.3))"/>
+        </svg>
+        <svg class="s3" style="width:80px;bottom:12%;right:18%;--dur:7s;--delay:-2s;--dy:-18px;--r1:-8deg" viewBox="0 0 100 100">
+          <polygon points="20,10 80,50 20,90" fill="rgba(255,255,255,.18)" filter="drop-shadow(0 6px 14px rgba(0,0,0,.3))"/>
+        </svg>
+      </div>
+      <div class="gai-inner">
+        <div class="gai-split">
+          <div>
+            <p class="gai-split-label">GDG Tulsa · Hackathons</p>
+            <p class="gai-split-intro">Brands can now harness AI-powered campaigns and trusted community programs to capture intent the moment it's sparked — shortening the path from idea to deployed product.</p>
+          </div>
+          <div>
+            <h1 class="gai-split-headline">For every objective,<br>a hackathon delivers</h1>
+            <p class="gai-split-body">Build something real, in a weekend. GDG Tulsa connects builders to Google's global hackathon programs — the Solution Challenge, Build with AI weekends, and MLH-backed local hack nights.</p>
+          </div>
+        </div>
+        <div class="hack-tool-chips" aria-label="Hackathon tools">
+          <span class="hack-chip">Gemini API</span>
+          <span class="hack-chip">Vertex AI</span>
+          <span class="hack-chip">Firebase</span>
+          <span class="hack-chip">Google Cloud</span>
+          <span class="hack-chip">Android</span>
+          <span class="hack-chip">Agent Dev Kit</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ SPLIT BAND — Blue, page 16 style ══ -->
+    <section class="gai-band band-blue" aria-label="Why hackathons matter">
+      <div class="gai-shapes" aria-hidden="true">
+        <div class="s3 s3-sphere" style="width:100px;height:100px;background-color:rgba(100,170,255,.5);top:10%;right:12%;--dur:7s;--dy:-18px;--r1:6deg"></div>
+        <svg class="s3" style="width:62px;bottom:10%;left:8%;--dur:8s;--delay:-4s;--dy:-14px;--r1:-8deg" viewBox="0 0 100 100">
+          <circle cx="40" cy="40" r="27" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="12" filter="drop-shadow(0 5px 12px rgba(0,0,0,.3))"/>
+          <line x1="62" y1="62" x2="85" y2="85" stroke="rgba(255,255,255,.25)" stroke-width="12" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="gai-inner">
+        <div class="gai-split">
+          <div>
+            <p class="gai-split-label">Why it works</p>
+            <p class="gai-split-intro">Discovery is happening across more surfaces, but hackathons remain the primary engine where exploration turns into shipped product. GDG and Google are present at every step of that journey.</p>
+          </div>
+          <div>
+            <h2 class="gai-split-headline">The biggest growth opportunity is an expanding builder universe</h2>
+            <p class="gai-split-body">When you nail the foundations with Gemini, Firebase, and Cloud today, you remove the barrier between your idea and your next (and best) build.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="bwai-shell">
       <aside class="bwai-sidebar" aria-label="Communities">
@@ -159,6 +257,30 @@
           </div>
         </section>
       </main>
+    </div>
+
+    <!-- ══ FORMULA — Page 32 style ══ -->
+    <div class="hack-formula">
+      <p class="formula-lbl">How to win a hackathon</p>
+      <h2 class="formula-hdr">The GDG Hackathon Formula</h2>
+      <div class="formula-list">
+        <div class="formula-card">
+          <strong>Put your idea at the <em class="acc" style="color:var(--red)">epicenter of a real problem.</em></strong>
+          <p>Pick one of the 17 UN SDGs or a genuine local challenge. Judges reward solutions that matter, not solutions that are merely clever.</p>
+        </div>
+        <div class="formula-card">
+          <strong>Unlock the <em class="acc" style="color:var(--blue)">best Google AI</em> for the best prototype.</strong>
+          <p>Use Gemini API, Vertex AI, or the Agent Development Kit to make your demo actually work — not just look like it works.</p>
+        </div>
+        <div class="formula-card">
+          <strong>Build with the <em class="acc" style="color:var(--green)">most trusted community.</em></strong>
+          <p>GDG mentors, Google Developer Experts, and your fellow builders are in the room. Use them. The best hackathon projects are always collaborative.</p>
+        </div>
+        <div class="formula-card">
+          <strong>Close with a <em class="acc" style="color:var(--yellow)">working demo loop.</em></strong>
+          <p>Ship something you can open in a browser or on a phone by the final presentation. A live demo beats slides every single time.</p>
+        </div>
+      </div>
     </div>
 
     <footer class="bwai-footer">

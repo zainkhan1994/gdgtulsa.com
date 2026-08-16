@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Community | GDG Tulsa</title>
+    <meta name="description" content="Meet the builders, makers, and innovators who make up GDG Tulsa — developers building real things with Google technology.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
+    <style>
+      /* ── Band system (shared with organizer) ── */
+      .gai-band{position:relative;overflow:hidden;padding:clamp(56px,10vw,112px) clamp(24px,6vw,80px);color:#fff}
+      .band-blue  {background:linear-gradient(135deg,#1558d6 0%,#4285f4 55%,#0d9ecb 100%)}
+      .band-green {background:linear-gradient(135deg,#065f32 0%,#34a853 65%,#0d7a4d 100%)}
+      .band-yellow{background:linear-gradient(135deg,#c96a00 0%,#fbbc04 65%,#f6ae2d 100%);color:#1a0e00}
+      .band-red   {background:linear-gradient(135deg,#9f0e0e 0%,#ea4335 65%,#ff5f52 100%)}
+      .gai-inner{position:relative;z-index:2;max-width:1100px;margin:0 auto}
+      .gai-display{font-size:clamp(2.8rem,8vw,5.5rem);font-weight:800;line-height:1.04;margin:0 0 24px}
+      .gai-sub{font-size:clamp(.95rem,2vw,1.2rem);opacity:.88;line-height:1.6;max-width:600px;margin:0 0 40px}
+      .gai-split{display:grid;grid-template-columns:1fr 1fr;gap:40px 64px;align-items:end}
+      .gai-split-label{font-size:1rem;font-weight:700;opacity:.82;margin-bottom:14px;letter-spacing:.01em}
+      .gai-split-intro{font-size:clamp(.9rem,1.8vw,1.05rem);line-height:1.6;opacity:.88}
+      .gai-split-headline{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;line-height:1.06;margin:0 0 18px}
+      .gai-split-body{font-size:clamp(.88rem,1.6vw,1rem);line-height:1.65;opacity:.88}
+
+      /* Floating shapes */
+      .gai-shapes{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+      .s3{position:absolute;animation:s3f var(--dur,8s) ease-in-out infinite var(--delay,0s)}
+      @keyframes s3f{0%,100%{transform:translateY(0) rotate(var(--r0,0deg))}50%{transform:translateY(var(--dy,-18px)) rotate(var(--r1,6deg))}}
+      .s3-sphere{border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.65) 0%,rgba(255,255,255,.15) 40%,rgba(0,0,0,.1) 100%);box-shadow:inset -6px -10px 20px rgba(0,0,0,.18),0 12px 30px rgba(0,0,0,.28)}
+
+      /* Hero stats row */
+      .hero-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);border-radius:16px;overflow:hidden}
+      .hero-stat{background:rgba(255,255,255,.1);padding:20px 16px;text-align:center}
+      .hero-stat strong{display:block;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;line-height:1;margin-bottom:4px}
+      .hero-stat p{font-size:.75rem;opacity:.82;margin:0;line-height:1.3}
+
+      /* ── Member grid ── */
+      .member-section{padding:64px clamp(24px,6vw,80px);max-width:calc(1100px + clamp(48px,12vw,160px));margin:0 auto}
+      .section-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+      .section-title{font-size:clamp(1.4rem,3vw,2rem);font-weight:800;margin:0 0 32px}
+      .member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+      .member-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+      .member-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mc,var(--blue))}
+      .member-card:hover{border-color:var(--mc,var(--blue));transform:translateY(-3px)}
+      .member-top{display:flex;align-items:center;gap:14px}
+      .member-avatar{width:52px;height:52px;border-radius:50%;background:var(--mc,var(--blue));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff;flex-shrink:0}
+      .member-name{font-size:1rem;font-weight:700;margin:0 0 2px}
+      .member-role{font-size:.78rem;color:var(--muted);margin:0}
+      .member-role span{color:var(--mc,var(--blue));font-weight:600}
+      .member-project{background:var(--soft);border-radius:10px;padding:12px 14px}
+      .member-project-label{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+      .member-project-name{font-size:.88rem;font-weight:700;margin-bottom:4px}
+      .member-project-desc{font-size:.78rem;color:var(--muted);line-height:1.45;margin:0}
+      .member-tags{display:flex;flex-wrap:wrap;gap:5px}
+      .member-tag{font-size:.68rem;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted)}
+
+      /* ── Formula cards (page 32 style) ── */
+      .formula-section{padding:0 clamp(24px,6vw,80px) 64px}
+      .formula-list{display:grid;gap:14px;max-width:1100px;margin:0 auto}
+      .formula-card{border:2px solid var(--line);border-radius:999px;padding:20px 36px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;transition:border-color .2s}
+      .formula-card:hover{border-color:var(--blue)}
+      .formula-card strong{font-size:1rem;font-weight:700;white-space:nowrap}
+      .formula-card .acc{color:var(--accent,var(--blue));font-style:normal}
+      .formula-card p{margin:0;font-size:.88rem;color:var(--muted);line-height:1.5}
+
+      /* ── Project showcase ── */
+      .project-section{padding:64px clamp(24px,6vw,80px);max-width:calc(1100px + clamp(48px,12vw,160px));margin:0 auto}
+      .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+      .project-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;transition:border-color .2s,transform .2s}
+      .project-card:hover{border-color:var(--blue);transform:translateY(-3px)}
+      .project-card-top{padding:24px 24px 0;display:flex;align-items:center;gap:12px}
+      .project-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+      .project-card-body{padding:16px 24px 24px}
+      .project-card-body h3{font-size:1rem;font-weight:700;margin:0 0 6px}
+      .project-card-body p{font-size:.85rem;color:var(--muted);line-height:1.5;margin:0 0 14px}
+      .project-stack{display:flex;flex-wrap:wrap;gap:5px}
+      .project-stack span{font-size:.68rem;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--soft);color:var(--muted)}
+
+      /* CTA */
+      .comm-cta{margin:0 clamp(24px,6vw,80px) 80px;text-align:center;padding:48px 32px;background:var(--surface);border:1px solid var(--line);border-radius:20px}
+      .comm-cta h2{font-size:clamp(1.3rem,3vw,1.8rem);margin:0 0 10px}
+      .comm-cta p{color:var(--muted);margin:0 0 24px;font-size:.95rem}
+      .comm-cta-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+
+      @media(max-width:640px){
+        .gai-split{grid-template-columns:1fr}
+        .hero-stats-row{grid-template-columns:repeat(2,1fr)}
+        .formula-card{border-radius:16px;padding:16px 20px}
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header" aria-label="Site header">
+      <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
+        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <span><strong>Google Developer Group Tulsa</strong></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="index.html#events">Events</a>
+        <a href="bwai.html">Build with AI</a>
+        <a href="devfest.html">DevFest</a>
+        <a href="hackathons.html">Hackathons</a>
+        <a href="community.html" aria-current="page">Community</a>
+        <a href="about-gdg.html">About GDGs</a>
+        <a href="google-ecosystem.html">Google Ecosystem</a>
+        <a href="ai-stack.html">AI Stack</a>
+      </nav>
+    </header>
+
+    <main id="top">
+
+      <!-- ══ HERO — Green band ══ -->
+      <section class="gai-band band-green" aria-label="Community overview">
+        <div class="gai-shapes" aria-hidden="true">
+          <div class="s3 s3-sphere" style="width:140px;height:140px;background-color:rgba(80,200,120,.5);top:6%;right:8%;--dur:9s;--dy:-24px;--r1:8deg"></div>
+          <div class="s3 s3-sphere" style="width:70px;height:70px;background-color:rgba(60,180,100,.4);bottom:18%;left:4%;--dur:6s;--delay:-3s;--dy:-14px;--r1:-6deg"></div>
+          <svg class="s3" style="width:80px;top:12%;right:28%;--dur:8s;--delay:-5s;--dy:-16px;--r1:10deg" viewBox="0 0 100 100">
+            <polygon points="50,8 92,88 8,88" fill="rgba(255,255,255,.2)" filter="drop-shadow(0 6px 16px rgba(0,0,0,.3))"/>
+          </svg>
+          <svg class="s3" style="width:72px;bottom:10%;right:18%;--dur:7s;--delay:-2s;--dy:-18px;--r1:-8deg" viewBox="0 0 100 100">
+            <circle cx="40" cy="40" r="27" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="12" filter="drop-shadow(0 5px 12px rgba(0,0,0,.3))"/>
+            <line x1="62" y1="62" x2="85" y2="85" stroke="rgba(255,255,255,.25)" stroke-width="12" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="gai-inner">
+          <h1 class="gai-display">Our Community.</h1>
+          <p class="gai-sub">Developers, designers, data scientists, and builders from Tulsa and Houston — shipping real things with Google technology.</p>
+          <div class="hero-stats-row">
+            <div class="hero-stat"><strong>200+</strong><p>Active<br>members</p></div>
+            <div class="hero-stat"><strong>40+</strong><p>Events<br>hosted</p></div>
+            <div class="hero-stat"><strong>30+</strong><p>Projects<br>shipped</p></div>
+            <div class="hero-stat"><strong>2</strong><p>GDG<br>chapters</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ MEMBER GRID ══ -->
+      <section class="member-section" aria-label="Community members">
+        <p class="section-label">Who we are</p>
+        <h2 class="section-title">Meet the builders</h2>
+        <div class="member-grid">
+
+          <article class="member-card" style="--mc:#4285f4">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#4285f4">M</div>
+              <div>
+                <p class="member-name">Marcus Okonkwo</p>
+                <p class="member-role">Backend Engineer · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">GreenTrack</p>
+              <p class="member-project-desc">AI-powered carbon footprint tracker that analyzes household habits using Gemini and stores data in Firebase Firestore.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Gemini API</span>
+              <span class="member-tag">Firebase</span>
+              <span class="member-tag">Node.js</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#34a853">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#34a853">P</div>
+              <div>
+                <p class="member-name">Priya Nair</p>
+                <p class="member-role">ML Engineer · <span>GDG Houston</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">MediAssist</p>
+              <p class="member-project-desc">Multimodal symptom checker using Vertex AI that accepts photo and text inputs to triage common health questions responsibly.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Vertex AI</span>
+              <span class="member-tag">Multimodal</span>
+              <span class="member-tag">Python</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#ea4335">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#ea4335">S</div>
+              <div>
+                <p class="member-name">Sofia Reyes</p>
+                <p class="member-role">UX Designer + Frontend · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">SkillBridge</p>
+              <p class="member-project-desc">Google Workspace-integrated career coaching tool that uses Gemini to generate personalized learning plans from resumes and job postings.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Workspace Add-on</span>
+              <span class="member-tag">Gemini</span>
+              <span class="member-tag">Apps Script</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#fbbc04">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#fbbc04;color:#1a0e00">J</div>
+              <div>
+                <p class="member-name">James Park</p>
+                <p class="member-role">Android Developer · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">LocalAlert</p>
+              <p class="member-project-desc">Real-time community safety app using the Google Maps Platform that crowdsources and verifies neighborhood incidents with AI moderation.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Maps Platform</span>
+              <span class="member-tag">Kotlin</span>
+              <span class="member-tag">Firestore</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#4285f4">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#4285f4">A</div>
+              <div>
+                <p class="member-name">Aisha Mendez</p>
+                <p class="member-role">Data Scientist · <span>GDG Houston</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">CropPredict</p>
+              <p class="member-project-desc">Agricultural yield prediction tool combining Google Earth Engine satellite imagery with Vertex AI ML models to support smallholder farmers.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Earth Engine</span>
+              <span class="member-tag">Vertex AI</span>
+              <span class="member-tag">BigQuery ML</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#34a853">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#34a853">L</div>
+              <div>
+                <p class="member-name">Liam Chen</p>
+                <p class="member-role">Cloud Architect · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">FloodSense</p>
+              <p class="member-project-desc">Climate risk assessment dashboard that aggregates NOAA data and runs flood prediction models on Google Cloud Run, visualized with Looker Studio.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Cloud Run</span>
+              <span class="member-tag">Looker Studio</span>
+              <span class="member-tag">BigQuery</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#ea4335">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#ea4335">Z</div>
+              <div>
+                <p class="member-name">Zoe Williams</p>
+                <p class="member-role">Full Stack Developer · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">TutorBot</p>
+              <p class="member-project-desc">Multi-agent tutoring system built with Google's Agent Development Kit (ADK) that breaks complex subjects into adaptive learning sessions.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Agent Dev Kit</span>
+              <span class="member-tag">Gemini API</span>
+              <span class="member-tag">Next.js</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#4285f4">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#4285f4">R</div>
+              <div>
+                <p class="member-name">Raj Patel</p>
+                <p class="member-role">iOS Developer · <span>GDG Houston</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">SoundMind</p>
+              <p class="member-project-desc">Mental wellness iOS app using Gemini-powered CBT journaling that detects emotional patterns and suggests evidence-based exercises.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Gemini SDK</span>
+              <span class="member-tag">Swift</span>
+              <span class="member-tag">HealthKit</span>
+            </div>
+          </article>
+
+          <article class="member-card" style="--mc:#fbbc04">
+            <div class="member-top">
+              <div class="member-avatar" style="background:#fbbc04;color:#1a0e00">F</div>
+              <div>
+                <p class="member-name">Fatima Al-Rashid</p>
+                <p class="member-role">DevOps Engineer · <span>GDG Tulsa</span></p>
+              </div>
+            </div>
+            <div class="member-project">
+              <p class="member-project-label">Project Built</p>
+              <p class="member-project-name">PipelineAI</p>
+              <p class="member-project-desc">MLOps automation framework on Vertex AI Pipelines with custom Kubeflow components, drift detection, and auto-retraining triggers.</p>
+            </div>
+            <div class="member-tags">
+              <span class="member-tag">Vertex AI Pipelines</span>
+              <span class="member-tag">Kubeflow</span>
+              <span class="member-tag">Python</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ══ SPLIT BAND — Blue, page 16 style ══ -->
+      <section class="gai-band band-blue" aria-label="Community impact">
+        <div class="gai-shapes" aria-hidden="true">
+          <div class="s3 s3-sphere" style="width:100px;height:100px;background-color:rgba(100,170,255,.5);top:10%;right:12%;--dur:8s;--dy:-20px;--r1:8deg"></div>
+          <div class="s3 s3-sphere" style="width:60px;height:60px;background-color:rgba(80,150,255,.4);bottom:14%;left:8%;--dur:6s;--delay:-4s;--dy:-12px;--r1:-6deg"></div>
+          <svg class="s3" style="width:65px;top:8%;right:30%;--dur:9s;--delay:-5s;--dy:-14px;--r1:10deg" viewBox="0 0 100 100">
+            <polygon points="50,8 92,88 8,88" fill="rgba(255,255,255,.2)" filter="drop-shadow(0 5px 14px rgba(0,0,0,.3))"/>
+          </svg>
+        </div>
+        <div class="gai-inner">
+          <div class="gai-split">
+            <div>
+              <p class="gai-split-label">Why it matters</p>
+              <p class="gai-split-intro">Discovery is happening across more surfaces — but community remains the primary engine where ideas turn into shipped products. Google and GDG are present in every step of that journey.</p>
+            </div>
+            <div>
+              <h2 class="gai-split-headline">The biggest growth opportunity is an expanding community</h2>
+              <p class="gai-split-body">When builders come together around real tools and real challenges, the distance between "I want to build this" and "I shipped this" collapses. That's what GDG Tulsa creates.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ FORMULA — Page 32 style ══ -->
+      <div class="formula-section" style="padding-top:56px">
+        <p class="section-label" style="max-width:1100px;margin:0 auto 8px">How we build community</p>
+        <h2 class="section-title" style="max-width:1100px;margin:0 auto 24px">The GDG Tulsa Formula</h2>
+        <div class="formula-list">
+          <div class="formula-card">
+            <strong>Put builders at the <em class="acc" style="--accent:#4285f4">center of learning.</em></strong>
+            <p>Hands-on workshops, live coding sessions, and mentorship from Google Developer Experts — not just slides.</p>
+          </div>
+          <div class="formula-card">
+            <strong>Connect people to the <em class="acc" style="--accent:#34a853">best Google tools.</em></strong>
+            <p>Early access to Google developer programs, Gemini API credits, and Cloud sandbox environments for members.</p>
+          </div>
+          <div class="formula-card">
+            <strong>Ship things that <em class="acc" style="--accent:#ea4335">matter.</em></strong>
+            <p>Every event ends with something deployed — a demo, a prototype, or a pull request. We measure by what gets built.</p>
+          </div>
+          <div class="formula-card">
+            <strong>Build a network that <em class="acc" style="--accent:#fbbc04">compounds.</em></strong>
+            <p>GDG members have gone on to join Google, start companies, and found GDG chapters of their own. The network grows with every event.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FEATURED PROJECTS ══ -->
+      <section class="project-section" aria-label="Featured projects">
+        <p class="section-label">Built by the community</p>
+        <h2 class="section-title">Featured projects</h2>
+        <div class="project-grid">
+          <article class="project-card">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(66,133,244,.15)">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              </div>
+              <strong style="font-size:1rem">TutorBot</strong>
+            </div>
+            <div class="project-card-body">
+              <p>A multi-agent learning system built with Google's Agent Development Kit. Breaks complex topics into adaptive micro-lessons and tracks comprehension over time.</p>
+              <div class="project-stack">
+                <span>Agent Dev Kit</span><span>Gemini 2.5</span><span>Firebase</span><span>Next.js</span>
+              </div>
+            </div>
+          </article>
+          <article class="project-card">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(52,168,83,.15)">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <strong style="font-size:1rem">CropPredict</strong>
+            </div>
+            <div class="project-card-body">
+              <p>Agricultural yield prediction combining Earth Engine satellite imagery with BigQuery ML models, helping smallholder farmers optimize planting decisions.</p>
+              <div class="project-stack">
+                <span>Earth Engine</span><span>BigQuery ML</span><span>Vertex AI</span><span>Python</span>
+              </div>
+            </div>
+          </article>
+          <article class="project-card">
+            <div class="project-card-top">
+              <div class="project-icon" style="background:rgba(234,67,53,.15)">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ea4335" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </div>
+              <strong style="font-size:1rem">SoundMind</strong>
+            </div>
+            <div class="project-card-body">
+              <p>Mental wellness iOS app with Gemini-powered CBT journaling. Detects emotional patterns in daily entries and suggests evidence-based coping strategies.</p>
+              <div class="project-stack">
+                <span>Gemini SDK</span><span>Swift</span><span>HealthKit</span><span>Firebase Auth</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ══ YELLOW SPLIT BAND ══ -->
+      <section class="gai-band band-yellow" aria-label="Join the community">
+        <div class="gai-shapes" aria-hidden="true">
+          <div class="s3 s3-sphere" style="width:90px;height:90px;background-color:rgba(255,200,60,.5);top:10%;right:12%;--dur:7s;--delay:-2s;--dy:-18px;--r1:8deg"></div>
+          <svg class="s3" style="width:70px;bottom:10%;left:8%;--dur:9s;--delay:-5s;--dy:-14px;--r1:-6deg" viewBox="0 0 100 100">
+            <polygon points="50,8 92,88 8,88" fill="rgba(0,0,0,.15)" filter="drop-shadow(0 5px 14px rgba(0,0,0,.2))"/>
+          </svg>
+        </div>
+        <div class="gai-inner">
+          <div class="gai-split">
+            <div>
+              <p class="gai-split-label">For developers, by developers</p>
+              <p class="gai-split-intro">Every builder in GDG Tulsa started somewhere. Whether you're shipping your first Gemini app or your fiftieth, there's a seat at the table.</p>
+            </div>
+            <div>
+              <h2 class="gai-split-headline">The next era of building is already here</h2>
+              <p class="gai-split-body">When you nail the AI foundations with Gemini, Vertex AI, and Firebase today, you remove the barrier between your ideas and your next shipped product.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ CTA ══ -->
+      <div class="comm-cta">
+        <h2>Become part of the community</h2>
+        <p>Join GDG Tulsa and build something worth shipping.</p>
+        <div class="comm-cta-btns">
+          <a class="button primary large" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
+          <a class="button secondary large" href="hackathons.html">View Hackathons</a>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="bwai-footer">
+      <h2>Stay connected</h2>
+      <div class="bwai-social-row">
+        <a href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">GDG Community Page</a>
+        <a href="mailto:zain@gdgtulsa.com">Email the Organizers</a>
+      </div>
+      <div class="bwai-footer-links">
+        <div><a href="index.html#events">Events</a><a href="bwai.html">Build with AI</a></div>
+        <div><a href="devfest.html">DevFest</a><a href="hackathons.html">Hackathons</a></div>
+        <div><a href="community.html">Community</a><a href="organizer.html">Organizer</a></div>
+        <div><a href="about-gdg.html">About GDGs</a><a href="google-ecosystem.html">Ecosystem</a></div>
+      </div>
+      <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
+    </footer>
+  </body>
+</html>
