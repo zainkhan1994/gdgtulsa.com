@@ -3,71 +3,137 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Meet the Organizer | GDG Tulsa</title>
-    <meta name="description" content="Meet Zain Khan, Google Developer Expert and founder/organizer of GDG Tulsa and GDG Houston.">
+    <title>Zain Khan — GDE &amp; Organizer | GDG Tulsa</title>
+    <meta name="description" content="Zain Khan — Google Developer Expert, founder of GDG Tulsa and GDG Houston. 50+ Google credentials, Gemini Certified Educator.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
     <style>
-      .org-page {
-        width: min(860px, calc(100% - 40px));
+      /* ── Page shell ── */
+      .prof-page {
+        width: min(980px, calc(100% - 40px));
         margin: 0 auto;
         padding: clamp(48px, 8vw, 96px) 0 80px;
       }
 
-      /* ── Hero ── */
-      .org-hero {
-        text-align: center;
-        margin-bottom: 72px;
+      /* ── GDE-style profile hero ── */
+      .prof-hero {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 32px;
+        align-items: start;
+        margin-bottom: 56px;
       }
-      .org-avatar {
-        width: 120px;
-        height: 120px;
+      .prof-avatar-wrap { position: relative; }
+      .prof-avatar {
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
-        background: var(--blue);
+        background: linear-gradient(135deg, #4285f4 0%, #0f9d58 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.8rem;
+        font-size: 2.6rem;
         font-weight: 700;
         color: #fff;
-        margin: 0 auto 28px;
-        box-shadow: 0 0 0 4px var(--surface), 0 0 0 6px var(--blue);
+        letter-spacing: -.02em;
       }
-      .org-hero h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
+      /* GDE verified badge on avatar */
+      .prof-gde-pip {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #4285f4;
+        border: 2px solid var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .prof-gde-pip svg { width: 14px; height: 14px; color: #fff; }
+
+      .prof-info { padding-top: 4px; }
+      .prof-name {
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
         font-weight: 700;
-        margin: 0 0 8px;
+        margin: 0 0 6px;
+        line-height: 1.1;
       }
-      .org-title {
-        font-size: 1.05rem;
-        color: var(--muted);
-        margin: 0 0 20px;
-      }
-      .org-quote {
-        font-size: clamp(.95rem, 2vw, 1.1rem);
-        line-height: 1.65;
-        color: var(--muted);
-        max-width: 600px;
-        margin: 0 auto 28px;
-        font-style: italic;
-      }
-      .org-contact {
+      /* GDE title pill — styled like the official GDE badge */
+      .prof-gde-title {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        color: var(--blue);
-        font-weight: 600;
-        font-size: .95rem;
-        text-decoration: none;
-        border: 1px solid var(--blue);
+        gap: 7px;
+        background: linear-gradient(90deg, #1a2f5a 0%, #1a3d5c 100%);
+        border: 1px solid rgba(66,133,244,.35);
         border-radius: 999px;
-        padding: 8px 20px;
-        transition: background .18s ease;
+        padding: 5px 14px 5px 8px;
+        margin-bottom: 10px;
       }
-      .org-contact:hover { background: rgba(66,133,244,.1); }
+      .prof-gde-title img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+      }
+      .prof-gde-title span {
+        font-size: .8rem;
+        font-weight: 700;
+        color: #7ab4f5;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+      .prof-subtitle {
+        font-size: .9rem;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
 
-      /* ── Stats ── */
-      .org-stats {
+      /* Tech area chips — like GDE profile */
+      .prof-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
+      .prof-chip {
+        font-size: .75rem;
+        font-weight: 600;
+        padding: 4px 11px;
+        border-radius: 999px;
+        border: 1px solid;
+        letter-spacing: .02em;
+      }
+      .chip-blue   { color: #7ab4f5; border-color: rgba(66,133,244,.4);  background: rgba(66,133,244,.1); }
+      .chip-green  { color: #6fcf97; border-color: rgba(52,168,83,.4);   background: rgba(52,168,83,.1); }
+      .chip-yellow { color: #f6d35b; border-color: rgba(251,188,4,.4);   background: rgba(251,188,4,.1); }
+      .chip-purple { color: #c084fc; border-color: rgba(161,66,244,.4);  background: rgba(161,66,244,.1); }
+      .chip-teal   { color: #5eead4; border-color: rgba(20,184,166,.4);  background: rgba(20,184,166,.1); }
+
+      /* External profile links */
+      .prof-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .prof-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .8rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 5px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        transition: border-color .18s, color .18s;
+      }
+      .prof-link:hover { border-color: var(--blue); color: var(--ink); }
+      .prof-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+      /* ── Stats row ── */
+      .prof-stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 1px;
@@ -75,157 +141,207 @@
         border: 1px solid var(--line);
         border-radius: 16px;
         overflow: hidden;
-        margin-bottom: 72px;
+        margin-bottom: 64px;
       }
-      .org-stat {
+      .prof-stat {
         background: var(--surface);
-        padding: 28px 24px;
+        padding: 24px 20px;
         text-align: center;
       }
-      .org-stat strong {
+      .prof-stat strong {
         display: block;
-        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
         font-weight: 700;
         line-height: 1;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
       }
-      .org-stat p {
-        font-size: .85rem;
-        color: var(--muted);
-        margin: 0;
-        line-height: 1.4;
-      }
+      .prof-stat p { font-size: .8rem; color: var(--muted); margin: 0; line-height: 1.35; }
 
-      /* ── Credentials ── */
-      .org-section-label {
-        font-size: .78rem;
+      /* ── Section label ── */
+      .prof-label {
+        font-size: .72rem;
         font-weight: 700;
         letter-spacing: .1em;
         text-transform: uppercase;
         color: var(--muted);
         margin: 0 0 20px;
       }
-      .org-creds-featured {
+
+      /* ── Featured certs (Credly-style large cards) ── */
+      .cred-featured-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 20px;
-        margin-bottom: 28px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 48px;
       }
-      .org-cred-card {
+      .cred-card {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 24px 24px;
+        text-align: center;
+        transition: border-color .2s, transform .2s;
+      }
+      .cred-card:hover { border-color: var(--blue); transform: translateY(-3px); }
+      .cred-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--cred-accent, var(--blue));
+      }
+      /* Credly-style hexagonal clip badge */
+      .cred-badge-wrap {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 20px;
+        position: relative;
+      }
+      .cred-badge-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 24px rgba(66,133,244,.25));
+      }
+      .cred-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+      .cred-issuer-row {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 20px;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .cred-issuer-row img {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+      }
+      .cred-issuer-row span {
+        font-size: .78rem;
+        color: var(--muted);
+      }
+      /* Verified pill */
+      .cred-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: .72rem;
+        font-weight: 700;
+        color: #34a853;
+        background: rgba(52,168,83,.12);
+        border: 1px solid rgba(52,168,83,.3);
+        border-radius: 999px;
+        padding: 3px 10px;
+        margin-bottom: 14px;
+      }
+      .cred-verified svg { width: 11px; height: 11px; }
+      .cred-verify-link {
+        font-size: .78rem;
+        font-weight: 600;
+        color: var(--blue);
+        text-decoration: none;
+        border: 1px solid rgba(66,133,244,.35);
+        border-radius: 8px;
+        padding: 6px 16px;
+        transition: background .18s;
+      }
+      .cred-verify-link:hover { background: rgba(66,133,244,.1); }
+
+      /* ── Badge grid (Credly wall style) ── */
+      .badge-wall {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 14px;
+        margin-bottom: 64px;
+      }
+      .badge-tile {
         background: var(--surface);
         border: 1px solid var(--line);
         border-radius: 14px;
-      }
-      .org-cred-card img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        flex-shrink: 0;
-      }
-      .org-cred-card strong {
-        display: block;
-        font-size: .95rem;
-        margin-bottom: 2px;
-      }
-      .org-cred-card span {
-        font-size: .8rem;
-        color: var(--muted);
-      }
-      .org-cred-card a {
-        display: inline-block;
-        margin-top: 6px;
-        font-size: .78rem;
-        color: var(--blue);
-        text-decoration: none;
-      }
-      .org-cred-card a:hover { text-decoration: underline; }
-
-      .org-badge-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-        gap: 16px;
-        margin-bottom: 72px;
-      }
-      .org-badge-grid figure {
-        margin: 0;
+        padding: 20px 12px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
         text-align: center;
+        cursor: default;
+        position: relative;
+        overflow: hidden;
+        transition: border-color .18s, transform .18s;
       }
-      .org-badge-grid img {
+      .badge-tile:hover { border-color: rgba(66,133,244,.5); transform: translateY(-2px); }
+      /* Subtle top accent matching Google's category colors */
+      .badge-tile::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--tile-accent, var(--blue));
+        opacity: .6;
+      }
+      .badge-tile img {
         width: 72px;
         height: 72px;
         object-fit: contain;
-        border-radius: 50%;
-        display: block;
-        margin: 0 auto 6px;
+        filter: drop-shadow(0 2px 12px rgba(66,133,244,.2));
       }
-      .org-badge-grid figcaption {
-        font-size: .72rem;
-        color: var(--muted);
+      .badge-tile figcaption {
+        font-size: .75rem;
+        font-weight: 600;
+        color: var(--ink);
         line-height: 1.3;
       }
-
-      /* ── Skills ── */
-      .org-skills {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-        margin-bottom: 72px;
+      .badge-tile .badge-issuer {
+        font-size: .68rem;
+        color: var(--muted);
+        margin-top: -4px;
       }
-      .org-skill {
-        padding: 20px;
+
+      /* ── Skills tags ── */
+      .prof-skills-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 64px;
+      }
+      .skill-tag {
+        font-size: .8rem;
+        font-weight: 500;
+        color: var(--ink);
         background: var(--surface);
         border: 1px solid var(--line);
-        border-radius: 14px;
+        border-radius: 8px;
+        padding: 6px 14px;
+        transition: border-color .18s, color .18s;
       }
-      .org-skill-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-bottom: 12px;
-      }
-      .org-skill h3 {
-        font-size: .95rem;
-        font-weight: 700;
-        margin: 0 0 6px;
-      }
-      .org-skill p {
-        font-size: .83rem;
-        color: var(--muted);
-        margin: 0;
-        line-height: 1.5;
-      }
+      .skill-tag:hover { border-color: var(--blue); color: #7ab4f5; }
 
       /* ── CTA ── */
-      .org-cta {
+      .prof-cta {
         text-align: center;
         padding: 48px 32px;
         background: var(--surface);
         border: 1px solid var(--line);
         border-radius: 20px;
       }
-      .org-cta h2 {
-        font-size: clamp(1.3rem, 3vw, 1.8rem);
-        margin: 0 0 10px;
-      }
-      .org-cta p {
-        color: var(--muted);
-        margin: 0 0 24px;
-        font-size: .95rem;
-      }
-      .org-cta-btns {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        justify-content: center;
-      }
+      .prof-cta h2 { font-size: clamp(1.3rem, 3vw, 1.8rem); margin: 0 0 10px; }
+      .prof-cta p { color: var(--muted); margin: 0 0 24px; font-size: .95rem; }
+      .prof-cta-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 
       @media (max-width: 560px) {
-        .org-stats { grid-template-columns: 1fr; }
-        .org-avatar { width: 96px; height: 96px; font-size: 2.2rem; }
+        .prof-hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+        .prof-chips, .prof-links { justify-content: center; }
+        .prof-stats { grid-template-columns: 1fr; }
+        .badge-wall { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
       }
     </style>
   </head>
@@ -248,96 +364,180 @@
     </header>
 
     <main id="top">
-      <div class="org-page">
+      <div class="prof-page">
 
-        <!-- Hero -->
-        <section class="org-hero">
-          <div class="org-avatar" aria-hidden="true">Z</div>
-          <h1>Zain Khan</h1>
-          <p class="org-title">Google Developer Expert &nbsp;·&nbsp; Founder &amp; Organizer, GDG Tulsa + GDG Houston</p>
-          <p class="org-quote">"Not a lecture series. Not a pitch fest. A real space where people show up, learn something, build something, and leave connected to someone new."</p>
-          <a class="org-contact" href="mailto:zain@gdgtulsa.com">zain@gdgtulsa.com</a>
+        <!-- ── GDE Profile Hero ── -->
+        <section class="prof-hero">
+          <div class="prof-avatar-wrap">
+            <div class="prof-avatar">Z</div>
+            <div class="prof-gde-pip" aria-label="Google Developer Expert verified">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+          </div>
+
+          <div class="prof-info">
+            <h1 class="prof-name">Zain Khan</h1>
+
+            <div class="prof-gde-title">
+              <img src="assets/logos/Google__G__logo.svg" alt="Google">
+              <span>Google Developer Expert</span>
+            </div>
+
+            <p class="prof-subtitle">Founder &amp; Organizer · GDG Tulsa + GDG Houston &nbsp;·&nbsp; The Khanstruct</p>
+
+            <div class="prof-chips" aria-label="Specializations">
+              <span class="prof-chip chip-blue">AI &amp; Machine Learning</span>
+              <span class="prof-chip chip-green">Gemini API</span>
+              <span class="prof-chip chip-purple">AI Agents</span>
+              <span class="prof-chip chip-yellow">MLOps</span>
+              <span class="prof-chip chip-teal">Vertex AI</span>
+              <span class="prof-chip chip-blue">Swift / iOS</span>
+              <span class="prof-chip chip-green">Product Design</span>
+            </div>
+
+            <nav class="prof-links" aria-label="External profiles">
+              <a class="prof-link" href="https://www.credly.com/users/zain-khan.c9437a7a/badges" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Credly
+              </a>
+              <a class="prof-link" href="https://skillshop.credential.net/profile/zainkhan244794/wallet" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Skillshop
+              </a>
+              <a class="prof-link" href="https://me.developers.google.com/u/khanstruct" rel="noopener" target="_blank">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                GDE Profile
+              </a>
+              <a class="prof-link" href="mailto:zain@gdgtulsa.com">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                zain@gdgtulsa.com
+              </a>
+            </nav>
+          </div>
         </section>
 
-        <!-- Stats -->
-        <div class="org-stats" aria-label="Credential summary">
-          <div class="org-stat">
+        <!-- ── Stats ── -->
+        <div class="prof-stats" aria-label="Credential summary">
+          <div class="prof-stat">
             <strong class="accent-blue">50+</strong>
-            <p>Google Skills badges</p>
+            <p>Google Skills<br>badges earned</p>
           </div>
-          <div class="org-stat">
+          <div class="prof-stat">
             <strong class="accent-green">6</strong>
-            <p>Agent &amp; MLOps courses</p>
+            <p>Agent &amp; MLOps<br>courses completed</p>
           </div>
-          <div class="org-stat">
+          <div class="prof-stat">
             <strong class="accent-red">2</strong>
-            <p>Verified certifications</p>
+            <p>Independently<br>verified certifications</p>
           </div>
         </div>
 
-        <!-- Certifications -->
-        <section aria-label="Certifications">
-          <p class="org-section-label">Certifications</p>
-          <div class="org-creds-featured">
-            <div class="org-cred-card">
-              <img src="assets/badges/credentials/gemini-certified-educator.png" alt="Gemini Certified Educator">
-              <div>
-                <strong>Gemini Certified Educator</strong>
+        <!-- ── Featured Certifications (Credly-style) ── -->
+        <section aria-label="Featured certifications">
+          <p class="prof-label">Featured Certifications</p>
+          <div class="cred-featured-row">
+
+            <div class="cred-card" style="--cred-accent:#4285f4">
+              <div class="cred-badge-wrap">
+                <img src="assets/badges/credentials/gemini-certified-educator.png" alt="Gemini Certified Educator badge">
+              </div>
+              <h3>Gemini Certified Educator</h3>
+              <div class="cred-issuer-row">
+                <img src="assets/logos/Google__G__logo.svg" alt="">
                 <span>Google for Education</span>
-                <a href="https://edu.google.accredible.com/aaaeebfa-83c1-4bf2-a080-e19840718151#acc.zXU1C0bD" rel="noopener">Verify ↗</a>
               </div>
+              <div class="cred-verified">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3.09 8.26 2 9.27l10 10.73 10-10.73-.91-1.01L12 2z"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Verified · Valid 3 years
+              </div>
+              <a class="cred-verify-link" href="https://edu.google.accredible.com/aaaeebfa-83c1-4bf2-a080-e19840718151#acc.zXU1C0bD" rel="noopener" target="_blank">Verify credential ↗</a>
             </div>
-            <div class="org-cred-card">
-              <img src="assets/badges/credentials/google-ai-essentials.png" alt="Google AI Essentials">
-              <div>
-                <strong>Google AI Essentials</strong>
+
+            <div class="cred-card" style="--cred-accent:#34a853">
+              <div class="cred-badge-wrap">
+                <img src="assets/badges/credentials/google-ai-essentials.png" alt="Google AI Essentials badge">
+              </div>
+              <h3>Google AI Essentials</h3>
+              <div class="cred-issuer-row">
+                <img src="assets/logos/Google__G__logo.svg" alt="">
                 <span>Google Career Certificates</span>
-                <a href="https://www.credly.com/badges/123eb5d9-c7ae-45cd-94f8-1714b48af8bc/public_url" rel="noopener">Verify on Credly ↗</a>
               </div>
+              <div class="cred-verified">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Verified on Credly
+              </div>
+              <a class="cred-verify-link" href="https://www.credly.com/badges/123eb5d9-c7ae-45cd-94f8-1714b48af8bc/public_url" rel="noopener" target="_blank">Verify on Credly ↗</a>
             </div>
+
           </div>
         </section>
 
-        <!-- Course badges -->
+        <!-- ── Badge wall ── -->
         <section aria-label="Google Skills badges">
-          <p class="org-section-label">Google Skills</p>
-          <div class="org-badge-grid">
-            <figure><img src="assets/badges/credentials/agent-fundamentals.png" alt="" loading="lazy"><figcaption>Agent Fundamentals</figcaption></figure>
-            <figure><img src="assets/badges/credentials/intro-ai-agents.png" alt="" loading="lazy"><figcaption>Intro to AI Agents</figcaption></figure>
-            <figure><img src="assets/badges/credentials/enterprise-agents.png" alt="" loading="lazy"><figcaption>Enterprise Agents</figcaption></figure>
-            <figure><img src="assets/badges/credentials/mlops-genai.png" alt="" loading="lazy"><figcaption>MLOps for GenAI</figcaption></figure>
-            <figure><img src="assets/badges/credentials/mlops-vertex.png" alt="" loading="lazy"><figcaption>MLOps · Vertex AI</figcaption></figure>
-            <figure><img src="assets/badges/credentials/gemini-enterprise-app.png" alt="" loading="lazy"><figcaption>Gemini Enterprise App</figcaption></figure>
+          <p class="prof-label">Google Skills Badges</p>
+          <div class="badge-wall">
+            <figure class="badge-tile" style="--tile-accent:#4285f4">
+              <img src="assets/badges/credentials/agent-fundamentals.png" alt="" loading="lazy">
+              <figcaption>Agent Fundamentals</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
+            <figure class="badge-tile" style="--tile-accent:#0f9d58">
+              <img src="assets/badges/credentials/intro-ai-agents.png" alt="" loading="lazy">
+              <figcaption>Intro to AI Agents</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
+            <figure class="badge-tile" style="--tile-accent:#db4437">
+              <img src="assets/badges/credentials/enterprise-agents.png" alt="" loading="lazy">
+              <figcaption>Enterprise Agents</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
+            <figure class="badge-tile" style="--tile-accent:#f4b400">
+              <img src="assets/badges/credentials/mlops-genai.png" alt="" loading="lazy">
+              <figcaption>MLOps for GenAI</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
+            <figure class="badge-tile" style="--tile-accent:#4285f4">
+              <img src="assets/badges/credentials/mlops-vertex.png" alt="" loading="lazy">
+              <figcaption>MLOps · Vertex AI</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
+            <figure class="badge-tile" style="--tile-accent:#0f9d58">
+              <img src="assets/badges/credentials/gemini-enterprise-app.png" alt="" loading="lazy">
+              <figcaption>Gemini Enterprise App</figcaption>
+              <span class="badge-issuer">Google Cloud</span>
+            </figure>
           </div>
         </section>
 
-        <!-- Skills -->
-        <section aria-label="Areas of expertise">
-          <p class="org-section-label">What Zain does</p>
-          <div class="org-skills">
-            <div class="org-skill">
-              <div class="org-skill-dot" style="background:var(--blue)"></div>
-              <h3>Product &amp; design</h3>
-              <p>End-to-end ownership — user insight to shipped feature. Rapid prototyping at The Khanstruct.</p>
-            </div>
-            <div class="org-skill">
-              <div class="org-skill-dot" style="background:var(--green)"></div>
-              <h3>Engineering</h3>
-              <p>Swift / SwiftUI, macOS, accessibility APIs, AI-assisted development.</p>
-            </div>
-            <div class="org-skill">
-              <div class="org-skill-dot" style="background:var(--yellow)"></div>
-              <h3>Community</h3>
-              <p>Recruiting, culture, events — GDG Tulsa and GDG Houston both.</p>
-            </div>
+        <!-- ── Skills ── -->
+        <section aria-label="Skills and expertise">
+          <p class="prof-label">Skills &amp; Expertise</p>
+          <div class="prof-skills-grid">
+            <span class="skill-tag">Gemini API</span>
+            <span class="skill-tag">AI Agents</span>
+            <span class="skill-tag">Agent Development Kit</span>
+            <span class="skill-tag">Vertex AI</span>
+            <span class="skill-tag">MLOps</span>
+            <span class="skill-tag">NotebookLM</span>
+            <span class="skill-tag">Gemini for Workspace</span>
+            <span class="skill-tag">Google AI Studio</span>
+            <span class="skill-tag">Prompt Engineering</span>
+            <span class="skill-tag">Responsible AI</span>
+            <span class="skill-tag">Swift</span>
+            <span class="skill-tag">SwiftUI</span>
+            <span class="skill-tag">iOS / macOS</span>
+            <span class="skill-tag">Product Design</span>
+            <span class="skill-tag">Prototyping</span>
+            <span class="skill-tag">Developer Relations</span>
+            <span class="skill-tag">Community Building</span>
           </div>
         </section>
 
-        <!-- CTA -->
-        <section class="org-cta">
-          <h2>Want to build with GDG Tulsa?</h2>
+        <!-- ── CTA ── -->
+        <section class="prof-cta">
+          <h2>Build with GDG Tulsa</h2>
           <p>Come to an event, or reach out directly.</p>
-          <div class="org-cta-btns">
+          <div class="prof-cta-btns">
             <a class="button primary large" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
             <a class="button secondary large" href="mailto:zain@gdgtulsa.com">Email Zain</a>
           </div>
