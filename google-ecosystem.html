@@ -105,7 +105,28 @@
         </p>
       </section>
 
-      <section class="product-galaxy" aria-label="Google products and tools">
+      <div class="eco-switch" role="tablist" aria-label="Ecosystem views">
+        <button class="eco-switch-btn is-active" role="tab" aria-selected="true"  data-view="orbit">Orbit</button>
+        <button class="eco-switch-btn"           role="tab" aria-selected="false" data-view="list">List</button>
+        <button class="eco-switch-btn"           role="tab" aria-selected="false" data-view="grid">Grid</button>
+        <button class="eco-switch-btn"           role="tab" aria-selected="false" data-view="table">Table</button>
+        <span class="eco-switch-thumb" aria-hidden="true"></span>
+      </div>
+
+      <section class="eco-panel" id="view-orbit" role="tabpanel">
+        <div class="orbit-wrap"><div class="orbit" id="orbitMount"></div></div>
+        <p class="orbit-hint">Click a category to explore its products. Click the centre to go back.</p>
+      </section>
+
+      <section class="eco-panel is-hidden" id="view-grid" role="tabpanel">
+        <div class="eco-grid" id="gridMount"></div>
+      </section>
+
+      <section class="eco-panel is-hidden" id="view-table" role="tabpanel">
+        <div class="eco-table" id="tableMount"></div>
+      </section>
+
+      <section class="eco-panel is-hidden product-galaxy" id="view-list" aria-label="Google products and tools" role="tabpanel">
         <p class="ecosystem-category-label">AI &amp; machine learning</p>
         <div class="product-galaxy-grid">
           <a class="product-chip" href="https://gemini.google.com/" rel="noopener">
@@ -250,5 +271,6 @@
       </div>
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
+      <script src="assets/ecosystem-views.js"></script>
   </body>
 </html>
