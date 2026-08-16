@@ -1,3 +1,46 @@
+# macOS
 .DS_Store
 **/.DS_Store
+*.AppleDouble
+*.LSOverride
+
+# Editor & IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Claude Code session files
+.claude/
+
+# Backups & temp
 *.bak
+*.tmp
+*.orig
+*~
+
+# Local research / scratch files
+AI Site Research/
+gdg_screenshots/
+
+# Binary / design source files (not web assets)
+*.ai
+*.psd
+*.sketch
+*.fig
+
+# Archives & dumps
+*.zip
+*.tar
+*.gz
+
+# Documents that aren't site content
+*.pdf
+*.mhtml
+
+# Data dumps
+bookmarks_tree.json
+full_bookmarks_export.json
+
+# Wireframes / planning
+Website wireframe.pdf
