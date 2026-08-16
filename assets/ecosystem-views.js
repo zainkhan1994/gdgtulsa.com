@@ -32,27 +32,49 @@
 
   /* ---------- AI ECOSYSTEM (orbit dataset) ---------- */
   var ICON = {
-    'Gemini':'assets/logos/gemini.svg','Gemma':'assets/logos/gemini.svg',
-    'Google AI Studio':'assets/logos/ai-studio.svg','Vertex AI':'assets/logos/google-cloud.png',
-    'Firebase AI':'assets/logos/firebase.svg','Google Antigravity':'assets/logos/products/antigravity.png',
-    'NotebookLM':'assets/logos/products/notebooklm.svg','Chrome':'assets/logos/products/chromeos.svg',
-    'Android':'assets/logos/android.png','Google Cloud':'assets/logos/google-cloud.png',
-    'Search':'assets/logos/products/search-central.svg','Gemini API':'assets/logos/gemini.svg',
-    'Gemini CLI':'assets/logos/gemini.svg','Gemini Code Assist':'assets/logos/gemini.svg'
+    'Gemini':                       'assets/logos/gemini.svg',
+    'Gemma':                        'assets/logos/gemini.svg',
+    'Gemini API':                   'assets/logos/gemini.svg',
+    'Gemini CLI':                   'assets/logos/gemini.svg',
+    'Gemini Code Assist':           'assets/logos/gemini.svg',
+    'Google AI Studio':             'assets/logos/ai-studio.svg',
+    'Vertex AI':                    'assets/logos/google-cloud.png',
+    'Firebase AI':                  'assets/logos/firebase.svg',
+    'Google Antigravity':           'assets/logos/products/antigravity.png',
+    'Agent SDKs':                   'assets/logos/products/adk.png',
+    'NotebookLM':                   'assets/logos/products/notebooklm.svg',
+    'Chrome':                       'assets/logos/products/chromeos.svg',
+    'Android':                      'assets/logos/android.png',
+    'Search':                       'assets/logos/products/search-central.svg',
+    'Google Cloud':                 'assets/logos/google-cloud.png',
+    'BigQuery':                     'assets/logos/google-cloud.png',
+    'Cloud Storage':                'assets/logos/google-cloud.png',
+    'Cloud Run':                    'assets/logos/google-cloud.png',
+    'Data Analytics':               'assets/logos/google-analytics.svg'
   };
+
   var AI = [
-    { key:'foundation', label:'Foundation Models', color:'#4285F4', items:['Gemini','Gemma','Veo','Imagen','Lyria','Nano Banana','Gemini Audio','Gemini Robotics','Genie'] },
-    { key:'platforms',  label:'AI Platforms',      color:'#0F9D58', items:['Google AI Studio','Gemini API','Vertex AI','Gemini Enterprise Agent Platform','Firebase AI'] },
-    { key:'agents',     label:'Agent Development', color:'#F4B400', items:['Google Antigravity','Gemini CLI','Gemini Code Assist','Managed Agents','Agent SDKs'] },
-    { key:'apps',       label:'AI Applications',   color:'#DB4437', items:['Gemini','NotebookLM','Search','Chrome','Workspace','Photos','YouTube','Android'] },
-    { key:'creative',   label:'Creative AI',       color:'#AB47BC', items:['Flow','Whisk','ImageFX','Veo','Imagen','Lyria'] },
-    { key:'science',    label:'AI for Science',    color:'#00ACC1', items:['AlphaFold','AlphaEarth','AlphaEvolve','WeatherNext','Gemini for Science'] },
-    { key:'infra',      label:'Infrastructure',    color:'#5C6BC0', items:['Google Cloud','TPUs','BigQuery','Cloud Storage','Cloud Run','Data Analytics','Vertex AI'] },
-    { key:'deepmind',   label:'Google DeepMind',   color:'#EC407A', items:['Research','Models','Robotics','World models','Science'] }
+    { key:'foundation', label:'Foundation Models', color:'#4285F4',
+      items:['Gemini','Gemma','Veo','Imagen','Lyria','Nano Banana','Gemini Audio','Gemini Robotics','Genie'] },
+    { key:'platforms',  label:'AI Platforms',      color:'#0F9D58',
+      items:['Google AI Studio','Gemini API','Vertex AI','Gemini Enterprise Agent Platform','Firebase AI'] },
+    { key:'agents',     label:'Agent Development', color:'#F4B400',
+      items:['Google Antigravity','Gemini CLI','Gemini Code Assist','Managed Agents','Agent SDKs'] },
+    { key:'apps',       label:'AI Applications',   color:'#DB4437',
+      items:['Gemini','NotebookLM','Search','Chrome','Workspace','Photos','YouTube','Android'] },
+    { key:'creative',   label:'Creative AI',       color:'#AB47BC',
+      items:['Flow','Whisk','ImageFX','Veo','Imagen','Lyria'] },
+    { key:'science',    label:'AI for Science',    color:'#00ACC1',
+      items:['AlphaFold','AlphaEarth','AlphaEvolve','WeatherNext','Gemini for Science'] },
+    { key:'infra',      label:'Infrastructure',    color:'#5C6BC0',
+      items:['Google Cloud','TPUs','BigQuery','Cloud Storage','Cloud Run','Data Analytics','Vertex AI'] },
+    { key:'deepmind',   label:'Google DeepMind',   color:'#EC407A',
+      items:['Research','Models','Robotics','World models','Science'] }
   ];
 
   function renderOrbit(mount) {
-    var SIZE=920, C=SIZE/2, RC=155, RI=295, RO=430, ns='http://www.w3.org/2000/svg';
+    /* SIZE is the SVG coordinate space; CSS scales the element to min(1100px,96vw) */
+    var SIZE=1000, C=SIZE/2, RC=130, RI=260, RO=440, ns='http://www.w3.org/2000/svg';
     var selected=null;
 
     var svg=document.createElementNS(ns,'svg');
@@ -70,72 +92,95 @@
       return 'M'+s[0]+' '+s[1]+' A'+r+' '+r+' 0 '+large+' 1 '+e[0]+' '+e[1];
     }
 
+    function makeNode(nm, color, href, isBtn) {
+      var n = isBtn ? el('button','orbit-node') : el('a','orbit-node');
+      if(isBtn){ n.type='button'; } else { n.href=href||'#'; }
+      n.style.setProperty('--c', color);
+      var icon = ICON[nm]
+        ? '<img src="'+ICON[nm]+'" alt="">'
+        : '<span class="orbit-dot" style="background:'+color+'"></span>';
+      n.innerHTML = icon + '<span>'+nm+'</span>';
+      return n;
+    }
+
     function draw(){
       svg.innerHTML=''; layer.innerHTML='';
-      [RC,RI,RO].forEach(function(r,i){
+
+      /* rings */
+      [RC, RI, RO].forEach(function(r,i){
         var c=document.createElementNS(ns,'circle');
-        c.setAttribute('cx',C);c.setAttribute('cy',C);c.setAttribute('r',r);
+        c.setAttribute('cx',C); c.setAttribute('cy',C); c.setAttribute('r',r);
         c.setAttribute('class','orbit-ring'+(i===0?' orbit-ring-core':''));
         svg.appendChild(c);
       });
 
       var span=(Math.PI*2)/AI.length;
+
       AI.forEach(function(cat,i){
         var a0=i*span-Math.PI/2, a1=a0+span, mid=a0+span/2;
-        var dim = selected && selected!==cat.key;
+        var isSelected = selected===cat.key;
+        var isDim = selected && !isSelected;
 
-        // wedge separator
+        /* spoke */
         var ln=document.createElementNS(ns,'line');
-        var p1=polar(RC,a0), p2=polar(RO,a0);
-        ln.setAttribute('x1',p1[0]);ln.setAttribute('y1',p1[1]);
-        ln.setAttribute('x2',p2[0]);ln.setAttribute('y2',p2[1]);
+        var p1=polar(RC,a0), p2=polar(RO+30,a0);
+        ln.setAttribute('x1',p1[0]); ln.setAttribute('y1',p1[1]);
+        ln.setAttribute('x2',p2[0]); ln.setAttribute('y2',p2[1]);
         ln.setAttribute('class','orbit-spoke');
         svg.appendChild(ln);
 
-        // coloured arc band
+        /* coloured arc band (between RC and RI) */
         var band=document.createElementNS(ns,'path');
-        band.setAttribute('d',arcPath((RI+RC)/2, a0+0.03, a1-0.03));
-        band.setAttribute('class','orbit-band'+(dim?' is-dim':'')+(selected===cat.key?' is-on':''));
+        band.setAttribute('d', arcPath((RI+RC)/2, a0+0.03, a1-0.03));
+        band.setAttribute('class','orbit-band'+(isDim?' is-dim':'')+(isSelected?' is-on':''));
         band.setAttribute('stroke',cat.color);
         svg.appendChild(band);
 
-        // clickable category label
+        /* category label inside band — always visible */
         var pos=polar((RI+RC)/2, mid);
-        var btn=el('button','orbit-cat-btn'+(dim?' is-dim':'')+(selected===cat.key?' is-on':''));
+        var btn=el('button','orbit-cat-btn'+(isDim?' is-dim':'')+(isSelected?' is-on':''));
         btn.type='button';
         btn.style.left=(pos[0]/SIZE*100)+'%';
         btn.style.top=(pos[1]/SIZE*100)+'%';
-        btn.style.setProperty('--c',cat.color);
+        btn.style.setProperty('--c', cat.color);
         btn.innerHTML='<span>'+cat.label+'</span><em>'+cat.items.length+'</em>';
-        btn.addEventListener('click',function(){
-          selected = (selected===cat.key)?null:cat.key; draw();
-        });
+        btn.addEventListener('click',function(){ selected=(isSelected)?null:cat.key; draw(); });
         layer.appendChild(btn);
 
-        // outer nodes: all cats when nothing selected, else only selected
-        var show = selected===cat.key;
-        if(show){
-          var arcFrom = selected ? -Math.PI/2 : a0;
-          var arcSpan = selected ? Math.PI*2 : span;
+        /* OUTER RING */
+        if(isSelected){
+          /* drill-down: fan ALL products around the full outer ring */
           cat.items.forEach(function(nm,j){
             var t=(j+0.5)/cat.items.length;
-            var a=arcFrom+arcSpan*t;
+            var a=-Math.PI/2+Math.PI*2*t;
             var np=polar(RO,a);
-            var n=el('a','orbit-node');
-            n.href='#'; n.style.left=(np[0]/SIZE*100)+'%'; n.style.top=(np[1]/SIZE*100)+'%';
-            n.style.setProperty('--c',cat.color);
-            n.innerHTML=(ICON[nm]?'<img src="'+ICON[nm]+'" alt="">':'<i class="orbit-dot"></i>')+'<span>'+nm+'</span>';
+            var n=makeNode(nm, cat.color, null, false);
+            n.style.left=(np[0]/SIZE*100)+'%';
+            n.style.top=(np[1]/SIZE*100)+'%';
             layer.appendChild(n);
           });
+        } else {
+          /* default: one category node per wedge on the outer ring — ALWAYS VISIBLE */
+          var nm=cat.items[0];
+          var np=polar(RO, mid);
+          var n=makeNode(nm, cat.color, null, true);
+          n.classList.add('orbit-cat-node');
+          n.style.left=(np[0]/SIZE*100)+'%';
+          n.style.top=(np[1]/SIZE*100)+'%';
+          if(isDim) n.classList.add('is-dim');
+          /* clicking the outer node also drills in */
+          (function(key){ n.addEventListener('click',function(){ selected=key; draw(); }); })(cat.key);
+          layer.appendChild(n);
         }
       });
 
+      /* core button */
       if(selected){
         var c=AI.filter(function(x){return x.key===selected;})[0];
-        core.innerHTML='<strong style="color:'+c.color+'">'+c.label+'</strong><span>'+c.items.length+' products · back</span>';
+        core.innerHTML='<strong style="color:'+c.color+'">'+c.label+'</strong><br><span>'+c.items.length+' products · tap to go back</span>';
         core.classList.add('is-drilled');
       } else {
-        core.innerHTML='<strong>Google AI</strong><span>Ecosystem</span>';
+        core.innerHTML='<strong>Google AI</strong><br><span>Tap a category</span>';
         core.classList.remove('is-drilled');
       }
     }
@@ -207,17 +252,14 @@
     }
 
     btns.forEach(function (b) {
-      b.addEventListener('click', function () { show(b.dataset.view); });
+      b.addEventListener('click', function () {
+        show(b.dataset.view);
+        history.replaceState(null,'','#'+b.dataset.view);
+      });
     });
 
     var VIEWS = ['orbit','list','grid','table'];
-    function fromHash(){
-      var h = (location.hash||'').replace('#','');
-      return VIEWS.indexOf(h) > -1 ? h : null;
-    }
-    btns.forEach(function(b){
-      b.addEventListener('click', function(){ history.replaceState(null,'','#'+b.dataset.view); });
-    });
+    function fromHash(){ var h=(location.hash||'').replace('#',''); return VIEWS.indexOf(h)>-1?h:null; }
     window.addEventListener('hashchange', function(){ var v=fromHash(); if(v) show(v); });
 
     var initial = fromHash();

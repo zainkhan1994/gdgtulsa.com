@@ -5481,7 +5481,7 @@ body:not(.ready) .hero-feature-grid article {
 
 /* ----- Orbit ----- */
 .orbit-wrap{display:flex;justify-content:center}
-.orbit{position:relative;width:min(900px,96vw);aspect-ratio:1}
+.orbit{position:relative;width:min(1100px,96vw);aspect-ratio:1}
 .orbit-svg{width:100%;height:100%;display:block;overflow:visible}
 .orbit-ring{fill:none;stroke:var(--line);stroke-width:1}
 .orbit-ring-core{fill:var(--surface)}
@@ -5539,36 +5539,47 @@ body:not(.ready) .hero-feature-grid article {
 }
 
 /* ----- Orbit v2: 8-category drill-down ----- */
-.orbit{width:min(900px,96vw)}
+.orbit{width:min(1100px,96vw)}
 .orbit-layer{position:absolute;inset:0}
-.orbit-band{fill:none;stroke-width:38;opacity:.16;transition:opacity .25s ease,stroke-width .25s ease}
-.orbit-band.is-on{opacity:.42;stroke-width:44}
-.orbit-band.is-dim{opacity:.05}
+.orbit-band{fill:none;stroke-width:52;opacity:.14;transition:opacity .25s ease,stroke-width .25s ease}
+.orbit-band.is-on{opacity:.38;stroke-width:58}
+.orbit-band.is-dim{opacity:.04}
 .orbit-cat-btn{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;
-  gap:2px;width:130px;padding:6px;border:0;background:none;cursor:pointer;font:inherit;
+  gap:3px;width:150px;padding:6px;border:0;background:none;cursor:pointer;font:inherit;
   transition:opacity .25s ease,transform .2s ease}
-.orbit-cat-btn span{font-size:.95rem;font-weight:700;line-height:1.2;text-align:center;
-  letter-spacing:.02em;color:var(--ink)}
-.orbit-cat-btn em{font-style:normal;font-size:.82rem;color:var(--c);font-weight:700}
-.orbit-cat-btn:hover{transform:translate(-50%,-50%) scale(1.08)}
-.orbit-cat-btn.is-dim{opacity:.3}
+.orbit-cat-btn span{font-size:1rem;font-weight:700;line-height:1.2;text-align:center;
+  letter-spacing:.01em;color:var(--ink)}
+.orbit-cat-btn em{font-style:normal;font-size:.88rem;color:var(--c);font-weight:700}
+.orbit-cat-btn:hover{transform:translate(-50%,-50%) scale(1.06)}
+.orbit-cat-btn.is-dim{opacity:.25}
 .orbit-cat-btn.is-on span{color:var(--c)}
-.orbit-dot{width:10px;height:10px;border-radius:50%;background:var(--c);display:block}
-.orbit-node{width:100px;gap:5px}
-.orbit-node .orbit-dot{margin-bottom:2px}
-.orbit-node span{font-size:.82rem}
-.orbit-core{border:0;background:none;cursor:pointer;font:inherit;padding:12px;
-  border-radius:50%;transition:background .2s ease}
-.orbit-core strong{font-size:1.4rem;font-weight:700;color:var(--ink)}
-.orbit-core span{font-size:1rem;color:var(--muted)}
+.orbit-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.orbit-node{position:absolute;transform:translate(-50%,-50%);display:grid;
+  place-items:center;gap:6px;width:110px;text-decoration:none;border:0;background:none;
+  cursor:pointer;font:inherit;transition:transform .2s ease,opacity .25s ease}
+.orbit-node img{width:44px;height:44px;object-fit:contain;padding:8px;border-radius:50%;
+  background:var(--soft)}
+.orbit-node span{font-size:.88rem;line-height:1.25;text-align:center;color:var(--muted);font-weight:500}
+.orbit-node:hover{transform:translate(-50%,-50%) scale(1.12)}
+.orbit-node:hover span{color:var(--ink)}
+.orbit-node.is-dim{opacity:.25}
+.orbit-cat-node span{color:var(--c);font-weight:700}
+.orbit-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  border:0;background:none;cursor:pointer;font:inherit;padding:16px;
+  border-radius:50%;transition:background .2s ease;text-align:center;min-width:120px}
+.orbit-core strong{display:block;font-size:1.5rem;font-weight:700;color:var(--ink)}
+.orbit-core span{display:block;font-size:.95rem;color:var(--muted);margin-top:2px}
 .orbit-core:hover{background:var(--soft)}
-.orbit-core.is-drilled span{font-size:.88rem}
+.orbit-core.is-drilled span{font-size:.82rem}
+.orbit-hint{text-align:center;color:var(--muted);font-size:.95rem;margin-top:20px}
 .eco-switch-btn{font-size:1rem}
 @media(max-width:640px){
-  .orbit-cat-btn{width:90px}
-  .orbit-cat-btn span{font-size:.78rem}
-  .orbit-node{width:72px}
-  .orbit-node span{font-size:.7rem}
-  .orbit-band{stroke-width:24}
-  .eco-switch-btn{font-size:.9rem}
+  .orbit-cat-btn{width:100px}
+  .orbit-cat-btn span{font-size:.82rem}
+  .orbit-cat-btn em{font-size:.74rem}
+  .orbit-node{width:80px}
+  .orbit-node img{width:34px;height:34px;padding:6px}
+  .orbit-node span{font-size:.74rem}
+  .orbit-band{stroke-width:32}
+  .eco-switch-btn{font-size:.92rem}
 }
