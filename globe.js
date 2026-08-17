@@ -6,6 +6,12 @@
   const EVENT_SOURCE_URL = "data/gdg-events.geojson?v=20260805-interactive-globe";
   const COUNTRY_SOURCE_URL = "data/world-countries.geojson?v=20260805-interactive-globe";
   const OFFICIAL_EVENTS_URL = "https://gdg.community.dev/events/";
+  // MapLibre is ~1MB of script and ~68KB of CSS. It is fetched on demand by
+  // loadMapLibrary() rather than from <head>, so it never costs the initial
+  // render — see initVisibilityHandling() for when that request is made.
+  const MAPLIBRE_VERSION = "5.24.0";
+  const MAPLIBRE_JS_URL = `vendor/maplibre-gl.js?v=${MAPLIBRE_VERSION}`;
+  const MAPLIBRE_CSS_URL = `vendor/maplibre-gl.css?v=${MAPLIBRE_VERSION}`;
   const DAY_MS = 24 * 60 * 60 * 1000;
   const RECENT_WINDOW_MS = 90 * DAY_MS;
   const AUTO_ROTATION_DEGREES_PER_SECOND = 1.6;
@@ -37,6 +43,7 @@
     mapReady: false,
     mapVisible: true,
     mapInitialized: false,
+    libraryPromise: null,
     manualPaused: false,
     rotationFrame: null,
     lastRotationAt: 0,
@@ -380,12 +387,72 @@
     };
   }
 
-  function initMap() {
+  // The globe sits directly below the hero, so on tall viewports the load
+  // observer can fire while the page is still painting. Waiting for load and
+  // then for an idle slot keeps MapLibre's ~1MB parse off the critical path;
+  // the timeout stops a busy main thread from starving it indefinitely.
+  function whenIdle(callback) {
+    const schedule = () => (typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(callback, { timeout: 2000 })
+      : setTimeout(callback, 200));
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+  }
+
+  // MapLibre applies .maplibregl-map to the very element that carries
+  // .community-globe, and both rules set `position` at the same specificity —
+  // so whichever stylesheet comes last wins. The vendor sheet therefore has to
+  // be inserted ahead of the site's own, exactly where the old <head> link sat.
+  // Appending it instead makes .maplibregl-map's `position: relative` beat
+  // `.community-globe { position: absolute; inset: 0 }` and the globe collapses
+  // to zero height.
+  function loadStylesheet(href) {
+    return new Promise((resolve, reject) => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      link.addEventListener("load", resolve, { once: true });
+      link.addEventListener("error", () => reject(new Error("stylesheet failed")), { once: true });
+      const firstSheet = document.head.querySelector('link[rel="stylesheet"], style');
+      if (firstSheet) firstSheet.before(link);
+      else document.head.append(link);
+    });
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.addEventListener("load", resolve, { once: true });
+      script.addEventListener("error", () => reject(new Error("script failed")), { once: true });
+      document.head.append(script);
+    });
+  }
+
+  // Resolves once window.maplibregl is usable. Cached so repeated calls share
+  // one request. A failed stylesheet is not fatal — it only affects the map's
+  // controls and attribution chrome, so the globe still renders without it.
+  function loadMapLibrary() {
+    if (window.maplibregl) return Promise.resolve();
+    if (state.libraryPromise) return state.libraryPromise;
+    state.libraryPromise = Promise.all([
+      loadStylesheet(MAPLIBRE_CSS_URL).catch(() => {}),
+      loadScript(MAPLIBRE_JS_URL),
+    ]).then(() => {
+      if (!window.maplibregl) throw new Error("The map library loaded but did not register.");
+    });
+    return state.libraryPromise;
+  }
+
+  async function initMap() {
     if (state.mapInitialized) return;
     state.mapInitialized = true;
 
-    if (!window.maplibregl) {
-      showFallback("The map library did not load.");
+    try {
+      await loadMapLibrary();
+    } catch (error) {
+      showFallback(error.message || "The map library did not load.");
       return;
     }
 
@@ -618,14 +685,14 @@
       const loadObserver = new IntersectionObserver(
         ([entry]) => {
           if (!entry?.isIntersecting) return;
-          initMap();
           loadObserver.disconnect();
+          whenIdle(initMap);
         },
-        { rootMargin: "600px 0px" },
+        { rootMargin: "400px 0px" },
       );
       loadObserver.observe(elements.map);
     } else {
-      initMap();
+      whenIdle(initMap);
     }
 
     document.addEventListener("visibilitychange", () => {

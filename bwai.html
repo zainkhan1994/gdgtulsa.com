@@ -7,11 +7,12 @@
     <meta name="description" content="Build with AI by GDG Tulsa: hands-on AI training, practical workshops, modern AI tooling, and local community events.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
+    <script src="assets/video.js?v=20260816-video" defer></script>
   </head>
   <body class="bwai-body">
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -45,17 +46,23 @@
               </div>
               <p class="bwai-tools-label">Tools you'll build with</p>
               <div class="bwai-tool-icons" aria-label="AI tools">
-                <img src="assets/logos/gemini.svg" alt="Gemini">
-                <img src="assets/logos/ai-studio.svg" alt="AI Studio">
-                <img src="assets/logos/google-cloud.png" alt="Google Cloud">
-                <img src="assets/logos/firebase.svg" alt="Firebase">
-                <img src="assets/logos/google-maps.png" alt="Google Maps">
-                <img src="assets/logos/google-analytics.svg" alt="Google Analytics">
-                <img src="assets/logos/android.png" alt="Android">
+                <img width="64" height="64" src="assets/logos/gemini.svg" alt="Gemini">
+                <img width="64" height="64" src="assets/logos/ai-studio.svg" alt="AI Studio">
+                <img width="64" height="64" src="assets/logos/google-cloud.png" alt="Google Cloud">
+                <img width="64" height="64" src="assets/logos/firebase.svg" alt="Firebase">
+                <img width="64" height="64" src="assets/logos/google-maps.png" alt="Google Maps">
+                <img width="64" height="64" src="assets/logos/google-analytics.svg" alt="Google Analytics">
+                <img width="32" height="32" src="assets/logos/android.png" alt="Android">
               </div>
             </div>
             <div class="bwai-hero-media">
-              <img class="bwai-hero-banner" src="assets/bwai/intro-title.gif" alt="Build with AI hero banner">
+              <video class="bwai-hero-banner" autoplay muted loop playsinline preload="metadata"
+                     width="960" height="540"
+                     poster="assets/bwai/intro-title-poster.webp"
+                     aria-label="Build with AI hero banner">
+                <source src="assets/bwai/intro-title.webm" type="video/webm">
+                <source src="assets/bwai/intro-title.mp4" type="video/mp4">
+              </video>
             </div>
           </div>
         </section>
@@ -78,12 +85,30 @@
           <h2>Watch: Build with AI</h2>
           <p>Google's official look at the Build with AI program &mdash; what it is and why chapters like GDG Tulsa run it.</p>
           <div class="hero-video-frame">
-            <iframe
-              title="Build with AI overview"
-              src="https://www.youtube-nocookie.com/embed/yGHi5V4sVkc?rel=0&amp;modestbranding=1"
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              loading="lazy"></iframe>
+            <button
+              class="video-facade"
+              type="button"
+              data-video-facade="yGHi5V4sVkc"
+              data-video-title="Build with AI overview">
+              <img
+                class="video-facade-poster"
+                src="assets/video/bwai-poster.webp"
+                alt=""
+                width="640"
+                height="360"
+                loading="lazy">
+              <span class="video-facade-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+              </span>
+              <span class="video-facade-label">Play the Build with AI overview video</span>
+            </button>
+            <noscript>
+              <iframe
+                title="Build with AI overview"
+                src="https://www.youtube-nocookie.com/embed/yGHi5V4sVkc?rel=0&amp;modestbranding=1"
+                allow="encrypted-media; picture-in-picture"
+                allowfullscreen></iframe>
+            </noscript>
           </div>
         </section>
 
@@ -116,7 +141,13 @@
               <p>Work side-by-side with community members and Google experts to solve real-world challenges.</p>
             </article>
           </div>
-          <img src="assets/bwai/intro.gif" alt="Workshop participants building with AI">
+          <video autoplay muted loop playsinline preload="none"
+                 width="960" height="540"
+                 poster="assets/bwai/intro-poster.webp"
+                 aria-label="Workshop participants building with AI">
+            <source src="assets/bwai/intro.webm" type="video/webm">
+            <source src="assets/bwai/intro.mp4" type="video/mp4">
+          </video>
         </section>
 
         <a class="bwai-dark-banner" href="index.html#events">
@@ -142,7 +173,13 @@
               <span>community projects</span>
             </article>
           </div>
-          <img src="assets/bwai/join-us.gif" alt="Diverse participants engaging with technology">
+          <video autoplay muted loop playsinline preload="none"
+                 width="960" height="540"
+                 poster="assets/bwai/join-us-poster.webp"
+                 aria-label="Diverse participants engaging with technology">
+            <source src="assets/bwai/join-us.webm" type="video/webm">
+            <source src="assets/bwai/join-us.mp4" type="video/mp4">
+          </video>
         </section>
 
         <section class="bwai-related-section">
@@ -199,7 +236,7 @@
 
         <section class="bwai-join-section">
           <div class="bwai-join-badge">
-            <img src="assets/logos/gdg-icon.png" alt="">
+            <img width="224" height="124" src="assets/logos/gdg-icon.png" alt="">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="#fbbc04" stroke="none"><path d="M12 2l2.2 5.6L20 9.8l-5.8 2.2L12 17.6l-2.2-5.6L4 9.8l5.8-2.2L12 2Z"/><path d="M19 15l1 2.6 2.6 1-2.6 1L19 22.2l-1-2.6-2.6-1 2.6-1 1-2.6Z"/></svg></span>
           </div>
           <div>

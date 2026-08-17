@@ -552,6 +552,16 @@ function renderMemberSection() {
   memberSection.classList.toggle("is-unlocked", isUnlocked);
   memberSection.classList.toggle("is-locked", !isUnlocked);
 
+  // While locked, the feed and action strip are a blurred teaser. CSS already
+  // sets pointer-events:none, but that only stops the mouse — without `inert`
+  // a keyboard user still tabs through a dozen unreadable "Unlock" buttons and
+  // a screen reader still reads out the placeholder cards. The real call to
+  // action lives in the unblurred .gated-overlay, so hide the teaser outright.
+  [memberFeed, document.querySelector(".member-action-strip")].forEach((el) => {
+    if (!el) return;
+    el.inert = !isUnlocked;
+  });
+
   const kicker = document.querySelector("[data-member-kicker]");
   const title = document.querySelector("[data-member-title]");
   const copy = document.querySelector("[data-member-copy]");
@@ -812,23 +822,68 @@ function renderAll() {
   renderMemberFeed();
 }
 
+// Scroll bookkeeping used to measure the document on every scroll event and
+// interleave those reads with style writes, forcing a synchronous reflow each
+// time. Geometry is now measured once and refreshed only when the layout
+// actually changes, so the scroll path is pure arithmetic.
+let scrollMax = 0;
+let sectionOffsets = [];
+let scrollMetricsStale = true;
+let scrollFrame = 0;
+
+function refreshScrollMetrics() {
+  const scrollY = window.scrollY;
+  scrollMax = document.documentElement.scrollHeight - window.innerHeight;
+  // Store document-absolute tops so the active section can be resolved from
+  // scrollY alone, with no per-scroll getBoundingClientRect().
+  sectionOffsets = sections.map((section) => ({
+    id: section.id,
+    top: section.getBoundingClientRect().top + scrollY,
+  }));
+  scrollMetricsStale = false;
+}
+
 function updateScrollState() {
-  if (meter) {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = max > 0 ? window.scrollY / max : 0;
-    meter.style.transform = `scaleX(${progress})`;
+  if (scrollMetricsStale) refreshScrollMetrics();
+
+  const scrollY = window.scrollY;
+  const progress = scrollMax > 0 ? scrollY / scrollMax : 0;
+  let active;
+  const trackSections = navLinks.length > 0 && scrollY >= 120;
+  if (trackSections) {
+    let closest = Infinity;
+    for (const section of sectionOffsets) {
+      const distance = Math.abs(section.top - scrollY - 120);
+      if (distance < closest) {
+        closest = distance;
+        active = section.id;
+      }
+    }
   }
+
+  // Every write happens after every read, so nothing forces layout twice.
+  if (meter) meter.style.transform = `scaleX(${progress})`;
   if (!navLinks.length) return;
-  if (window.scrollY < 120) {
+  if (!trackSections) {
     navLinks.forEach((link) => link.classList.remove("is-active"));
     return;
   }
-  const active = sections
-    .map((section) => ({ section, top: Math.abs(section.getBoundingClientRect().top - 120) }))
-    .sort((a, b) => a.top - b.top)[0]?.section.id;
   navLinks.forEach((link) => {
     link.classList.toggle("is-active", link.getAttribute("href") === `#${active}`);
   });
+}
+
+function requestScrollUpdate() {
+  if (scrollFrame) return;
+  scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = 0;
+    updateScrollState();
+  });
+}
+
+function invalidateScrollMetrics() {
+  scrollMetricsStale = true;
+  requestScrollUpdate();
 }
 
 document.addEventListener("click", async (event) => {
@@ -899,10 +954,16 @@ document.querySelectorAll(".event-card, .hero-art, .learn-card, .join-point").fo
   });
 });
 
-window.addEventListener("scroll", updateScrollState, { passive: true });
-window.addEventListener("resize", updateScrollState);
+window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+window.addEventListener("resize", invalidateScrollMetrics);
+// The globe, the event list and the member feed all render after this point
+// and change the page height, so remeasure whenever the layout settles rather
+// than trusting a single startup measurement.
+if ("ResizeObserver" in window) {
+  new ResizeObserver(invalidateScrollMetrics).observe(document.body);
+}
 renderAll();
-updateScrollState();
+invalidateScrollMetrics();
 void setupFirebase();
 
 // Workspace-style product row: click an icon to open its detail card
