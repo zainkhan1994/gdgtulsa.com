@@ -61,7 +61,10 @@ const storageKeys = {
   previewMembers: "gdgTulsaPreviewMembers",
   previewCurrentMember: "gdgTulsaPreviewCurrentMember",
   previewRegistrations: "gdgTulsaPreviewRegistrations",
-  previewSchedules: "gdgTulsaPreviewScheduleRequests"
+  previewSchedules: "gdgTulsaPreviewScheduleRequests",
+  // Set once a member signs in, so returning visitors get Firebase loaded
+  // automatically while first-time visitors never pay for it.
+  hasSignedIn: "gdgTulsaHasSignedIn"
 };
 
 const starterResources = [
@@ -269,10 +272,15 @@ async function setupFirebase() {
         state.events = [];
         state.registeredEvents.clear();
         state.authReady = true;
+        // Stop pre-loading the SDK for this browser now that nobody is signed in.
+        removeStored(storageKeys.hasSignedIn);
         renderAll();
         return;
       }
 
+      // Remember that this browser has a session, so the next visit loads the
+      // SDK up front instead of waiting for a click.
+      writeJSON(storageKeys.hasSignedIn, true);
       state.currentMember = await saveMemberFromFirebaseUser(user);
       state.admin = isAdminEmail(user.email);
       state.authReady = true;
@@ -964,7 +972,6 @@ if ("ResizeObserver" in window) {
 }
 renderAll();
 invalidateScrollMetrics();
-void setupFirebase();
 
 // Workspace-style product row: click an icon to open its detail card
 const productCard = document.querySelector("[data-product-card]");
@@ -1015,17 +1022,35 @@ document.querySelectorAll("video[loop]").forEach((video) => {
   }
 });
 
-function scheduleFirebaseSetup() {
-  const run = () => {
-    void setupFirebase();
-  };
+// The Firebase SDK is ~275KB of third-party JavaScript plus an auth iframe,
+// and nothing above the fold needs it. It now loads only when someone
+// actually touches the member portal — or straight away for people who have
+// signed in before, so their session is restored without a click.
+let firebaseSetupStarted = false;
 
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(run, { timeout: 2200 });
+function scheduleFirebaseSetup() {
+  if (firebaseSetupStarted) return;
+  firebaseSetupStarted = true;
+  void setupFirebase();
+}
+
+(function initFirebaseTriggers() {
+  const isPortalPage = Boolean(adminDashboard);
+  const returning = readJSON(storageKeys.hasSignedIn, false);
+
+  if (isPortalPage || returning) {
+    if ("requestIdleCallback" in window) window.requestIdleCallback(scheduleFirebaseSetup, { timeout: 2200 });
+    else window.setTimeout(scheduleFirebaseSetup, 0);
     return;
   }
 
-  window.setTimeout(run, 0);
-}
-
-scheduleFirebaseSetup();
+  // Otherwise wait for intent. Capture phase so the SDK starts loading before
+  // the click handlers that need it run.
+  const wake = (event) => {
+    if (!event.target?.closest?.("[data-open-auth], [data-member-signout], [data-open-scheduler], [data-admin-tab]")) return;
+    scheduleFirebaseSetup();
+  };
+  document.addEventListener("pointerdown", wake, true);
+  document.addEventListener("focusin", wake, true);
+  document.addEventListener("click", wake, true);
+})();

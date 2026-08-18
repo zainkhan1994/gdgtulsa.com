@@ -626,3 +626,25 @@
     transition: none;
   }
 }
+
+/* Opt-in panel shown instead of the globe controls until the visitor asks
+   for the map. MapLibre is only fetched on that click — see globe.js. */
+.globe-invite {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 20px 22px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  border-radius: 16px;
+  background: rgba(15, 15, 15, 0.72);
+  text-align: center;
+}
+
+.globe-invite p {
+  max-width: 46ch;
+  margin: 0;
+  color: #c9cdc4;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
