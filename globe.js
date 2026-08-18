@@ -6,9 +6,8 @@
   const EVENT_SOURCE_URL = "data/gdg-events.geojson?v=20260805-interactive-globe";
   const COUNTRY_SOURCE_URL = "data/world-countries.geojson?v=20260805-interactive-globe";
   const OFFICIAL_EVENTS_URL = "https://gdg.community.dev/events/";
-  // MapLibre is ~1MB of script and ~68KB of CSS. It is fetched on demand by
-  // loadMapLibrary() rather than from <head>, so it never costs the initial
-  // render — see initVisibilityHandling() for when that request is made.
+  // MapLibre is ~1MB of script and ~68KB of CSS, fetched by loadMapLibrary()
+  // only once the visitor asks for the globe — never on page load.
   const MAPLIBRE_VERSION = "5.24.0";
   const MAPLIBRE_JS_URL = `vendor/maplibre-gl.js?v=${MAPLIBRE_VERSION}`;
   const MAPLIBRE_CSS_URL = `vendor/maplibre-gl.css?v=${MAPLIBRE_VERSION}`;
@@ -23,6 +22,8 @@
     uiFrame: document.querySelector("[data-globe-ui-frame]"),
     panel: document.querySelector("[data-event-panel]"),
     loading: document.querySelector("[data-globe-loading]"),
+    invite: document.querySelector("[data-globe-invite]"),
+    loadButton: document.querySelector("[data-globe-load]"),
     list: document.querySelector("#event-list"),
     search: document.querySelector("#event-search"),
     status: document.querySelector("#event-status"),
@@ -387,18 +388,6 @@
     };
   }
 
-  // The globe sits directly below the hero, so on tall viewports the load
-  // observer can fire while the page is still painting. Waiting for load and
-  // then for an idle slot keeps MapLibre's ~1MB parse off the critical path;
-  // the timeout stops a busy main thread from starving it indefinitely.
-  function whenIdle(callback) {
-    const schedule = () => (typeof window.requestIdleCallback === "function"
-      ? window.requestIdleCallback(callback, { timeout: 2000 })
-      : setTimeout(callback, 200));
-    if (document.readyState === "complete") schedule();
-    else window.addEventListener("load", schedule, { once: true });
-  }
-
   // MapLibre applies .maplibregl-map to the very element that carries
   // .community-globe, and both rules set `position` at the same specificity —
   // so whichever stylesheet comes last wins. The vendor sheet therefore has to
@@ -682,18 +671,18 @@
       );
       visibilityObserver.observe(elements.map);
 
-      const loadObserver = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry?.isIntersecting) return;
-          loadObserver.disconnect();
-          whenIdle(initMap);
-        },
-        { rootMargin: "400px 0px" },
-      );
-      loadObserver.observe(elements.map);
-    } else {
-      whenIdle(initMap);
     }
+
+    // MapLibre costs roughly a megabyte of script plus ~200KB of country
+    // geometry, and burns seconds of main-thread time building the globe.
+    // Most visitors only read the event list below, so the map is loaded on
+    // request rather than automatically. The list itself needs no map at all.
+    elements.loadButton?.addEventListener("click", () => {
+      elements.invite?.remove();
+      elements.loading?.removeAttribute("hidden");
+      document.querySelector("[data-globe-controls]")?.removeAttribute("hidden");
+      initMap();
+    });
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) stopRotationLoop();

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
          real response headers (see docs/security-headers.md). -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com https://tulsahub.firebaseapp.com https://accounts.google.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>GDG Tulsa | Google Developer Group Tulsa</title>
     <meta name="description" content="GDG Tulsa brings developers, builders, students, and technologists together in Tulsa, Oklahoma to learn, build, and share with Google technologies.">
@@ -101,7 +101,7 @@
         </div>
       </nav>
       <a class="brand brand--image brand--right" href="#members" aria-label="GDG Tulsa community">
-        <img width="1020" height="102" class="brand-logo brand-logo--community" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
+        <img width="480" height="48" class="brand-logo brand-logo--community" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
       </a>
     </header>
 
@@ -169,8 +169,8 @@
                   class="video-facade-poster"
                   src="assets/video/hero-poster.webp"
                   alt=""
-                  width="1280"
-                  height="720"
+                  width="708"
+                  height="398"
                   fetchpriority="high">
                 <span class="video-facade-play" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
@@ -198,7 +198,7 @@
             aria-label="Interactive globe of verified upcoming GDG events"
             aria-describedby="globe-instructions"
           >
-            <div class="globe-loading" data-globe-loading>
+            <div class="globe-loading" data-globe-loading hidden>
               <span class="globe-loader" aria-hidden="true"></span>
               <span>Preparing the event globe…</span>
             </div>
@@ -247,7 +247,12 @@
                 Drag to rotate and use the controls to move or zoom. The event list provides the same choices without dragging.
               </p>
 
-              <div class="globe-controls" aria-label="Globe controls">
+              <div class="globe-invite" data-globe-invite>
+                <p>The interactive globe needs a large map library. Load it if you want to explore visually &mdash; every event is listed above either way.</p>
+                <button class="button primary" type="button" data-globe-load>Load the interactive globe</button>
+              </div>
+
+              <div class="globe-controls" aria-label="Globe controls" data-globe-controls hidden>
                 <button type="button" data-globe-action="rotate-left" aria-label="Rotate globe left. Hold to keep orbiting." title="Hold to orbit left">←</button>
                 <button type="button" data-globe-action="rotate-right" aria-label="Rotate globe right. Hold to keep orbiting." title="Hold to orbit right">→</button>
                 <button type="button" data-globe-action="zoom-in" aria-label="Zoom in">+</button>
@@ -537,19 +542,19 @@
           </div>
           <div class="get-involved-grid">
             <article class="get-involved-card">
-              <img class="role-badge-img" src="assets/badges/roles/speaker-badge.png" alt="" width="72" height="72">
+              <img class="role-badge-img" src="assets/badges/roles/speaker-badge.png" alt="" width="144" height="144">
               <h3>Speaker</h3>
               <p>Give a talk or run a hands-on session at a Workshop, BWAI, or DevFest.</p>
               <a class="text-link" href="mailto:zain@gdgtulsa.com?subject=Speaker%20Interest">Apply to speak</a>
             </article>
             <article class="get-involved-card">
-              <img class="role-badge-img" src="assets/badges/roles/member-badge.png" alt="" width="72" height="72">
+              <img class="role-badge-img" src="assets/badges/roles/member-badge.png" alt="" width="144" height="144">
               <h3>Member</h3>
               <p>Unlock certifications, accelerator links, job leads, and member-only events.</p>
               <button class="text-link get-involved-action" type="button" data-open-auth="register">Become a member</button>
             </article>
             <article class="get-involved-card">
-              <img class="role-badge-img" src="assets/badges/roles/partner-badge.png" alt="" width="72" height="72">
+              <img class="role-badge-img" src="assets/badges/roles/partner-badge.png" alt="" width="144" height="144">
               <h3>Partner</h3>
               <p>Back an event, put your brand in front of Tulsa's builders, or team up on a program.</p>
               <a class="text-link" href="mailto:zain@gdgtulsa.com?subject=Partnership%20Interest">Become a partner</a>
@@ -562,7 +567,7 @@
     <footer class="site-footer">
       <div class="site-footer-inner">
         <div class="site-footer-brand">
-          <img width="1020" height="102" class="site-footer-logo" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
+          <img width="480" height="48" class="site-footer-logo" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
           <p>Empowering developers and technologists to build, grow, and lead together in Tulsa.</p>
           <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
         </div>
