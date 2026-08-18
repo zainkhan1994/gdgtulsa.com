@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>DevFest Tulsa | GDG Tulsa</title>
     <meta name="description" content="DevFest Tulsa: the annual tentpole GDG Tulsa event — speaker sessions, technical tracks, hands-on labs, demos, and sponsor showcases.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -11,7 +15,7 @@
   <body class="bwai-body">
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -36,7 +40,7 @@
           <div class="devfest-inner">
             <div class="devfest-head">
               <p class="section-label devfest-label">The annual tentpole</p>
-              <h2>DevFest Tulsa</h2>
+              <h1>DevFest Tulsa</h1>
               <p class="devfest-lead">
                 Once a year, the whole community comes together for our biggest event: speaker
                 sessions, technical tracks, hands-on labs, demos, and sponsor showcases — built for
@@ -48,28 +52,28 @@
                 <span class="devfest-icon blue" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg>
                 </span>
-                <h3>Speaker sessions</h3>
+                <h2>Speaker sessions</h2>
                 <p>Google Developer Experts and local leaders on AI, Cloud, Web, and Android.</p>
               </article>
               <article class="devfest-card">
                 <span class="devfest-icon green" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8V2"/><path d="M8.5 2h7"/><path d="M7 15h10"/></svg>
                 </span>
-                <h3>Hands-on labs</h3>
+                <h2>Hands-on labs</h2>
                 <p>Guided, deep-dive builds where you leave with something working and reusable.</p>
               </article>
               <article class="devfest-card">
                 <span class="devfest-icon yellow" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/><circle cx="12" cy="19" r="2"/></svg>
                 </span>
-                <h3>Community demos</h3>
+                <h2>Community demos</h2>
                 <p>Local builders showcase projects, side projects, and startups to the room.</p>
               </article>
               <article class="devfest-card">
                 <span class="devfest-icon red" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6"/><path d="M18.5 20a5 5 0 0 0-3-4.5"/></svg>
                 </span>
-                <h3>Sponsors &amp; careers</h3>
+                <h2>Sponsors &amp; careers</h2>
                 <p>Meet partners hiring in Tulsa and connect over career conversations.</p>
               </article>
             </div>
@@ -86,7 +90,7 @@
 
         <section class="bwai-join-section">
           <div class="bwai-join-badge">
-            <img src="assets/logos/gdg-icon.png" alt="">
+            <img width="224" height="124" src="assets/logos/gdg-icon.png" alt="">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="#fbbc04" stroke="none"><path d="M12 2l2.2 5.6L20 9.8l-5.8 2.2L12 17.6l-2.2-5.6L4 9.8l5.8-2.2L12 2Z"/><path d="M19 15l1 2.6 2.6 1-2.6 1L19 22.2l-1-2.6-2.6-1 2.6-1 1-2.6Z"/></svg></span>
           </div>
           <div>

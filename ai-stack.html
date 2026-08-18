@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>The Google AI Stack | GDG Tulsa</title>
     <meta name="description" content="A map of Google's full-stack AI ecosystem — models, video, design, coding, agents, and research tools — all radiating from the Google G, the way GDG Tulsa teaches it.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -361,11 +365,12 @@
         }
       }
     </style>
+      <script src="assets/image-fallback.js?v=20260818-csp" defer></script>
   </head>
   <body>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -461,7 +466,7 @@
             </svg>
 
             <div class="g-center">
-              <img src="assets/logos/Google__G__logo.svg" onerror="this.src='assets/logos/google.svg'" alt="Google">
+              <img width="24" height="24" src="assets/logos/Google__G__logo.svg" data-fallback-src="assets/logos/google.svg" alt="Google">
             </div>
 
             <!-- Hub buttons -->
@@ -504,28 +509,28 @@
 
             <!-- Left column: Models group -->
             <div class="leaf-card" data-group="models" style="left:40px; top:70px; --leaf-color:#4285f4">
-              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span>
               <div>
                 <strong>Gemini 3 Flash</strong>
                 <p>Google's frontier model tuned for speed and efficiency.</p>
               </div>
             </div>
             <div class="leaf-card" data-group="models" style="left:40px; top:160px; --leaf-color:#4285f4">
-              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span>
               <div>
                 <strong>Gemini 3 Flash Lite</strong>
                 <p>An even lighter, faster build for high-volume tasks.</p>
               </div>
             </div>
             <div class="leaf-card" data-group="models" style="left:40px; top:250px; --leaf-color:#4285f4">
-              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span>
               <div>
                 <strong>Gemini 3 Pro</strong>
                 <p>Google's most capable reasoning model.</p>
               </div>
             </div>
             <div class="leaf-card" data-group="models" style="left:40px; top:340px; --leaf-color:#4285f4">
-              <span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span>
+              <span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span>
               <div>
                 <strong>Gemini</strong>
                 <p>The consumer app — chat, plan, and reason day to day.</p>
@@ -581,14 +586,14 @@
               </div>
             </div>
             <div class="leaf-card" data-group="coding" style="left:40px; top:810px; --leaf-color:#20c997">
-              <span class="leaf-icon"><img src="assets/logos/products/antigravity.png" alt=""></span>
+              <span class="leaf-icon"><img width="192" height="177" src="assets/logos/products/antigravity.png" alt=""></span>
               <div>
                 <strong>Antigravity</strong>
                 <p>An AI-powered IDE with autonomous coding agents.</p>
               </div>
             </div>
             <div class="leaf-card" data-group="coding" style="left:40px; top:890px; --leaf-color:#20c997">
-              <span class="leaf-icon"><img src="assets/logos/products/jules.png" alt=""></span>
+              <span class="leaf-icon"><img width="96" height="96" src="assets/logos/products/jules.png" alt=""></span>
               <div>
                 <strong>Jules</strong>
                 <p>An async coding assistant that works across your repos.</p>
@@ -624,7 +629,7 @@
 
             <!-- Right column: Research group -->
             <div class="leaf-card right" data-group="research" style="left:830px; top:340px; --leaf-color:#34a853">
-              <span class="leaf-icon"><img src="assets/logos/products/notebooklm.svg" alt=""></span>
+              <span class="leaf-icon"><img width="96" height="97" src="assets/logos/products/notebooklm.svg" alt=""></span>
               <div>
                 <strong>NotebookLM</strong>
                 <p>An AI research assistant that organizes your sources.</p>
@@ -651,14 +656,14 @@
 
             <!-- Right column: AI Agents group -->
             <div class="leaf-card right" data-group="agents" style="left:830px; top:600px; --leaf-color:#22d3ee">
-              <span class="leaf-icon"><img src="assets/logos/products/adk.png" alt=""></span>
+              <span class="leaf-icon"><img width="512" height="512" src="assets/logos/products/adk.png" alt=""></span>
               <div>
                 <strong>Google ADK</strong>
                 <p>A framework for building scalable, production-ready AI agents.</p>
               </div>
             </div>
             <div class="leaf-card right" data-group="agents" style="left:830px; top:690px; --leaf-color:#22d3ee">
-              <span class="leaf-icon"><img src="assets/logos/products/a2a.svg" alt=""></span>
+              <span class="leaf-icon"><img width="860" height="860" src="assets/logos/products/a2a.svg" alt=""></span>
               <div>
                 <strong>Google A2A</strong>
                 <p>An open protocol for agent-to-agent communication across frameworks.</p>
@@ -688,10 +693,10 @@
               <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="stack-acc-body">
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash</strong><p>Google's frontier model tuned for speed and efficiency.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash Lite</strong><p>An even lighter, faster build for high-volume tasks.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Pro</strong><p>Google's most capable reasoning model.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini</strong><p>The consumer app — chat, plan, and reason day to day.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash</strong><p>Google's frontier model tuned for speed and efficiency.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Flash Lite</strong><p>An even lighter, faster build for high-volume tasks.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini 3 Pro</strong><p>Google's most capable reasoning model.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="64" height="64" src="assets/logos/gemini.svg" alt=""></span><div><strong>Gemini</strong><p>The consumer app — chat, plan, and reason day to day.</p></div></div>
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 6 10 6 13a6 6 0 0 0 12 0c0-3-2-7-6-11Z"/></svg></span><div><strong>Gemma</strong><p>Open-weight models built from Gemini research.</p></div></div>
             </div>
           </div>
@@ -705,7 +710,7 @@
             <div class="stack-acc-body">
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></span><div><strong>Veo 3.1</strong><p>Text-to-video generation with high-fidelity output.</p></div></div>
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7L8 5Z"/></svg></span><div><strong>Flow</strong><p>A cinematic tool for building scenes and clips with AI.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/workspace/icons/vids.svg" alt=""></span><div><strong>Google Vids</strong><p>AI-assisted video creation built for work.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="192" height="192" src="assets/workspace/icons/vids.svg" alt=""></span><div><strong>Google Vids</strong><p>AI-assisted video creation built for work.</p></div></div>
             </div>
           </div>
 
@@ -717,8 +722,8 @@
             </button>
             <div class="stack-acc-body">
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg></span><div><strong>Gemini CLI</strong><p>An open-source agent that brings Gemini into your terminal.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/antigravity.png" alt=""></span><div><strong>Antigravity</strong><p>An AI-powered IDE with autonomous coding agents.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/jules.png" alt=""></span><div><strong>Jules</strong><p>An async coding assistant that works across your repos.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="192" height="177" src="assets/logos/products/antigravity.png" alt=""></span><div><strong>Antigravity</strong><p>An AI-powered IDE with autonomous coding agents.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="96" height="96" src="assets/logos/products/jules.png" alt=""></span><div><strong>Jules</strong><p>An async coding assistant that works across your repos.</p></div></div>
             </div>
           </div>
 
@@ -742,7 +747,7 @@
               <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="stack-acc-body">
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/notebooklm.svg" alt=""></span><div><strong>NotebookLM</strong><p>An AI research assistant that organizes your sources.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="96" height="97" src="assets/logos/products/notebooklm.svg" alt=""></span><div><strong>NotebookLM</strong><p>An AI research assistant that organizes your sources.</p></div></div>
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 1 3.6 10.8c-.6.5-.6 1.2-.6 2.2h-6c0-1-.1-1.7-.6-2.2A6 6 0 0 1 12 3Z"/></svg></span><div><strong>Pomelli</strong><p>Generates on-brand marketing ideas and campaigns.</p></div></div>
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg></span><div><strong>AI Mode</strong><p>Advanced, multimodal reasoning inside Google Search.</p></div></div>
             </div>
@@ -755,8 +760,8 @@
               <svg class="stack-acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div class="stack-acc-body">
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/adk.png" alt=""></span><div><strong>Google ADK</strong><p>A framework for building scalable, production-ready AI agents.</p></div></div>
-              <div class="stack-acc-tool"><span class="leaf-icon"><img src="assets/logos/products/a2a.svg" alt=""></span><div><strong>Google A2A</strong><p>An open protocol for agent-to-agent communication across frameworks.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="512" height="512" src="assets/logos/products/adk.png" alt=""></span><div><strong>Google ADK</strong><p>A framework for building scalable, production-ready AI agents.</p></div></div>
+              <div class="stack-acc-tool"><span class="leaf-icon"><img width="860" height="860" src="assets/logos/products/a2a.svg" alt=""></span><div><strong>Google A2A</strong><p>An open protocol for agent-to-agent communication across frameworks.</p></div></div>
               <div class="stack-acc-tool"><span class="leaf-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><circle cx="11" cy="15" r="2.5"/><path d="m14.5 18.5-2-2"/></svg></span><div><strong>FileSearch API</strong><p>A ready-made, configurable RAG pipeline from the API.</p></div></div>
             </div>
           </div>
@@ -782,46 +787,6 @@
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
 
-    <script>
-      /* Mobile accordion */
-      (function () {
-        document.querySelectorAll(".stack-acc-trigger").forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            var item = btn.closest(".stack-acc-item");
-            var open = item.classList.contains("is-open");
-            document.querySelectorAll(".stack-acc-item.is-open").forEach(function (el) {
-              el.classList.remove("is-open");
-              el.querySelector(".stack-acc-trigger").setAttribute("aria-expanded", "false");
-            });
-            if (!open) {
-              item.classList.add("is-open");
-              btn.setAttribute("aria-expanded", "true");
-            }
-          });
-        });
-      })();
-
-      /* Desktop diagram */
-      (function () {
-        var hubs = document.querySelectorAll(".hub-btn");
-        var current = null;
-        function setActive(group) {
-          document.querySelectorAll(".leaf-card, .leaf-line").forEach(function (el) {
-            el.classList.toggle("is-visible", el.dataset.group === group);
-          });
-          hubs.forEach(function (b) {
-            b.classList.toggle("is-active", b.dataset.group === group);
-          });
-        }
-        hubs.forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            var group = btn.dataset.group;
-            current = current === group ? null : group;
-            setActive(current);
-          });
-        });
-      })();
-      })();
-    </script>
+    <script src="assets/ai-stack.js?v=20260818-csp" defer></script>
   </body>
 </html>

@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Hackathons | GDG Tulsa</title>
     <meta name="description" content="Hackathons by GDG Tulsa: Google Solution Challenge, Build with AI hackathons, and MLH-partnered local hack nights built around real Google technology.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -52,7 +56,7 @@
   <body class="bwai-body">
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -161,18 +165,18 @@
         <section class="bwai-hero-section">
           <span class="bwai-curved-line" aria-hidden="true"></span>
           <div class="bwai-hero-head">
-            <img class="bwai-mark" src="assets/logos/gdg-community-logo.png" alt="">
+            <img width="1020" height="102" class="bwai-mark" src="assets/logos/gdg-community-logo.png" alt="">
             <a href="index.html">GDG Tulsa</a>
           </div>
           <h1>Hackathons <svg viewBox="0 0 24 24" width="30" height="30" fill="#fbbc04" stroke="none" aria-hidden="true"><path d="M12 2l2.2 5.6L20 9.8l-5.8 2.2L12 17.6l-2.2-5.6L4 9.8l5.8-2.2L12 2Z"/><path d="M19 15l1 2.6 2.6 1-2.6 1L19 22.2l-1-2.6-2.6-1 2.6-1 1-2.6Z"/></svg></h1>
           <p class="bwai-subheadline">Build something real, in a weekend. <a href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">With us.</a></p>
           <p class="bwai-description">GDG Tulsa connects builders to Google's global hackathon programs — the student-focused Solution Challenge, Build with AI hackathon weekends, and MLH-backed local hack nights.</p>
           <div class="bwai-tool-icons" aria-label="Hackathon tools">
-            <img src="assets/logos/gemini.svg" alt="Gemini">
-            <img src="assets/logos/ai-studio.svg" alt="AI Studio">
-            <img src="assets/logos/google-cloud.png" alt="Google Cloud">
-            <img src="assets/logos/firebase.svg" alt="Firebase">
-            <img src="assets/logos/android.png" alt="Android">
+            <img width="64" height="64" src="assets/logos/gemini.svg" alt="Gemini">
+            <img width="64" height="64" src="assets/logos/ai-studio.svg" alt="AI Studio">
+            <img width="64" height="64" src="assets/logos/google-cloud.png" alt="Google Cloud">
+            <img width="64" height="64" src="assets/logos/firebase.svg" alt="Firebase">
+            <img width="32" height="32" src="assets/logos/android.png" alt="Android">
           </div>
         </section>
 
@@ -247,7 +251,7 @@
 
         <section class="bwai-join-section">
           <div class="bwai-join-badge">
-            <img src="assets/logos/gdg-community-logo.png" alt="">
+            <img width="1020" height="102" src="assets/logos/gdg-community-logo.png" alt="">
             <span aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="#fbbc04" stroke="none"><path d="M12 2l2.2 5.6L20 9.8l-5.8 2.2L12 17.6l-2.2-5.6L4 9.8l5.8-2.2L12 2Z"/><path d="M19 15l1 2.6 2.6 1-2.6 1L19 22.2l-1-2.6-2.6-1 2.6-1 1-2.6Z"/></svg></span>
           </div>
           <div>
@@ -260,9 +264,9 @@
     </div>
 
     <!-- ══ FORMULA — Page 32 style ══ -->
-    <div class="hack-formula">
+    <section class="hack-formula" aria-labelledby="formula-hdr">
       <p class="formula-lbl">How to win a hackathon</p>
-      <h2 class="formula-hdr">The GDG Hackathon Formula</h2>
+      <h2 class="formula-hdr" id="formula-hdr">The GDG Hackathon Formula</h2>
       <div class="formula-list">
         <div class="formula-card">
           <strong>Put your idea at the <em class="acc" style="color:var(--red)">epicenter of a real problem.</em></strong>
@@ -281,7 +285,7 @@
           <p>Ship something you can open in a browser or on a phone by the final presentation. A live demo beats slides every single time.</p>
         </div>
       </div>
-    </div>
+    </section>
 
     <footer class="bwai-footer">
       <h2>Stay connected</h2>

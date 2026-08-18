@@ -3,9 +3,44 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Zain Khan — GDE &amp; Organizer | GDG Tulsa</title>
     <meta name="description" content="Zain Khan — Google Developer Expert in AI/ML, founder of GDG Tulsa and GDG Houston. 48 Google Skills badges, Gemini Certified Educator.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="canonical" href="https://gdgtulsa.com/organizer.html">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "url": "https://gdgtulsa.com/organizer.html",
+      "mainEntity": {
+        "@type": "Person",
+        "name": "Zain Khan",
+        "url": "https://gdgtulsa.com/organizer.html",
+        "jobTitle": "Google Developer Expert, AI/ML",
+        "description": "Google Developer Expert in AI/ML, and founder and organizer of GDG Tulsa and GDG Houston.",
+        "sameAs": [
+          "https://me.developers.google.com/u/khanstruct",
+          "https://www.credly.com/users/zain-khan.c9437a7a/badges",
+          "https://skillshop.credential.net/profile/zainkhan244794/wallet"
+        ],
+        "affiliation": [
+          {
+            "@type": "Organization",
+            "name": "GDG Tulsa",
+            "url": "https://gdgtulsa.com/"
+          },
+          {
+            "@type": "Organization",
+            "name": "GDG Houston"
+          }
+        ]
+      }
+    }
+    </script>
     <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
     <style>
       /* ── Google AI Marketing band system ── */
@@ -66,7 +101,7 @@
       .feat-cert-card:hover{border-color:var(--blue);transform:translateY(-3px)}
       .feat-cert-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cert-accent,var(--blue))}
       .feat-cert-card img{width:110px;height:110px;object-fit:contain;margin-bottom:18px;filter:drop-shadow(0 4px 20px rgba(66,133,244,.2))}
-      .feat-cert-card h3{font-size:1rem;font-weight:700;margin:0 0 5px}
+      .feat-cert-card h2,.feat-cert-card h3{font-size:1rem;font-weight:700;margin:0 0 5px;line-height:1.24}
       .feat-cert-issuer{font-size:.78rem;color:var(--muted);margin-bottom:14px}
       .feat-cert-verified{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;color:#34a853;background:rgba(52,168,83,.12);border:1px solid rgba(52,168,83,.3);border-radius:999px;padding:3px 10px;margin-bottom:14px}
       .feat-cert-verified svg{width:11px;height:11px}
@@ -98,7 +133,7 @@
   <body>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span><strong>Google Developer Group Tulsa</strong></span>
       </a>
       <nav aria-label="Primary navigation">
@@ -133,7 +168,7 @@
           <div class="prof-hero-grid">
             <div>
               <div class="prof-avatar">Z
-                <div class="prof-gde-pip" aria-label="Google Developer Expert verified">
+                <div class="prof-gde-pip" role="img" aria-label="Google Developer Expert verified">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                 </div>
               </div>
@@ -141,7 +176,7 @@
             <div>
               <h1 class="prof-name">Zain Khan</h1>
               <div class="prof-gde-pill">
-                <img src="assets/logos/Google__G__logo.svg" alt="Google">
+                <img width="24" height="24" src="assets/logos/Google__G__logo.svg" alt="Google">
                 <span>Google Developer Expert</span>
               </div>
               <p class="prof-subtitle">Founder &amp; Organizer · GDG Tulsa + GDG Houston · The Khanstruct</p>
@@ -186,8 +221,8 @@
       <div class="feat-sect"><p class="prof-label">Featured Certifications</p></div>
       <div class="feat-cert-row">
         <div class="feat-cert-card" style="--cert-accent:#4285f4">
-          <img src="assets/badges/credentials/gemini-certified-educator.png" alt="Gemini Certified Educator badge">
-          <h3>Gemini Certified Educator</h3>
+          <img width="400" height="400" src="assets/badges/credentials/gemini-certified-educator.png" alt="Gemini Certified Educator badge">
+          <h2>Gemini Certified Educator</h2>
           <p class="feat-cert-issuer">Google for Education</p>
           <span class="feat-cert-verified">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
@@ -196,8 +231,8 @@
           <a class="feat-cert-link" href="https://edu.google.accredible.com/aaaeebfa-83c1-4bf2-a080-e19840718151" rel="noopener" target="_blank">Verify credential ↗</a>
         </div>
         <div class="feat-cert-card" style="--cert-accent:#34a853">
-          <img src="assets/badges/credentials/google-ai-essentials.png" alt="Google AI Essentials badge">
-          <h3>Google AI Essentials</h3>
+          <img width="440" height="440" src="assets/badges/credentials/google-ai-essentials.png" alt="Google AI Essentials badge">
+          <h2>Google AI Essentials</h2>
           <p class="feat-cert-issuer">Google Career Certificates</p>
           <span class="feat-cert-verified">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
@@ -348,85 +383,6 @@
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
 
-    <script>
-    (function(){
-      var BASE = 'assets/Google Skill Badges/google-skills-badges_';
-      var GROUPS = {
-        'grid-agents': [
-          ['Agent Fundamentals','Agent Fundamentals'],
-          ['Introduction to AI Agents','Intro to AI Agents'],
-          ['Enterprise Agents and Use Cases','Enterprise Agents'],
-          ['Create Your First Gemini Enterprise Application','Gemini Enterprise App'],
-          ['Machine Learning Operations (MLOps) for Generative AI','MLOps for GenAI'],
-          ['Machine Learning Operations (MLOps) with Vertex AI- Model Evaluation','MLOps · Vertex AI'],
-        ],
-        'grid-notebooklm': [
-          ['AI Boost Bites- Intro to NotebookLM','Intro to NotebookLM'],
-          ['AI Boost Bites- Discover Sources in NotebookLM','Discover Sources'],
-          ['AI Boost Bites- NotebookLM for Market Research','Market Research'],
-          ['AI Boost Bites- NotebookLM Mind Maps','Mind Maps'],
-          ['AI Boost Bites- NotebookLM Reports','Reports'],
-          ['AI Boost Bites- NotebookLM Video Overviews','Video Overviews'],
-          ['AI Boost Bites- Project Notebooks','Project Notebooks'],
-          ['AI Boost Bites- Research Hacks with NotebookLM','Research Hacks'],
-        ],
-        'grid-workspace': [
-          ['AI Boost Bites- Advanced Analysis in Sheets','Advanced Sheets'],
-          ['AI Boost Bites- AI Magic in a Sheets Cell','AI Magic in Sheets'],
-          ['AI Boost Bites- AI Power-Ups for Google Workspace','Workspace Power-Ups'],
-          ['AI Boost Bites- Amplify Exec Voices with AI','Amplify Exec Voices'],
-          ['AI Boost Bites- Build Slides Fast with Gemini','Build Slides Fast'],
-          ['AI Boost Bites- Create Docs in Seconds','Create Docs Fast'],
-          ["AI Boost Bites- Create ‘What If’ Scenarios with AI","'What If' Scenarios"],
-          ['AI Boost Bites- Create Your Own Productivity Tools','Productivity Tools'],
-          ['AI Boost Bites- Email Content Creation','Email Creation'],
-          ['AI Boost Bites- Find the Story in Your Data','Data Storytelling'],
-          ['AI Boost Bites- Gemini Calendar Hacks in Gmail','Calendar Hacks'],
-          ['AI Boost Bites- Gemini Slide Summaries','Slide Summaries'],
-          ['AI Boost Bites- No-Code Sheets & Scripts','No-Code Sheets'],
-          ['AI Boost Bites- Notes to Sheets with Gemini','Notes to Sheets'],
-          ['AI Boost Bites- Presentation Scripts with Gemini','Presentation Scripts'],
-          ['AI Boost Bites- Streamline Event Planning with AI','Event Planning AI'],
-          ['AI Boost Bites- Talk to Your Data in Sheets','Talk to Your Data'],
-        ],
-        'grid-creative': [
-          ['AI Boost Bites- Animated Charts with Gemini','Animated Charts'],
-          ['AI Boost Bites- Become a -Vibe DJ-','Vibe DJ'],
-          ['AI Boost Bites- Become a Creative Mashup Artist','Creative Mashup'],
-          ['AI Boost Bites- Become an AI Art Director for Your World','AI Art Director'],
-          ['AI Boost Bites- Build a Personalized Weather App','Weather App'],
-          ['AI Boost Bites- Create a 3D Solar System','3D Solar System'],
-          ['AI Boost Bites- Create the Perfect Portrait','Perfect Portrait'],
-          ['AI Boost Bites- Create Your Own Retro Arcade Game','Retro Arcade Game'],
-          ['AI Boost Bites- Create Your Ultimate College Scouting Report','College Scouting'],
-          ['AI Boost Bites- From Napkin Sketch to Functional App','Napkin to App'],
-          ["AI Boost Bites- Get Your Competitor’s Playbook in Minutes","Competitor's Playbook"],
-          ['AI Boost Bites- Make Any Big Purchase with Confidence','Smart Purchases'],
-          ['AI Boost Bites- One-Click Campaign Visuals','Campaign Visuals'],
-          ['AI Boost Bites- Supercharge Research with Gemini','Supercharge Research'],
-          ['AI Boost Bites- Turn Your Ideas into Animated Art','Animated Art'],
-          ['AI Boost Bites- Your Personal AI Tutor','Personal AI Tutor'],
-          ['AI Boost Bites- Your Personal Feedback Agent','Feedback Agent'],
-        ]
-      };
-      Object.keys(GROUPS).forEach(function(id){
-        var grid = document.getElementById(id);
-        if(!grid) return;
-        GROUPS[id].forEach(function(pair){
-          var fig = document.createElement('figure');
-          fig.className = 'badge-band-item';
-          var img = document.createElement('img');
-          img.src = BASE + pair[0] + '.png';
-          img.alt = pair[1] + ' badge';
-          img.loading = 'lazy';
-          var cap = document.createElement('span');
-          cap.textContent = pair[1];
-          fig.appendChild(img);
-          fig.appendChild(cap);
-          grid.appendChild(fig);
-        });
-      });
-    })();
-    </script>
+    <script src="assets/organizer.js?v=20260818-csp" defer></script>
   </body>
 </html>

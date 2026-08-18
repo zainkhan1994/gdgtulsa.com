@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>The Google Ecosystem | GDG Tulsa</title>
     <meta name="description" content="Everything GDG Tulsa builds with: the real Google products, AI models, and developer tools that power our workshops, hackathons, and DevFest — Gemini, Android, Firebase, Google Cloud, Flutter, AI Studio, and more.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -73,7 +77,7 @@
   <body>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -130,19 +134,19 @@
         <p class="ecosystem-category-label">AI &amp; machine learning</p>
         <div class="product-galaxy-grid">
           <a class="product-chip" href="https://gemini.google.com/" rel="noopener">
-            <img src="assets/logos/gemini.svg" alt="">
+            <img width="64" height="64" src="assets/logos/gemini.svg" alt="">
             <span>Gemini</span>
           </a>
           <a class="product-chip" href="https://aistudio.google.com/" rel="noopener">
-            <img src="assets/logos/ai-studio.svg" alt="">
+            <img width="64" height="64" src="assets/logos/ai-studio.svg" alt="">
             <span>AI Studio</span>
           </a>
           <a class="product-chip" href="https://antigravity.google/" rel="noopener">
-            <img src="assets/logos/products/antigravity.png" alt="">
+            <img width="192" height="177" src="assets/logos/products/antigravity.png" alt="">
             <span>Antigravity</span>
           </a>
           <a class="product-chip" href="https://colab.research.google.com/" rel="noopener">
-            <img src="assets/logos/products/colab.png" alt="">
+            <img width="260" height="260" src="assets/logos/products/colab.png" alt="">
             <span>Colab</span>
           </a>
         </div>
@@ -150,19 +154,19 @@
         <p class="ecosystem-category-label">Mobile &amp; web</p>
         <div class="product-galaxy-grid">
           <a class="product-chip" href="https://developer.android.com/" rel="noopener">
-            <img src="assets/logos/android.png" alt="">
+            <img width="32" height="32" src="assets/logos/android.png" alt="">
             <span>Android</span>
           </a>
           <a class="product-chip" href="https://flutter.dev/" rel="noopener">
-            <img src="assets/logos/products/flutter.svg" alt="">
+            <img width="842" height="1043" src="assets/logos/products/flutter.svg" alt="">
             <span>Flutter</span>
           </a>
           <a class="product-chip" href="https://www.google.com/chromebook/chrome-os/" rel="noopener">
-            <img src="assets/logos/products/chromeos.svg" alt="">
+            <img width="550" height="550" src="assets/logos/products/chromeos.svg" alt="">
             <span>ChromeOS</span>
           </a>
           <a class="product-chip" href="https://developers.google.com/search" rel="noopener">
-            <img src="assets/logos/products/search-central.svg" alt="">
+            <img width="400" height="400" src="assets/logos/products/search-central.svg" alt="">
             <span>Search Central</span>
           </a>
         </div>
@@ -170,19 +174,19 @@
         <p class="ecosystem-category-label">Cloud &amp; infrastructure</p>
         <div class="product-galaxy-grid">
           <a class="product-chip" href="https://cloud.google.com/" rel="noopener">
-            <img src="assets/logos/google-cloud.png" alt="">
+            <img width="64" height="64" src="assets/logos/google-cloud.png" alt="">
             <span>Google Cloud</span>
           </a>
           <a class="product-chip" href="https://firebase.google.com/" rel="noopener">
-            <img src="assets/logos/firebase.svg" alt="">
+            <img width="64" height="64" src="assets/logos/firebase.svg" alt="">
             <span>Firebase</span>
           </a>
           <a class="product-chip" href="https://www.google.com/maps" rel="noopener">
-            <img src="assets/logos/google-maps.png" alt="">
+            <img width="64" height="64" src="assets/logos/google-maps.png" alt="">
             <span>Maps Platform</span>
           </a>
           <a class="product-chip" href="https://marketingplatform.google.com/about/analytics/" rel="noopener">
-            <img src="assets/logos/google-analytics.svg" alt="">
+            <img width="64" height="64" src="assets/logos/google-analytics.svg" alt="">
             <span>Analytics</span>
           </a>
         </div>
@@ -190,19 +194,19 @@
         <p class="ecosystem-category-label">Business &amp; growth</p>
         <div class="product-galaxy-grid">
           <a class="product-chip" href="https://ads.google.com/" rel="noopener">
-            <img src="assets/logos/products/google-ads.svg" alt="">
+            <img width="192" height="192" src="assets/logos/products/google-ads.svg" alt="">
             <span>Google Ads</span>
           </a>
           <a class="product-chip" href="https://admob.google.com/" rel="noopener">
-            <img src="assets/logos/products/admob.png" alt="">
+            <img width="72" height="72" src="assets/logos/products/admob.png" alt="">
             <span>AdMob</span>
           </a>
           <a class="product-chip" href="https://play.google.com/console/" rel="noopener">
-            <img src="assets/logos/products/play-store.png" alt="">
+            <img width="128" height="128" src="assets/logos/products/play-store.png" alt="">
             <span>Play Console</span>
           </a>
           <a class="product-chip" href="https://privacysandbox.google.com/" rel="noopener">
-            <img src="assets/logos/products/privacy-sandbox.svg" alt="">
+            <img width="192" height="192" src="assets/logos/products/privacy-sandbox.svg" alt="">
             <span>Privacy Sandbox</span>
           </a>
         </div>
@@ -213,7 +217,7 @@
           <span class="gdg-about-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
           </span>
-          <h3>Build with AI</h3>
+          <h2>Build with AI</h2>
           <p>Our Build with AI hackathons run entirely on Gemini, AI Studio, and Vertex AI — real prompting, real API usage, real deployed apps by the end of the weekend.</p>
           <a class="gdg-about-arrow" href="bwai.html" aria-label="See Build with AI">→</a>
         </article>
@@ -221,7 +225,7 @@
           <span class="gdg-about-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M3 12h18"/></svg>
           </span>
-          <h3>Solution Challenge &amp; hackathons</h3>
+          <h2>Solution Challenge &amp; hackathons</h2>
           <p>Student teams ship real products on Android, Flutter, and Firebase during the Solution Challenge and MLH-backed hack nights.</p>
           <a class="gdg-about-arrow" href="hackathons.html" aria-label="See Hackathons">→</a>
         </article>
@@ -229,7 +233,7 @@
           <span class="gdg-about-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>
           </span>
-          <h3>DevFest deep dives</h3>
+          <h2>DevFest deep dives</h2>
           <p>DevFest sessions go wide across the stack — Cloud, Maps Platform, Search, Ads, and whatever Google ships next.</p>
           <a class="gdg-about-arrow" href="devfest.html" aria-label="See DevFest">→</a>
         </article>
@@ -238,10 +242,10 @@
       <section class="gdg-about-grid" aria-label="Related Google ecosystem pages" style="grid-template-columns: 1fr; margin-top: 24px;">
         <article class="gdg-about-card" style="display:flex; align-items:center; gap:20px;">
           <span class="gdg-about-icon" aria-hidden="true" style="width:56px; height:56px; flex-shrink:0;">
-            <img src="assets/workspace/logos/logo-workspace-apps.svg" alt="" style="width:100%; height:100%; object-fit:contain;">
+            <img width="136" height="20" src="assets/workspace/logos/logo-workspace-apps.svg" alt="" style="width:100%; height:100%; object-fit:contain;">
           </span>
           <div style="flex:1;">
-            <h3 style="margin-bottom:4px;">Google Workspace</h3>
+            <h2 style="margin-bottom:4px;">Google Workspace</h2>
             <p>The productivity half of the stack — Gmail, Docs, Drive, Calendar, Meet, and NotebookLM, all tied together with Gemini.</p>
           </div>
           <a class="gdg-about-arrow" href="google-workspace.html" aria-label="Explore Google Workspace" style="position:static; font-size:26px;">→</a>

@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Google Workspace | GDG Tulsa</title>
     <meta name="description" content="A tour of Google Workspace — Gmail, Docs, Drive, Calendar, Meet, and the AI built into all of them — the productivity half of the Google ecosystem GDG Tulsa teaches.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -23,8 +27,10 @@
       }
 
       .ws-crumb a {
-        color: var(--blue);
-        text-decoration: none;
+        /* Underlined so the link is distinguishable without relying on colour,
+           and --on-blue for contrast against the muted crumb text. */
+        color: var(--on-blue);
+        text-decoration: underline;
       }
 
       .ws-hero {
@@ -34,6 +40,9 @@
 
       .ws-hero img.ws-lockup {
         height: 34px;
+        /* The lockup is a wide SVG sized by height alone; without this its
+           width attribute would be taken as the used width. */
+        width: auto;
         margin-bottom: 18px;
       }
 
@@ -120,8 +129,10 @@
         filter: invert(1) brightness(1.3);
       }
 
+      .ws-app-card h2,
       .ws-app-card h3 {
         font-size: 17px;
+        line-height: 1.24;
         margin-bottom: 4px;
       }
 
@@ -295,6 +306,10 @@
       }
 
       .ws-car-shot img {
+        /* Let the intrinsic aspect ratio set the box and the max-* rules cap
+           it, rather than the width/height attributes driving the used size. */
+        width: auto;
+        height: auto;
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
@@ -374,6 +389,9 @@
 
       .ws-trust img {
         height: 30px;
+        /* Sized by height; each logo keeps its own width from its aspect
+           ratio instead of being stretched to the width attribute. */
+        width: auto;
         max-width: 130px;
         object-fit: contain;
         filter: grayscale(1) brightness(1.8);
@@ -425,7 +443,7 @@
   <body>
     <header class="site-header" aria-label="Site header">
       <a class="brand" href="index.html#top" aria-label="GDG Tulsa home">
-        <img class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
+        <img width="1020" height="102" class="brand-logo" src="assets/logos/gdg-community-logo-dark.png" alt="">
         <span>
           <strong>Google Developer Group Tulsa</strong>
         </span>
@@ -447,7 +465,7 @@
         <p class="ws-crumb"><a href="google-ecosystem.html">Google Ecosystem</a> / Google Workspace</p>
 
         <div class="ws-hero">
-          <img class="ws-lockup" src="assets/workspace/logos/logo-google-workspace.svg" alt="Google Workspace">
+          <img width="3995" height="512" class="ws-lockup" src="assets/workspace/logos/logo-google-workspace.svg" alt="Google Workspace">
           <h1>Run your work on Google Workspace</h1>
           <p>Gmail, Docs, Sheets, Drive, Calendar, and Meet — connected by Gemini. This is the productivity side of the Google stack GDG Tulsa builds with, the same apps most of our members already have open every day.</p>
           <div class="ws-hero-video-wrap">
@@ -461,44 +479,44 @@
         <p class="ws-section-label">The apps</p>
         <div class="ws-app-grid">
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/gmail.svg" alt="">
+            <img width="96" height="96" src="assets/workspace/icons/gmail.svg" alt="">
             <div>
-              <h3>Gmail</h3>
+              <h2>Gmail</h2>
               <p>Email with AI-drafted replies, smart summaries, and privacy that's never used for advertising.</p>
             </div>
           </article>
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/docs.svg" alt="">
+            <img width="96" height="96" src="assets/workspace/icons/docs.svg" alt="">
             <div>
-              <h3>Docs</h3>
+              <h2>Docs</h2>
               <p>Real-time collaborative writing, now with Gemini for summarizing, drafting, and proofreading.</p>
             </div>
           </article>
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/drive.svg" alt="">
+            <img width="96" height="96" src="assets/workspace/icons/drive.svg" alt="">
             <div>
-              <h3>Drive</h3>
+              <h2>Drive</h2>
               <p>Cloud storage with smart search that finds files by content, owner, or type in seconds.</p>
             </div>
           </article>
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/calendar.svg" alt="">
+            <img width="96" height="96" src="assets/workspace/icons/calendar.svg" alt="">
             <div>
-              <h3>Calendar</h3>
+              <h2>Calendar</h2>
               <p>Scheduling that syncs across your whole team and every other Workspace app.</p>
             </div>
           </article>
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/meet.svg" alt="">
+            <img width="96" height="96" src="assets/workspace/icons/meet.svg" alt="">
             <div>
-              <h3>Meet</h3>
+              <h2>Meet</h2>
               <p>Video calls with live captions, AI-generated notes, and action items pulled automatically.</p>
             </div>
           </article>
           <article class="ws-app-card">
-            <img src="assets/workspace/icons/notebooklm.svg" alt="">
+            <img width="96" height="97" src="assets/workspace/icons/notebooklm.svg" alt="">
             <div>
-              <h3>NotebookLM</h3>
+              <h2>NotebookLM</h2>
               <p>An AI research notebook that grounds every answer in the sources you actually upload.</p>
             </div>
           </article>
@@ -523,49 +541,49 @@
 
           <p class="ws-all-tools-label">Google Workspace includes:</p>
           <div class="ws-all-tools-row">
-            <div class="ws-tool"><img src="assets/workspace/icons/gmail-full.png" alt=""><span>Gmail</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/drive-full.png" alt=""><span>Drive</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/meet-full.png" alt=""><span>Meet</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/calendar-full.png" alt=""><span>Calendar</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/chat.png" alt=""><span>Chat</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/gemini-app.png" alt=""><span>Gemini</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/docs.svg" alt=""><span>Docs</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/sheets.png" alt=""><span>Sheets</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/slides.png" alt=""><span>Slides</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/vids.svg" alt=""><span>Vids</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/keep.png" alt=""><span>Keep</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/sites.png" alt=""><span>Sites</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/forms.png" alt=""><span>Forms</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/tasks.png" alt=""><span>Tasks</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/notebooklm.svg" alt=""><span>Gemini Notebook</span></div>
-            <div class="ws-tool"><img src="assets/workspace/icons/appsheet.png" alt=""><span>AppSheet</span></div>
+            <div class="ws-tool"><img width="64" height="64" src="assets/workspace/icons/gmail-full.png" alt=""><span>Gmail</span></div>
+            <div class="ws-tool"><img width="64" height="64" src="assets/workspace/icons/drive-full.png" alt=""><span>Drive</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/meet-full.png" alt=""><span>Meet</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/calendar-full.png" alt=""><span>Calendar</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/chat.png" alt=""><span>Chat</span></div>
+            <div class="ws-tool"><img width="64" height="64" src="assets/workspace/icons/gemini-app.png" alt=""><span>Gemini</span></div>
+            <div class="ws-tool"><img width="96" height="96" src="assets/workspace/icons/docs.svg" alt=""><span>Docs</span></div>
+            <div class="ws-tool"><img width="96" height="96" src="assets/workspace/icons/sheets.png" alt=""><span>Sheets</span></div>
+            <div class="ws-tool"><img width="96" height="96" src="assets/workspace/icons/slides.png" alt=""><span>Slides</span></div>
+            <div class="ws-tool"><img width="192" height="192" src="assets/workspace/icons/vids.svg" alt=""><span>Vids</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/keep.png" alt=""><span>Keep</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/sites.png" alt=""><span>Sites</span></div>
+            <div class="ws-tool"><img width="96" height="96" src="assets/workspace/icons/forms.png" alt=""><span>Forms</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/tasks.png" alt=""><span>Tasks</span></div>
+            <div class="ws-tool"><img width="96" height="97" src="assets/workspace/icons/notebooklm.svg" alt=""><span>Gemini Notebook</span></div>
+            <div class="ws-tool"><img width="32" height="32" src="assets/workspace/icons/appsheet.png" alt=""><span>AppSheet</span></div>
           </div>
         </section>
 
         <p class="ws-section-label">Built in</p>
         <div class="ws-feature-row">
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/draft-proofread.svg" alt="">
+            <img width="35" height="36" src="assets/workspace/icons/draft-proofread.svg" alt="">
             <span>AI drafting &amp; proofreading</span>
           </div>
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/security-badge.svg" alt="">
+            <img width="136" height="136" src="assets/workspace/icons/security-badge.svg" alt="">
             <span>Privacy-first by default</span>
           </div>
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/security.svg" alt="">
+            <img width="36" height="37" src="assets/workspace/icons/security.svg" alt="">
             <span>Enterprise-grade security</span>
           </div>
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/language.svg" alt="">
+            <img width="36" height="37" src="assets/workspace/icons/language.svg" alt="">
             <span>Works in your language</span>
           </div>
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/web.svg" alt="">
+            <img width="36" height="37" src="assets/workspace/icons/web.svg" alt="">
             <span>Runs anywhere, on the web</span>
           </div>
           <div class="ws-feature-chip">
-            <img src="assets/workspace/icons/settings.svg" alt="">
+            <img width="36" height="37" src="assets/workspace/icons/settings.svg" alt="">
             <span>Admin controls that scale</span>
           </div>
         </div>
@@ -575,75 +593,75 @@
           <button type="button" class="ws-car-nav prev" aria-label="Scroll left">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-          <div class="ws-carousel" id="wsCarousel">
+          <div class="ws-carousel" id="wsCarousel" tabindex="0" role="group" aria-label="Google Workspace product screenshots, scrollable">
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot3.webp" alt="Meet automatically generating action items and a call summary, with an option to save the summary to Docs."></div>
+              <div class="ws-car-shot"><img width="527" height="433" src="assets/workspace/shots/shot3.webp" alt="Meet automatically generating action items and a call summary, with an option to save the summary to Docs."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/meet-full.png" alt="">Meet</span>
+                <span class="ws-car-tag"><img width="32" height="32" src="assets/workspace/icons/meet-full.png" alt="">Meet</span>
                 <h3>AI notes, automatically</h3>
                 <p>Gemini listens in on your Meet calls and turns the conversation into action items and a saved summary — nobody has to take notes.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot9.webp" alt="Gmail showing a built-in privacy notice confirming email content is never used for advertising."></div>
+              <div class="ws-car-shot"><img width="684" height="472" src="assets/workspace/shots/shot9.webp" alt="Gmail showing a built-in privacy notice confirming email content is never used for advertising."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
+                <span class="ws-car-tag"><img width="64" height="64" src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
                 <h3>Privacy, built in</h3>
                 <p>Every message is protected by default — your content stays secure and is never used for advertising.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot2.webp" alt="A Sheets inventory tracker with an analysis panel, next to the same data surfaced in Gmail on mobile."></div>
+              <div class="ws-car-shot"><img width="527" height="433" src="assets/workspace/shots/shot2.webp" alt="A Sheets inventory tracker with an analysis panel, next to the same data surfaced in Gmail on mobile."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/drive-full.png" alt="">Sheets + Gmail</span>
+                <span class="ws-car-tag"><img width="64" height="64" src="assets/workspace/icons/drive-full.png" alt="">Sheets + Gmail</span>
                 <h3>Your data, everywhere</h3>
                 <p>A live inventory tracker in Sheets, with the same numbers surfacing right inside Gmail on your phone.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot13.webp" alt="Google Drive smart search filtering files by owner and keyword, next to a storage usage panel."></div>
+              <div class="ws-car-shot"><img width="684" height="500" src="assets/workspace/shots/shot13.webp" alt="Google Drive smart search filtering files by owner and keyword, next to a storage usage panel."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/drive-full.png" alt="">Drive</span>
+                <span class="ws-car-tag"><img width="64" height="64" src="assets/workspace/icons/drive-full.png" alt="">Drive</span>
                 <h3>Find anything in seconds</h3>
                 <p>Smart search filters by type, owner, or keyword — no more digging through nested folders.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot10.webp" alt="Gemini in Slides drafting a full agenda slide from a single prompt."></div>
+              <div class="ws-car-shot"><img width="684" height="436" src="assets/workspace/shots/shot10.webp" alt="Gemini in Slides drafting a full agenda slide from a single prompt."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/gemini-app.png" alt="">Slides</span>
+                <span class="ws-car-tag"><img width="64" height="64" src="assets/workspace/icons/gemini-app.png" alt="">Slides</span>
                 <h3>Let Gemini build the draft</h3>
                 <p>Describe the deck you need and Gemini drafts a full agenda slide to start from.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot.webp" alt="Gemini in Docs summarizing a set of meeting notes on request."></div>
+              <div class="ws-car-shot"><img width="528" height="367" src="assets/workspace/shots/shot.webp" alt="Gemini in Docs summarizing a set of meeting notes on request."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/docs.svg" alt="">Docs</span>
+                <span class="ws-car-tag"><img width="96" height="96" src="assets/workspace/icons/docs.svg" alt="">Docs</span>
                 <h3>Summarize, instantly</h3>
                 <p>Ask Gemini to condense a page of notes into a clean, shareable summary.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot4.webp" alt="A Calendar event with a Join with Google Meet button, next to the Workspace app launcher grid."></div>
+              <div class="ws-car-shot"><img width="527" height="433" src="assets/workspace/shots/shot4.webp" alt="A Calendar event with a Join with Google Meet button, next to the Workspace app launcher grid."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/calendar-full.png" alt="">Calendar</span>
+                <span class="ws-car-tag"><img width="32" height="32" src="assets/workspace/icons/calendar-full.png" alt="">Calendar</span>
                 <h3>One click into everything</h3>
                 <p>Join a meeting straight from the event, or jump to any other Workspace app from the launcher.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot15.webp" alt="A shared team brainstorm table in Sheets next to a live Meet call gallery view."></div>
+              <div class="ws-car-shot"><img width="527" height="433" src="assets/workspace/shots/shot15.webp" alt="A shared team brainstorm table in Sheets next to a live Meet call gallery view."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/meet-full.png" alt="">Sheets + Meet</span>
+                <span class="ws-car-tag"><img width="32" height="32" src="assets/workspace/icons/meet-full.png" alt="">Sheets + Meet</span>
                 <h3>Brainstorm together, live</h3>
                 <p>A shared voting table in Sheets sits right next to the live call — ideas and decisions in the same window.</p>
               </div>
             </article>
             <article class="ws-car-card">
-              <div class="ws-car-shot"><img src="assets/workspace/shots/shot12.webp" alt="A full Gmail inbox interface with mail, chats, spaces, and meetings organized in one sidebar."></div>
+              <div class="ws-car-shot"><img width="684" height="500" src="assets/workspace/shots/shot12.webp" alt="A full Gmail inbox interface with mail, chats, spaces, and meetings organized in one sidebar."></div>
               <div class="ws-car-caption">
-                <span class="ws-car-tag"><img src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
+                <span class="ws-car-tag"><img width="64" height="64" src="assets/workspace/icons/gmail-full.png" alt="">Gmail</span>
                 <h3>Inbox that stays organized</h3>
                 <p>Mail, chats, spaces, and meetings live in one sidebar, so nothing gets lost.</p>
               </div>
@@ -656,10 +674,10 @@
 
         <p class="ws-section-label">Businesses running on Workspace</p>
         <div class="ws-trust">
-          <img src="assets/workspace/logos/customer-bushel.webp" alt="Bushel">
-          <img src="assets/workspace/logos/customer-bhi.webp" alt="BHI">
-          <img src="assets/workspace/logos/customer-rspca.webp" alt="RSPCA">
-          <img src="assets/workspace/logos/customer-customink.webp" alt="Custom Ink">
+          <img width="368" height="160" src="assets/workspace/logos/customer-bushel.webp" alt="Bushel">
+          <img width="320" height="160" src="assets/workspace/logos/customer-bhi.webp" alt="BHI">
+          <img width="320" height="160" src="assets/workspace/logos/customer-rspca.webp" alt="RSPCA">
+          <img width="400" height="214" src="assets/workspace/logos/customer-customink.webp" alt="Custom Ink">
         </div>
 
         <div class="ws-cta">
@@ -687,48 +705,6 @@
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
 
-    <script>
-      (function () {
-        var track = document.getElementById("wsCarousel");
-        if (!track) return;
-        var prevBtn = document.querySelector(".ws-car-nav.prev");
-        var nextBtn = document.querySelector(".ws-car-nav.next");
-        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        function cardStep() {
-          var card = track.querySelector(".ws-car-card");
-          if (!card) return 340;
-          var style = window.getComputedStyle(track);
-          return card.getBoundingClientRect().width + parseFloat(style.gap || 22);
-        }
-
-        function scrollByCards(n) {
-          track.scrollBy({ left: cardStep() * n, behavior: "smooth" });
-        }
-
-        nextBtn && nextBtn.addEventListener("click", function () { scrollByCards(1); });
-        prevBtn && prevBtn.addEventListener("click", function () { scrollByCards(-1); });
-
-        if (!reduceMotion) {
-          var paused = false;
-          ["mouseenter", "touchstart", "focusin"].forEach(function (evt) {
-            track.addEventListener(evt, function () { paused = true; });
-          });
-          ["mouseleave", "touchend", "focusout"].forEach(function (evt) {
-            track.addEventListener(evt, function () { paused = false; });
-          });
-
-          setInterval(function () {
-            if (paused) return;
-            var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-            if (atEnd) {
-              track.scrollTo({ left: 0, behavior: "smooth" });
-            } else {
-              scrollByCards(1);
-            }
-          }, 3200);
-        }
-      })();
-    </script>
+    <script src="assets/google-workspace.js?v=20260818-csp" defer></script>
   </body>
 </html>

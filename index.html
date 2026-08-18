@@ -3,24 +3,67 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>GDG Tulsa | Google Developer Group Tulsa</title>
     <meta name="description" content="GDG Tulsa brings developers, builders, students, and technologists together in Tulsa, Oklahoma to learn, build, and share with Google technologies.">
     <meta property="og:title" content="GDG Tulsa">
     <meta property="og:description" content="A Google Developer Group for Tulsa builders. Learn, build, and connect around AI, Cloud, Web, Android, Gemini, Firebase, and more.">
     <meta property="og:image" content="/assets/brand/gdg-tulsa-banner.png">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="vendor/maplibre-gl.css?v=5.24.0">
+    <link rel="canonical" href="https://gdgtulsa.com/">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://gdgtulsa.com/#organization",
+          "name": "GDG Tulsa",
+          "alternateName": "Google Developer Group Tulsa",
+          "url": "https://gdgtulsa.com/",
+          "logo": "https://gdgtulsa.com/assets/logos/gdg-community-logo.png",
+          "image": "https://gdgtulsa.com/assets/brand/gdg-tulsa-banner.png",
+          "description": "GDG Tulsa brings developers, builders, students, and technologists together in Tulsa, Oklahoma to learn, build, and share with Google technologies.",
+          "sameAs": ["https://gdg.community.dev/gdg-tulsa/"],
+          "areaServed": {
+            "@type": "City",
+            "name": "Tulsa",
+            "containedInPlace": { "@type": "State", "name": "Oklahoma" }
+          },
+          "memberOf": {
+            "@type": "Organization",
+            "name": "Google Developer Groups",
+            "url": "https://developers.google.com/community/gdg"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://gdgtulsa.com/#website",
+          "url": "https://gdgtulsa.com/",
+          "name": "GDG Tulsa",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://gdgtulsa.com/#organization" }
+        }
+      ]
+    }
+    </script>
     <link rel="stylesheet" href="styles.css?v=20260813-dark-signage">
     <link rel="stylesheet" href="globe-explorer.css?v=20260805-interactive-globe">
     <script type="module" src="script.js?v=92591fbb13424aec2ad5a38b0e7d72b9c2cdf661"></script>
-    <script src="vendor/maplibre-gl.js?v=5.24.0" defer></script>
+    <script src="assets/video.js?v=20260816-video" defer></script>
+    <!-- MapLibre's script and stylesheet are injected by globe.js once the
+         globe nears the viewport, so they cost nothing on first render. -->
     <script src="globe.js?v=92591fbb13424aec2ad5a38b0e7d72b9c2cdf661" defer></script>
+      <script src="assets/image-fallback.js?v=20260818-csp" defer></script>
   </head>
   <body>
     <div class="scroll-meter" aria-hidden="true"></div>
         <header class="site-header site-header--mega" aria-label="Site header">
       <a class="brand brand--image brand--left" href="#top" aria-label="Google for Developers home">
-        <img class="brand-logo brand-logo--wordmark" src="assets/logos/google-for-developers-dark.png" alt="Google for Developers">
+        <img width="640" height="70" class="brand-logo brand-logo--wordmark" src="assets/logos/google-for-developers-dark.png" alt="Google for Developers">
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
         <div class="nav-item">
@@ -58,7 +101,7 @@
         </div>
       </nav>
       <a class="brand brand--image brand--right" href="#members" aria-label="GDG Tulsa community">
-        <img class="brand-logo brand-logo--community" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
+        <img width="1020" height="102" class="brand-logo brand-logo--community" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
       </a>
     </header>
 
@@ -69,8 +112,8 @@
           <h1>
             Build with
             <span class="google-word" aria-label="Google">
-              <img class="google-logo-img" src="assets/logos/google.svg" alt="Google"
-                   onerror="this.style.display='none';var f=document.getElementById('googleWordText');if(f)f.style.display='inline-flex';">
+              <img width="270" height="82" class="google-logo-img" src="assets/logos/google.svg" alt="Google"
+                   data-fallback-reveal="googleWordText">
               <span class="google-word-text" id="googleWordText" style="display:none" aria-hidden="true"><span class="google-blue">G</span><span class="google-red">o</span><span class="google-yellow">o</span><span class="google-blue">g</span><span class="google-green">l</span><span class="google-red">e</span></span>
             </span>
             in Tulsa.
@@ -117,12 +160,30 @@
         <div class="hero-media-stack" aria-label="Featured community videos">
           <article class="hero-video-card hero-video-card--primary">
             <div class="hero-video-frame">
-              <iframe
-                title="Featured GDG Tulsa video"
-                src="https://www.youtube-nocookie.com/embed/h489hYQCt0s?autoplay=1&mute=1&loop=1&playlist=h489hYQCt0s&controls=0&modestbranding=1&rel=0&playsinline=1"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowfullscreen
-                loading="lazy"></iframe>
+              <button
+                class="video-facade"
+                type="button"
+                data-video-facade="h489hYQCt0s"
+                data-video-title="Featured GDG Tulsa video">
+                <img
+                  class="video-facade-poster"
+                  src="assets/video/hero-poster.webp"
+                  alt=""
+                  width="1280"
+                  height="720"
+                  fetchpriority="high">
+                <span class="video-facade-play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+                </span>
+                <span class="video-facade-label">Play featured GDG Tulsa video</span>
+              </button>
+              <noscript>
+                <iframe
+                  title="Featured GDG Tulsa video"
+                  src="https://www.youtube-nocookie.com/embed/h489hYQCt0s?rel=0&amp;modestbranding=1&amp;playsinline=1"
+                  allow="encrypted-media; picture-in-picture"
+                  allowfullscreen></iframe>
+              </noscript>
             </div>
           </article>
         </div>
@@ -501,7 +562,7 @@
     <footer class="site-footer">
       <div class="site-footer-inner">
         <div class="site-footer-brand">
-          <img class="site-footer-logo" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
+          <img width="1020" height="102" class="site-footer-logo" src="assets/logos/gdg-community-logo-dark.png" alt="Google Developer Groups">
           <p>Empowering developers and technologists to build, grow, and lead together in Tulsa.</p>
           <a class="button primary" href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">Join GDG Tulsa</a>
         </div>
