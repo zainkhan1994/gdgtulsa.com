@@ -1618,26 +1618,26 @@ tr:last-child td {
   line-height: 1.5;
 }
 
+/* Entrance animations move content but never hide it. Anything painted at
+   opacity 0 is excluded from Largest Contentful Paint, and since the hero copy
+   and every .section sit above the fold, fading them in left Lighthouse with no
+   LCP candidate at all on mobile (NO_LCP). Transform-only keeps the motion. */
 @keyframes riseIn {
   from {
-    opacity: 0;
     transform: translateY(24px) scale(0.98);
   }
 
   to {
-    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
 @keyframes floatIn {
   from {
-    opacity: 0;
     transform: translateY(-18px);
   }
 
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
