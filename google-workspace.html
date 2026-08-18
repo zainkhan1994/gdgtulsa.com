@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Google Workspace | GDG Tulsa</title>
     <meta name="description" content="A tour of Google Workspace — Gmail, Docs, Drive, Calendar, Meet, and the AI built into all of them — the productivity half of the Google ecosystem GDG Tulsa teaches.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -701,48 +705,6 @@
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
 
-    <script>
-      (function () {
-        var track = document.getElementById("wsCarousel");
-        if (!track) return;
-        var prevBtn = document.querySelector(".ws-car-nav.prev");
-        var nextBtn = document.querySelector(".ws-car-nav.next");
-        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        function cardStep() {
-          var card = track.querySelector(".ws-car-card");
-          if (!card) return 340;
-          var style = window.getComputedStyle(track);
-          return card.getBoundingClientRect().width + parseFloat(style.gap || 22);
-        }
-
-        function scrollByCards(n) {
-          track.scrollBy({ left: cardStep() * n, behavior: "smooth" });
-        }
-
-        nextBtn && nextBtn.addEventListener("click", function () { scrollByCards(1); });
-        prevBtn && prevBtn.addEventListener("click", function () { scrollByCards(-1); });
-
-        if (!reduceMotion) {
-          var paused = false;
-          ["mouseenter", "touchstart", "focusin"].forEach(function (evt) {
-            track.addEventListener(evt, function () { paused = true; });
-          });
-          ["mouseleave", "touchend", "focusout"].forEach(function (evt) {
-            track.addEventListener(evt, function () { paused = false; });
-          });
-
-          setInterval(function () {
-            if (paused) return;
-            var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-            if (atEnd) {
-              track.scrollTo({ left: 0, behavior: "smooth" });
-            } else {
-              scrollByCards(1);
-            }
-          }, 3200);
-        }
-      })();
-    </script>
+    <script src="assets/google-workspace.js?v=20260818-csp" defer></script>
   </body>
 </html>

@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>About GDGs | GDG Tulsa</title>
     <meta name="description" content="What Google Developer Groups are: community-driven groups for developers to learn, build, and connect through workshops, conferences, speaker sessions, AMAs, design sprints, and meetups.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">

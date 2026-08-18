@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>The Google AI Stack | GDG Tulsa</title>
     <meta name="description" content="A map of Google's full-stack AI ecosystem — models, video, design, coding, agents, and research tools — all radiating from the Google G, the way GDG Tulsa teaches it.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -361,6 +365,7 @@
         }
       }
     </style>
+      <script src="assets/image-fallback.js?v=20260818-csp" defer></script>
   </head>
   <body>
     <header class="site-header" aria-label="Site header">
@@ -461,7 +466,7 @@
             </svg>
 
             <div class="g-center">
-              <img width="24" height="24" src="assets/logos/Google__G__logo.svg" onerror="this.src='assets/logos/google.svg'" alt="Google">
+              <img width="24" height="24" src="assets/logos/Google__G__logo.svg" data-fallback-src="assets/logos/google.svg" alt="Google">
             </div>
 
             <!-- Hub buttons -->
@@ -782,45 +787,6 @@
       <p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p>
     </footer>
 
-    <script>
-      /* Mobile accordion */
-      (function () {
-        document.querySelectorAll(".stack-acc-trigger").forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            var item = btn.closest(".stack-acc-item");
-            var open = item.classList.contains("is-open");
-            document.querySelectorAll(".stack-acc-item.is-open").forEach(function (el) {
-              el.classList.remove("is-open");
-              el.querySelector(".stack-acc-trigger").setAttribute("aria-expanded", "false");
-            });
-            if (!open) {
-              item.classList.add("is-open");
-              btn.setAttribute("aria-expanded", "true");
-            }
-          });
-        });
-      })();
-
-      /* Desktop diagram */
-      (function () {
-        var hubs = document.querySelectorAll(".hub-btn");
-        var current = null;
-        function setActive(group) {
-          document.querySelectorAll(".leaf-card, .leaf-line").forEach(function (el) {
-            el.classList.toggle("is-visible", el.dataset.group === group);
-          });
-          hubs.forEach(function (b) {
-            b.classList.toggle("is-active", b.dataset.group === group);
-          });
-        }
-        hubs.forEach(function (btn) {
-          btn.addEventListener("click", function () {
-            var group = btn.dataset.group;
-            current = current === group ? null : group;
-            setActive(current);
-          });
-        });
-      })();
-    </script>
+    <script src="assets/ai-stack.js?v=20260818-csp" defer></script>
   </body>
 </html>

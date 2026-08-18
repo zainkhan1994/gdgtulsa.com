@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- frame-ancestors and HSTS cannot be set from a meta tag; they need
+         real response headers (see docs/security-headers.md). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self'; font-src 'self'; connect-src 'self' https://www.gstatic.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src https://www.youtube-nocookie.com; worker-src 'self' blob:; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>GDG Tulsa | Google Developer Group Tulsa</title>
     <meta name="description" content="GDG Tulsa brings developers, builders, students, and technologists together in Tulsa, Oklahoma to learn, build, and share with Google technologies.">
     <meta property="og:title" content="GDG Tulsa">
@@ -53,6 +57,7 @@
     <!-- MapLibre's script and stylesheet are injected by globe.js once the
          globe nears the viewport, so they cost nothing on first render. -->
     <script src="globe.js?v=92591fbb13424aec2ad5a38b0e7d72b9c2cdf661" defer></script>
+      <script src="assets/image-fallback.js?v=20260818-csp" defer></script>
   </head>
   <body>
     <div class="scroll-meter" aria-hidden="true"></div>
@@ -108,7 +113,7 @@
             Build with
             <span class="google-word" aria-label="Google">
               <img width="270" height="82" class="google-logo-img" src="assets/logos/google.svg" alt="Google"
-                   onerror="this.style.display='none';var f=document.getElementById('googleWordText');if(f)f.style.display='inline-flex';">
+                   data-fallback-reveal="googleWordText">
               <span class="google-word-text" id="googleWordText" style="display:none" aria-hidden="true"><span class="google-blue">G</span><span class="google-red">o</span><span class="google-yellow">o</span><span class="google-blue">g</span><span class="google-green">l</span><span class="google-red">e</span></span>
             </span>
             in Tulsa.
