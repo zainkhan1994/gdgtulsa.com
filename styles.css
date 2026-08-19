@@ -785,10 +785,19 @@ footer span {
 }
 
 .site-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  align-items: center;
+  justify-content: space-between;
   padding: 18px clamp(20px, 5vw, 64px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: #8b9099;
   font-size: 13px;
+}
+
+.site-footer-updated {
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {
