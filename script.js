@@ -11,6 +11,62 @@ const authModal = document.querySelector("[data-auth-modal]");
 const scheduleModal = document.querySelector("[data-schedule-modal]");
 const adminDashboard = document.querySelector("[data-admin-dashboard]");
 
+(function initRotatingHeadline() {
+  const container = document.querySelector(".rotating-container");
+  if (!container) return;
+
+  const items = [
+    {
+      name: "Gemini",
+      textColor: "#A8C7FA",
+      svg: `<svg class="brand-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="url(#gemini-grad)"/><defs><linearGradient id="gemini-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#4E82EE"/><stop offset="0.5" stop-color="#9B72CB"/><stop offset="1" stop-color="#D96570"/></linearGradient></defs></svg>`
+    },
+    {
+      name: "Google Cloud",
+      textColor: "#4285F4",
+      svg: `<svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`
+    },
+    {
+      name: "Flutter",
+      textColor: "#02569B",
+      svg: `<svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#02569B" d="M14.314 0L2.3 12 6 15.7 21.686 0h-7.372zm.014 11.072L7.643 17.757l3.685 3.715 6.685-6.686 3.686 3.714L14.328 24H21.7l-3.686-3.714L21.7 16.572l-7.372-5.5z"/></svg>`
+    },
+    {
+      name: "Firebase",
+      textColor: "#FFCA28",
+      svg: `<svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#FFA000" d="M3.89 15.672L6.255.96a.547.547 0 0 1 1.014-.145l3.153 5.92-6.532 8.937z"/><path fill="#F57C00" d="M12.983 7.82l2.25-4.298a.547.547 0 0 1 .987.037L20.1 15.67 12.983 7.82z"/><path fill="#FFCA28" d="M3.89 15.672l8.11 4.544a1.78 1.78 0 0 0 1.748 0l8.352-4.544-7.217 7.747a1.69 1.69 0 0 1-2.392 0L3.89 15.672z"/></svg>`
+    },
+    {
+      name: "Android",
+      textColor: "#3DDC84",
+      svg: `<svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3DDC84" d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.996-3.46a.416.416 0 0 0-.1521-.5676.416.416 0 0 0-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1355 1.0881L4.8422 5.4359a.4161.416 0 0 0-.5677-.1521.4157.4157 0 0 0-.1521.5676l1.996 3.46C2.6889 11.2863.3435 15.3444 0 20.082h24c-.3435-4.7376-2.689-8.7957-6.1185-10.7606"/></svg>`
+    }
+  ];
+
+  const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduceMotionQuery.matches) return;
+
+  let position = 1;
+  window.setInterval(() => {
+    const current = container.querySelector(".rotater.fade-in");
+    if (current) {
+      current.classList.remove("fade-in");
+      current.classList.add("fade-out");
+      window.setTimeout(() => current.remove(), 400);
+    }
+
+    const next = items[position];
+    container.insertAdjacentHTML("beforeend", `
+      <span class="rotater fade-in">
+        ${next.svg}
+        <span class="brand-text" style="--brand-color: ${next.textColor};">${next.name}</span>
+      </span>
+    `);
+    container.setAttribute("aria-label", next.name);
+    position = (position + 1) % items.length;
+  }, 2600);
+})();
+
 // Mega nav dropdowns: previously CSS-only (:hover / :focus-within), which is
 // unreliable on touch devices and in Safari (clicking a <button> doesn't
 // always move focus there, so :focus-within never fires — the reported bug

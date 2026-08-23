@@ -254,6 +254,51 @@ h1 {
   color: var(--green);
 }
 
+.hero-title .rotating-container {
+  display: inline-block;
+  position: relative;
+  width: 6.25em;
+  height: 1.08em;
+  vertical-align: middle;
+}
+
+.hero-title .rotater {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18em;
+  white-space: nowrap;
+  font-size: 0.86em;
+  letter-spacing: -0.04em;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.hero-title .rotater.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-title .brand-icon {
+  width: 0.92em;
+  height: 0.92em;
+  flex: 0 0 auto;
+}
+
+.hero-title .brand-text {
+  color: var(--brand-color, var(--blue));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-title .rotater {
+    transition: none;
+    transform: none;
+  }
+}
+
 h2 {
   margin-bottom: 18px;
   font-size: clamp(30px, 4vw, 48px);
