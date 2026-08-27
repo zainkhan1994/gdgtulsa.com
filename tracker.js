@@ -31,7 +31,7 @@
 
   const params = new URLSearchParams(window.location.search);
 
-  function sendEvent(eventName, extra = {}) {
+  function sendEvent(eventName, extra = {}, useBeacon = false) {
     const payload = {
       consent: true,
       anonymous_id: anonymousId,
@@ -47,12 +47,24 @@
       ...extra
     };
 
+    const body = JSON.stringify(payload);
+
+    if (useBeacon && navigator.sendBeacon) {
+      const blob = new Blob([body], {
+        type: "text/plain;charset=UTF-8"
+      });
+
+      if (navigator.sendBeacon(COLLECTOR, blob)) {
+        return;
+      }
+    }
+
     fetch(COLLECTOR, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload),
+      body,
       keepalive: true
     }).catch(() => {});
   }
@@ -67,6 +79,6 @@
     sendEvent("click", {
       click_text: (link.innerText || link.textContent || "").trim().slice(0, 500),
       click_url: link.href || ""
-    });
+    }, true);
   });
 })();
