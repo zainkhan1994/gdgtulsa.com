@@ -1,13 +1,15 @@
-# Google APIs already enabled on the project.
+# Google APIs — POSTPONED TO A LATER STAGE.
 #
-# IMPORTANT: every one of these is ALREADY ENABLED in production. They must be
-# imported, not applied — applying without importing is harmless for enabling
-# (it is idempotent), but Terraform would then own them and could disable them
-# on a future destroy.
+# All 11 services below are already enabled in production (the live project has
+# 36 enabled in total; the rest are Google-managed defaults we do not intend to
+# manage).
 #
-# disable_on_destroy = false is set on every service so that removing a service
-# from this file, or any accidental destroy, can never turn off an API that
-# production depends on.
+# The resource is commented out on purpose. If it were declared without a
+# matching import block, `terraform plan` would report 11 services "to add",
+# which would break the first stage's required 0-to-add result.
+#
+# When this stage is enabled, keep disable_on_destroy = false so Terraform can
+# never switch off an API production depends on.
 
 locals {
   enabled_services = [
@@ -25,14 +27,12 @@ locals {
   ]
 }
 
-resource "google_project_service" "enabled" {
-  for_each = toset(local.enabled_services)
-
-  project = var.project_id
-  service = each.value
-
-  # Never let Terraform turn an API off. Disabling an API in a live project
-  # takes the dependent services down with it.
-  disable_on_destroy         = false
-  disable_dependent_services = false
-}
+# resource "google_project_service" "enabled" {
+#   for_each = toset(local.enabled_services)
+#
+#   project = var.project_id
+#   service = each.value
+#
+#   disable_on_destroy         = false
+#   disable_dependent_services = false
+# }

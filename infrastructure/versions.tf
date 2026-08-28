@@ -18,6 +18,8 @@ terraform {
     }
   }
 
-  # State backend is configured in Phase 8, after imports are stable.
-  # Until then state is local and git-ignored. See README.md.
+  backend "gcs" {
+    bucket = "gdg-tulsa-terraform-state-867531953739"
+    prefix = "terraform/state"
+  }
 }

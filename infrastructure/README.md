@@ -14,12 +14,12 @@ infrastructure behind the GDG Tulsa website analytics platform.
 |---|---|---|
 | 1 | Terraform skeleton, provider pinning, API config | **Done** |
 | 2 | Production inventory | **Blocked — needs GCP auth** |
-| 3 | Import BigQuery, Pub/Sub, Secret, service accounts | Not started |
+| 3 | Import BigQuery, Pub/Sub, Secret, service accounts | Complete |
 | 4 | IAM (non-authoritative bindings only) | Not started |
 | 5 | Budgets | Not started |
 | 6 | Cloud Run (infrastructure only) | Not started |
 | 7 | Billing shutdown function | Not started |
-| 8 | Remote state in private GCS | Not started |
+| 8 | Remote state in private GCS | Complete |
 | 9 | Full documentation | Not started |
 
 ## Architecture
@@ -103,10 +103,55 @@ It is strictly read-only — describe/list/get only, no mutating verbs.
 Its output is git-ignored because it contains the full IAM policy.
 
 ## State
+## Terraform State
 
-State is **local and git-ignored** until imports are stable. Phase 8 moves it
-to a private, versioned GCS bucket with uniform bucket-level access and public
-access prevention.
+Terraform state is stored remotely in the private GCS bucket:
+
+`gs://gdg-tulsa-terraform-state-867531953739/terraform/state/default.tfstate`
+
+The state bucket is configured with:
+
+- Uniform bucket-level access
+- Public access prevention enforced
+- Object versioning enabled
+
+The bucket is bootstrap infrastructure and is intentionally not managed by the
+Terraform state stored inside it.
+
+Local Terraform state files are git-ignored and must never be committed.
+
+## Current Managed Resources
+
+The first Terraform migration stage is complete.
+
+Currently managed:
+
+- BigQuery dataset `website_analytics`
+- BigQuery table `website_analytics.events`
+- Pub/Sub topic `billing-alerts-topic`
+- Secret Manager container `ip-hash-secret`
+- Service account `gdg-tulsa@gdg-tulsa.iam.gserviceaccount.com`
+- Service account `billing-shutdown@gdg-tulsa.iam.gserviceaccount.com`
+
+Initial import result:
+
+`6 imported, 0 added, 0 changed, 0 destroyed`
+
+Current Terraform plan:
+
+`No changes. Your infrastructure matches the configuration.`
+
+The following remain intentionally outside Terraform for now:
+
+- Cloud Run
+- Gen2 billing shutdown function
+- IAM bindings
+- budgets
+- Eventarc
+- billing-account attachment
+- Domain Restricted Sharing policy
+- Google-managed deployment buckets and repositories
+- project API ownership
 
 State contains resource metadata and must never be committed.
 
