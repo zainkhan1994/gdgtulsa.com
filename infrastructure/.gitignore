@@ -1,0 +1,27 @@
+# Terraform state — may contain resource metadata and must never reach GitHub.
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Local provider plugins and lock directories
+.terraform/
+.terraform.lock.hcl.bak
+
+# Variable files may contain identifiers or secrets
+*.tfvars
+*.tfvars.json
+
+# Saved plans can embed sensitive attribute values
+*.tfplan
+plan.out
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Editor noise
+*.swp
+.DS_Store
+
+# Inventory output contains full IAM policy — never commit
+inventory-*.txt
