@@ -1111,9 +1111,29 @@ function scheduleFirebaseSetup() {
   void setupFirebase();
 }
 
+// Cheap pre-check for a Firebase email-link landing, used to decide whether the
+// SDK must load before any interaction. Firebase's own isSignInWithEmailLink()
+// remains the authority inside completeEmailLinkSignIn(); this only inspects the
+// query string and never reads, stores or logs oobCode.
+function isEmailLinkCallback() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("mode") === "signIn" && params.has("oobCode");
+}
+
 (function initFirebaseTriggers() {
   const isPortalPage = Boolean(adminDashboard);
   const returning = readJSON(storageKeys.hasSignedIn, false);
+  const emailLinkCallback = isEmailLinkCallback();
+
+  // A first-time visitor returning from the verification email has
+  // hasSignedIn = false and touches no member UI, so the intent listeners below
+  // would never fire and completeEmailLinkSignIn() would never run. Load
+  // immediately rather than via requestIdleCallback: sign-in has to complete
+  // before the visitor navigates away.
+  if (emailLinkCallback) {
+    scheduleFirebaseSetup();
+    return;
+  }
 
   if (isPortalPage || returning) {
     if ("requestIdleCallback" in window) window.requestIdleCallback(scheduleFirebaseSetup, { timeout: 2200 });
