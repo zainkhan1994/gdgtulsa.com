@@ -107,6 +107,11 @@
 
   sendEvent("page_view");
 
+  // Tell application code that consent is granted and the analytics browser
+  // and session IDs now exist. No identifiers or authentication data are
+  // included in the event itself.
+  window.dispatchEvent(new Event("gdg:analytics-ready"));
+
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;

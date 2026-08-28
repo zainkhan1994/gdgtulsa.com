@@ -153,6 +153,80 @@ const state = {
 
 let firebaseApi = null;
 
+const ANALYTICS_IDENTITY_ENDPOINT =
+  "https://gdg-tulsa-collector-867531953739.us-central1.run.app/identify";
+const ANALYTICS_CONSENT_KEY = "gdg_analytics_consent";
+const ANALYTICS_ANON_KEY = "gdg_anonymous_id";
+const ANALYTICS_SESSION_KEY = "gdg_session_id";
+
+let analyticsIdentityLinked = "";
+let analyticsIdentityInFlight = null;
+
+async function linkAnalyticsIdentity(user = firebaseApi?.auth?.currentUser) {
+  if (!user || user.emailVerified !== true) return;
+
+  if (window.localStorage.getItem(ANALYTICS_CONSENT_KEY) !== "granted") {
+    return;
+  }
+
+  const anonymousId = window.localStorage.getItem(ANALYTICS_ANON_KEY);
+  const sessionId = window.sessionStorage.getItem(ANALYTICS_SESSION_KEY);
+
+  if (!anonymousId || !sessionId) return;
+
+  // Kept only in memory. The raw Firebase UID is never written to analytics
+  // storage or sent in the request body.
+  const linkKey = `${user.uid}:${anonymousId}:${sessionId}`;
+
+  if (analyticsIdentityLinked === linkKey) return;
+
+  if (analyticsIdentityInFlight?.key === linkKey) {
+    return analyticsIdentityInFlight.promise;
+  }
+
+  const promise = (async () => {
+    const token = await user.getIdToken();
+
+    const response = await fetch(ANALYTICS_IDENTITY_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        consent: true,
+        anonymous_id: anonymousId,
+        session_id: sessionId
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Identity link failed (${response.status})`);
+    }
+
+    analyticsIdentityLinked = linkKey;
+  })()
+    .catch((error) => {
+      // Never log the token, UID or Firebase claims.
+      console.warn(
+        "Analytics identity link failed.",
+        error instanceof Error ? error.message : "Unknown error"
+      );
+    })
+    .finally(() => {
+      if (analyticsIdentityInFlight?.key === linkKey) {
+        analyticsIdentityInFlight = null;
+      }
+    });
+
+  analyticsIdentityInFlight = { key: linkKey, promise };
+  return promise;
+}
+
+window.addEventListener("gdg:analytics-ready", () => {
+  void linkAnalyticsIdentity();
+});
+
 function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
@@ -338,6 +412,7 @@ async function setupFirebase() {
       // SDK up front instead of waiting for a click.
       writeJSON(storageKeys.hasSignedIn, true);
       state.currentMember = await saveMemberFromFirebaseUser(user);
+      void linkAnalyticsIdentity(user);
       state.admin = isAdminEmail(user.email);
       state.authReady = true;
       await loadProtectedMemberContent();
