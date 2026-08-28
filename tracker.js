@@ -31,6 +31,31 @@
 
   const params = new URLSearchParams(window.location.search);
 
+  // Conversion events. Only these names are ever sent; anything else arriving
+  // on the gdg:analytics channel is discarded. Keeping this an explicit
+  // allowlist means application code cannot invent an event name, and cannot
+  // smuggle a value through one either.
+  const CONVERSION_EVENTS = new Set([
+    "email_click",
+    "speaker_interest",
+    "partner_interest",
+    "schedule_open",
+    "schedule_submit",
+    "member_register_open"
+  ]);
+
+  // Reads the fixed subject from a mailto href. These subjects are hard-coded
+  // in the site's markup, never typed by a visitor.
+  function mailtoSubject(href) {
+    const q = href.indexOf("?");
+    if (q === -1) return "";
+    try {
+      return (new URLSearchParams(href.slice(q + 1)).get("subject") || "").trim().toLowerCase();
+    } catch {
+      return "";
+    }
+  }
+
   function sendEvent(eventName, extra = {}, useBeacon = false) {
     const payload = {
       consent: true,
@@ -72,13 +97,59 @@
   sendEvent("page_view");
 
   document.addEventListener("click", event => {
-    const link = event.target.closest("a");
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    // Opens a modal rather than navigating, so no beacon is needed. Nothing is
+    // prevented or stopped here, so script.js handles the click exactly as before.
+    //
+    // schedule_open is deliberately NOT tracked here. A click on
+    // [data-open-scheduler] is only an attempt — openScheduler() still returns
+    // early for a non-confirmed member or a missing modal. script.js emits
+    // schedule_open once the modal is actually shown.
+    if (target.closest('[data-open-auth="register"]')) {
+      sendEvent("member_register_open");
+    }
+
+    const link = target.closest("a");
 
     if (!link) return;
 
+    // Existing generic link tracking — unchanged.
     sendEvent("click", {
       click_text: (link.innerText || link.textContent || "").trim().slice(0, 500),
       click_url: link.href || ""
     }, true);
+
+    // Additionally classify contact links. Sent with no extra fields: the
+    // page context sendEvent already attaches is enough to attribute the
+    // conversion, and adding the href here would serve no purpose.
+    const href = link.getAttribute("href") || "";
+    if (!href.toLowerCase().startsWith("mailto:")) return;
+
+    sendEvent("email_click", {}, true);
+
+    const subject = mailtoSubject(href);
+    if (subject === "speaker interest") {
+      sendEvent("speaker_interest", {}, true);
+    } else if (subject === "partnership interest") {
+      sendEvent("partner_interest", {}, true);
+    }
+  });
+
+  // Conversion channel for application code:
+  //
+  //   window.dispatchEvent(new CustomEvent("gdg:analytics", {
+  //     detail: { event_name: "schedule_submit" }
+  //   }));
+  //
+  // Only detail.event_name is read, and only if it is on the allowlist above.
+  // Every other property of detail is ignored by construction, so a caller
+  // cannot leak an email, uid or form field into analytics even by mistake.
+  // anonymous_id and session_id stay private to this closure.
+  window.addEventListener("gdg:analytics", event => {
+    const name = event && event.detail && event.detail.event_name;
+    if (typeof name !== "string" || !CONVERSION_EVENTS.has(name)) return;
+    sendEvent(name);
   });
 })();

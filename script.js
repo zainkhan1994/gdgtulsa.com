@@ -553,6 +553,15 @@ function openScheduler() {
   const member = requireConfirmedMember();
   if (!member || !scheduleModal) return;
   scheduleModal.hidden = false;
+
+  // Emitted only once the scheduler is genuinely open: the guard above returns
+  // for an unconfirmed member or a missing modal, so a click that never opens
+  // anything is not counted. Carries no member details — tracker.js reads only
+  // event_name.
+  window.dispatchEvent(new CustomEvent("gdg:analytics", {
+    detail: { event_name: "schedule_open" }
+  }));
+
   window.setTimeout(() => scheduleModal.querySelector("select")?.focus(), 60);
 }
 
@@ -589,6 +598,18 @@ async function requestScheduleTime(form) {
     email: member.email,
     createdAt: firebaseApi.serverTimestamp()
   });
+
+  // Conversion signal only. Reached solely when the Firestore write above
+  // resolves: the earlier guards return on a missing member, missing Firebase
+  // or failed validation, and an addDoc rejection propagates rather than
+  // falling through to here.
+  //
+  // Deliberately carries no uid, name, email, topic, slot or notes — tracker.js
+  // reads only event_name. Firestore remains the record of the actual request.
+  window.dispatchEvent(new CustomEvent("gdg:analytics", {
+    detail: { event_name: "schedule_submit" }
+  }));
+
   form.reset();
   closeScheduler();
   showToast("Office-hour request saved.");
