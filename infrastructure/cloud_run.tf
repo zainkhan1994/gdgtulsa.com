@@ -67,6 +67,16 @@ resource "google_cloud_run_v2_service" "collector" {
           }
         }
       }
+
+      env {
+        name = "IDENTITY_HASH_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.identity_hash_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
