@@ -126,6 +126,9 @@ def identify():
         # Never log the Firebase token or decoded claims.
         return jsonify({"error": "invalid authentication"}), 401
 
+    if decoded.get("email_verified") is not True:
+        return jsonify({"error": "verified member required"}), 403
+
     uid = decoded.get("uid")
 
     if not isinstance(uid, str) or not uid:
