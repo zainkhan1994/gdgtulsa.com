@@ -93,3 +93,30 @@ import {
   to = google_billing_account_iam_member.billing_shutdown_admin
   id = "01A239-502350-6B64D0 roles/billing.admin serviceAccount:billing-shutdown@gdg-tulsa.iam.gserviceaccount.com"
 }
+
+# ============================================================
+# STAGE 3 — Cloud Run collector and Gen2 billing-shutdown function
+#
+# Earlier stages are already in state; their blocks act as no-ops.
+# ============================================================
+
+import {
+  to = google_cloud_run_v2_service.collector
+  id = "projects/gdg-tulsa/locations/us-central1/services/gdg-tulsa-collector"
+}
+
+import {
+  to = google_cloud_run_v2_service_iam_member.collector_public_invoker
+  id = "projects/gdg-tulsa/locations/us-central1/services/gdg-tulsa-collector roles/run.invoker allUsers"
+}
+
+import {
+  to = google_cloudfunctions2_function.billing_shutdown
+  id = "projects/gdg-tulsa/locations/us-central1/functions/billing-shutdown"
+}
+
+# The function's underlying Cloud Run service, invoked by Eventarc.
+import {
+  to = google_cloud_run_v2_service_iam_member.billing_shutdown_invoker
+  id = "projects/gdg-tulsa/locations/us-central1/services/billing-shutdown roles/run.invoker serviceAccount:billing-shutdown@gdg-tulsa.iam.gserviceaccount.com"
+}
