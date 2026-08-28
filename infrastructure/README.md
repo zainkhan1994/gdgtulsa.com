@@ -15,8 +15,8 @@ infrastructure behind the GDG Tulsa website analytics platform.
 | 1 | Terraform skeleton, provider pinning, API config | **Done** |
 | 2 | Production inventory | **Blocked — needs GCP auth** |
 | 3 | Import BigQuery, Pub/Sub, Secret, service accounts | Complete |
-| 4 | IAM (non-authoritative bindings only) | Not started |
-| 5 | Budgets | Not started |
+| 4 | IAM (non-authoritative bindings only) | Complete |
+| 5 | Budgets | Complete |
 | 6 | Cloud Run (infrastructure only) | Not started |
 | 7 | Billing shutdown function | Not started |
 | 8 | Remote state in private GCS | Complete |
@@ -162,3 +162,50 @@ the configuration describes existing resources rather than defining them from
 zero. Once Phases 3–7 are imported and the plan is clean, this directory
 becomes the source of truth and a rebuild becomes feasible. Disaster-recovery
 steps are documented in Phase 9.
+
+Document that Stage 2 is complete.
+
+Current Terraform state now contains 13 resources.
+
+Newly managed IAM:
+- gdg-tulsa@ → roles/bigquery.dataEditor
+- gdg-tulsa@ → roles/bigquery.jobUser
+- gdg-tulsa@ → roles/secretmanager.secretAccessor on ip-hash-secret only
+- billing-shutdown@ → roles/billing.projectManager
+- billing-shutdown@ → roles/billing.admin on billing account 01A239-502350-6B64D0
+
+Managed budgets:
+
+GDG Tulsa $80 Shutdown Budget
+- $80/month
+- project-filtered to gdg-tulsa
+- EXCLUDE_ALL_CREDITS
+- 100% CURRENT_SPEND threshold
+- Pub/Sub billing-alerts-topic
+
+GDG Tulsa $100 Budget
+- $100/month
+- project-filtered to gdg-tulsa
+- EXCLUDE_ALL_CREDITS
+- thresholds 50%, 80%, 90%, 100%
+- Pub/Sub billing-alerts-topic
+
+Leave "$100 Monthly Budget Alert" documented as unmanaged.
+
+Stage 2 import result:
+7 imported, 0 added, 0 changed, 0 destroyed.
+
+Post-import plan:
+No changes. Your infrastructure matches the configuration.
+
+Production verification:
+- billingEnabled = true
+- billing-shutdown = ACTIVE
+- $80 budget = EXCLUDE_ALL_CREDITS
+
+Also document:
+- cloudresourcemanager.googleapis.com was manually enabled as a prerequisite for Terraform IAM reads.
+- providers.tf uses billing_project = var.project_id and user_project_override = true for User ADC quota routing.
+
+Still deferred:
+Cloud Run, Gen2 billing function, Eventarc, Cloud Run invoker IAM, DRS, billing attachment, API Terraform ownership, and Google-managed resources.
