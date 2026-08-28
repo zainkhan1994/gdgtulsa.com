@@ -58,3 +58,11 @@ resource "google_billing_account_iam_member" "billing_shutdown_admin" {
   role               = "roles/billing.admin"
   member             = "serviceAccount:${google_service_account.billing_shutdown.email}"
 }
+
+# Scoped access to the identity hashing secret only.
+resource "google_secret_manager_secret_iam_member" "collector_identity_hash_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.identity_hash_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.collector.email}"
+}
