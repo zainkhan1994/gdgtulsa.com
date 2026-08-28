@@ -72,3 +72,30 @@ resource "google_bigquery_table" "events" {
     { name = "ip_hash", type = "STRING" },
   ])
 }
+
+# Identity stitching.
+#
+# Links an analytics browser identity to a verified Firebase identity.
+# No email, name, raw Firebase UID or Firebase token is stored here.
+resource "google_bigquery_table" "identity_links" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
+  table_id   = "identity_links"
+
+  deletion_protection = true
+
+  time_partitioning {
+    type  = "DAY"
+    field = "linked_at"
+  }
+
+  clustering = ["firebase_uid_hash", "anonymous_id"]
+
+  schema = jsonencode([
+    { name = "link_id", type = "STRING", mode = "REQUIRED" },
+    { name = "linked_at", type = "TIMESTAMP", mode = "REQUIRED" },
+    { name = "anonymous_id", type = "STRING", mode = "REQUIRED" },
+    { name = "session_id", type = "STRING", mode = "REQUIRED" },
+    { name = "firebase_uid_hash", type = "STRING", mode = "REQUIRED" },
+  ])
+}

@@ -6,6 +6,8 @@ import re
 import uuid
 from datetime import datetime, timezone
 
+import firebase_admin
+from firebase_admin import auth as firebase_auth
 from flask import Flask, jsonify, request
 from google.cloud import bigquery
 
@@ -14,8 +16,11 @@ app = Flask(__name__)
 PROJECT_ID = "gdg-tulsa"
 DATASET_ID = "website_analytics"
 TABLE_ID = "events"
+IDENTITY_TABLE_ID = "identity_links"
+FIREBASE_PROJECT_ID = "tulsahub"
 
 TABLE = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
+IDENTITY_TABLE = f"{PROJECT_ID}.{DATASET_ID}.{IDENTITY_TABLE_ID}"
 
 ALLOWED_ORIGINS = {
     "https://gdgtulsa.com",
@@ -29,13 +34,19 @@ BOT_PATTERN = re.compile(
 
 bq = bigquery.Client(project=PROJECT_ID)
 
+# Token verification is intentionally tied to the Firebase project that owns
+# GDG Tulsa authentication, not to the analytics GCP project.
+firebase_app = firebase_admin.initialize_app(
+    options={"projectId": FIREBASE_PROJECT_ID}
+)
+
 
 def add_cors(response):
     origin = request.headers.get("Origin")
     if origin in ALLOWED_ORIGINS:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Vary"] = "Origin"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
     return response
 
@@ -48,6 +59,148 @@ def after_request(response):
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"}), 200
+
+
+def canonical_uuid(value):
+    try:
+        return str(uuid.UUID(str(value)))
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
+def hash_firebase_uid(uid):
+    secret = os.environ.get("IDENTITY_HASH_SECRET", "")
+    if not secret:
+        return None
+
+    return hmac.new(
+        secret.encode(),
+        uid.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+@app.route("/identify", methods=["OPTIONS"])
+def identify_options():
+    return "", 204
+
+
+@app.route("/identify", methods=["POST"])
+def identify():
+    origin = request.headers.get("Origin")
+
+    if origin not in ALLOWED_ORIGINS:
+        return jsonify({"error": "origin not allowed"}), 403
+
+    if request.content_length and request.content_length > 32_000:
+        return jsonify({"error": "payload too large"}), 413
+
+    if not request.is_json:
+        return jsonify({"error": "invalid payload"}), 400
+
+    payload = request.get_json(silent=True) or {}
+
+    # Identity stitching is analytics processing and therefore follows the
+    # same consent requirement as normal event collection.
+    if payload.get("consent") is not True:
+        return "", 204
+
+    anonymous_id = canonical_uuid(payload.get("anonymous_id"))
+    session_id = canonical_uuid(payload.get("session_id"))
+
+    if not anonymous_id or not session_id:
+        return jsonify({"error": "invalid identity fields"}), 400
+
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, token = authorization.partition(" ")
+
+    if scheme.lower() != "bearer" or not token:
+        return jsonify({"error": "authentication required"}), 401
+
+    try:
+        decoded = firebase_auth.verify_id_token(
+            token,
+            app=firebase_app,
+        )
+    except Exception:
+        # Never log the Firebase token or decoded claims.
+        return jsonify({"error": "invalid authentication"}), 401
+
+    if decoded.get("email_verified") is not True:
+        return jsonify({"error": "verified member required"}), 403
+
+    uid = decoded.get("uid")
+
+    if not isinstance(uid, str) or not uid:
+        return jsonify({"error": "invalid authentication"}), 401
+
+    firebase_uid_hash = hash_firebase_uid(uid)
+
+    if not firebase_uid_hash:
+        return jsonify({"error": "identity service unavailable"}), 503
+
+    # Stable for the same verified member/browser/session, so page refreshes
+    # cannot create another identity row for that same session.
+    link_id = hashlib.sha256(
+        f"{firebase_uid_hash}:{anonymous_id}:{session_id}".encode()
+    ).hexdigest()
+
+    linked_at = datetime.now(timezone.utc)
+
+    # BigQuery does not enforce unique keys. MERGE gives link_id real
+    # idempotency rather than relying on best-effort streaming deduplication.
+    query = f"""
+        MERGE `{IDENTITY_TABLE}` AS target
+        USING (
+          SELECT
+            @link_id AS link_id,
+            @linked_at AS linked_at,
+            @anonymous_id AS anonymous_id,
+            @session_id AS session_id,
+            @firebase_uid_hash AS firebase_uid_hash
+        ) AS source
+        ON target.link_id = source.link_id
+        WHEN NOT MATCHED THEN
+          INSERT (
+            link_id,
+            linked_at,
+            anonymous_id,
+            session_id,
+            firebase_uid_hash
+          )
+          VALUES (
+            source.link_id,
+            source.linked_at,
+            source.anonymous_id,
+            source.session_id,
+            source.firebase_uid_hash
+          )
+    """
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("link_id", "STRING", link_id),
+            bigquery.ScalarQueryParameter("linked_at", "TIMESTAMP", linked_at),
+            bigquery.ScalarQueryParameter(
+                "anonymous_id", "STRING", anonymous_id
+            ),
+            bigquery.ScalarQueryParameter(
+                "session_id", "STRING", session_id
+            ),
+            bigquery.ScalarQueryParameter(
+                "firebase_uid_hash", "STRING", firebase_uid_hash
+            ),
+        ]
+    )
+
+    try:
+        bq.query(query, job_config=job_config).result()
+    except Exception:
+        # Do not log UID hashes or authentication information.
+        print("Identity link storage failure")
+        return jsonify({"error": "storage failure"}), 500
+
+    return "", 204
 
 
 @app.route("/collect", methods=["OPTIONS"])

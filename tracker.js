@@ -56,16 +56,27 @@
     }
   }
 
+  function safeAnalyticsUrl(value) {
+    if (!value) return "";
+
+    try {
+      const url = new URL(value, window.location.origin);
+      return `${url.origin}${url.pathname}`;
+    } catch {
+      return "";
+    }
+  }
+
   function sendEvent(eventName, extra = {}, useBeacon = false) {
     const payload = {
       consent: true,
       anonymous_id: anonymousId,
       session_id: sessionId,
       event_name: eventName,
-      page_url: window.location.href,
+      page_url: safeAnalyticsUrl(window.location.href),
       page_path: window.location.pathname,
       page_title: document.title,
-      referrer: document.referrer,
+      referrer: safeAnalyticsUrl(document.referrer),
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
       utm_campaign: params.get("utm_campaign") || "",
@@ -95,6 +106,11 @@
   }
 
   sendEvent("page_view");
+
+  // Tell application code that consent is granted and the analytics browser
+  // and session IDs now exist. No identifiers or authentication data are
+  // included in the event itself.
+  window.dispatchEvent(new Event("gdg:analytics-ready"));
 
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : null;
