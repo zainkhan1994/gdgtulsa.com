@@ -24,15 +24,128 @@
     </button>
   </header>
 
-  <main class="dashboard-shell">
-    <section class="placeholder-card">
-      <h2>Protected dashboard shell</h2>
+  <main class="dashboard-shell" data-analytics-root>
+    <div class="dashboard-heading">
+      <div>
+        <h2>Website Analytics</h2>
+        <p>
+          Private reporting from GDG Tulsa website activity.
+        </p>
+      </div>
 
-      <p>
-        Server-side admin authentication is active here.
-        The existing dashboard will be migrated only after
-        this security boundary is verified.
-      </p>
+      <div class="dashboard-actions">
+        <span class="updated-at" data-updated-at></span>
+
+        <button
+          type="button"
+          class="secondary-button"
+          data-analytics-refresh
+        >
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="analytics-status"
+      data-analytics-status
+      role="status"
+      aria-live="polite"
+    >
+      Loading analytics...
+    </div>
+
+    <section
+      class="metrics-grid"
+      data-metrics
+      hidden
+      aria-label="Analytics overview"
+    >
+      <article class="metric-card">
+        <span class="metric-label">Visitors</span>
+        <strong class="metric-value" data-total-visitors>0</strong>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-label">Page views</span>
+        <strong class="metric-value" data-total-page-views>0</strong>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-label">Sessions</span>
+        <strong class="metric-value" data-total-sessions>0</strong>
+      </article>
+    </section>
+
+    <section class="analytics-card" data-analytics-content hidden>
+      <div class="card-heading">
+        <div>
+          <h3>Conversion Funnel</h3>
+          <p>Unique visitors reaching each tracked conversion stage.</p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Stage</th>
+              <th scope="col" class="number-cell">Visitors</th>
+              <th scope="col" class="number-cell">Percent</th>
+            </tr>
+          </thead>
+          <tbody data-funnel-body></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="analytics-card" data-analytics-content hidden>
+      <div class="card-heading">
+        <div>
+          <h3>Page Traffic</h3>
+          <p>Most visited pages across the public website.</p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Page</th>
+              <th scope="col" class="number-cell">Views</th>
+              <th scope="col" class="number-cell">Visitors</th>
+              <th scope="col" class="number-cell">Sessions</th>
+              <th scope="col" class="number-cell">Views / visitor</th>
+            </tr>
+          </thead>
+          <tbody data-pages-body></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="analytics-card" data-analytics-content hidden>
+      <div class="card-heading">
+        <div>
+          <h3>Traffic Sources</h3>
+          <p>How visitor sessions reached the website.</p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">Source</th>
+              <th scope="col">Medium</th>
+              <th scope="col">Campaign</th>
+              <th scope="col" class="number-cell">Sessions</th>
+              <th scope="col" class="number-cell">Visitors</th>
+            </tr>
+          </thead>
+          <tbody data-sources-body></tbody>
+        </table>
+      </div>
     </section>
   </main>
 </body>
