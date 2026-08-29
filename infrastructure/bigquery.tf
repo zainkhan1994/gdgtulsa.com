@@ -223,3 +223,33 @@ resource "google_bigquery_table" "conversion_funnel" {
     SQL
   }
 }
+
+# Reporting view: traffic performance by page.
+resource "google_bigquery_table" "page_traffic" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
+  table_id   = "page_traffic"
+
+  deletion_protection = true
+
+  view {
+    use_legacy_sql = false
+
+    query = <<-SQL
+      SELECT
+        page_path,
+        COUNT(*) AS page_views,
+        COUNT(DISTINCT anonymous_id) AS unique_visitors,
+        COUNT(DISTINCT session_id) AS sessions,
+        SAFE_DIVIDE(
+          COUNT(*),
+          COUNT(DISTINCT anonymous_id)
+        ) AS page_views_per_visitor,
+        MIN(event_timestamp) AS first_seen,
+        MAX(event_timestamp) AS last_seen
+      FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+      WHERE event_name = 'page_view'
+      GROUP BY page_path
+    SQL
+  }
+}
