@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 
 import firebase_admin
 from firebase_admin import auth as firebase_auth
+from google.cloud import bigquery
 from flask import (
     Flask,
     jsonify,
@@ -17,6 +18,8 @@ from flask import (
 )
 
 FIREBASE_PROJECT_ID = "tulsahub"
+PROJECT_ID = "gdg-tulsa"
+DATASET_ID = "website_analytics"
 SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
 
 app = Flask(__name__)
@@ -38,6 +41,8 @@ app.config.update(
 firebase_app = firebase_admin.initialize_app(
     options={"projectId": FIREBASE_PROJECT_ID}
 )
+
+bq = bigquery.Client(project=PROJECT_ID)
 
 
 def same_origin_request():
@@ -204,6 +209,65 @@ def create_session():
     session["admin_hash"] = session_hash
 
     return "", 204
+
+
+@app.route("/api/analytics", methods=["GET"])
+def analytics():
+    if not valid_admin_session():
+        return jsonify({"error": "authentication required"}), 401
+
+    queries = {
+        "funnel": f"""
+            SELECT
+              stage_order,
+              stage,
+              visitors,
+              percent_of_visitors
+            FROM `{PROJECT_ID}.{DATASET_ID}.conversion_funnel`
+            ORDER BY stage_order
+        """,
+        "pages": f"""
+            SELECT
+              page_path,
+              page_views,
+              unique_visitors,
+              sessions,
+              page_views_per_visitor
+            FROM `{PROJECT_ID}.{DATASET_ID}.page_traffic`
+            ORDER BY page_views DESC
+            LIMIT 50
+        """,
+        "sources": f"""
+            SELECT
+              source_type,
+              source,
+              utm_medium,
+              utm_campaign,
+              sessions,
+              unique_visitors
+            FROM `{PROJECT_ID}.{DATASET_ID}.traffic_sources`
+            ORDER BY sessions DESC
+            LIMIT 50
+        """,
+    }
+
+    try:
+        payload = {}
+
+        for name, query in queries.items():
+            rows = bq.query(query).result()
+            payload[name] = [
+                {key: row[key] for key in row.keys()}
+                for row in rows
+            ]
+
+    except Exception:
+        # Never expose SQL, credentials, service-account details or query
+        # internals to the browser.
+        print("Private admin analytics query failure")
+        return jsonify({"error": "analytics unavailable"}), 500
+
+    return jsonify(payload), 200
 
 
 @app.route("/logout", methods=["POST"])
