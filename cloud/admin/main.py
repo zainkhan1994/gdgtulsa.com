@@ -1,0 +1,228 @@
+import hashlib
+import hmac
+import os
+from datetime import timedelta
+from urllib.parse import urlsplit
+
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from flask import (
+    Flask,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+
+FIREBASE_PROJECT_ID = "tulsahub"
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
+
+app = Flask(__name__)
+
+# Keep the service bootable before its secret is provisioned, but fail closed
+# for authentication until SESSION_SECRET is actually configured.
+app.secret_key = SESSION_SECRET or os.urandom(32)
+
+app.config.update(
+    SESSION_COOKIE_NAME="gdg_tulsa_admin",
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE="Strict",
+    SESSION_COOKIE_PATH="/",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=1),
+    SESSION_REFRESH_EACH_REQUEST=False,
+)
+
+firebase_app = firebase_admin.initialize_app(
+    options={"projectId": FIREBASE_PROJECT_ID}
+)
+
+
+def same_origin_request():
+    origin = request.headers.get("Origin", "")
+
+    try:
+        parsed = urlsplit(origin)
+    except ValueError:
+        return False
+
+    return (
+        parsed.scheme == "https"
+        and parsed.netloc == request.host
+    )
+
+
+def admin_email_allowlist():
+    raw = os.environ.get("ADMIN_EMAILS", "")
+    return {
+        email.strip().lower()
+        for email in raw.split(",")
+        if email.strip()
+    }
+
+
+def admin_session_hash(email):
+    if not SESSION_SECRET:
+        return None
+
+    normalized = str(email or "").strip().lower()
+
+    if not normalized:
+        return None
+
+    return hmac.new(
+        SESSION_SECRET.encode(),
+        f"gdg-admin-session:{normalized}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def valid_admin_session():
+    if not SESSION_SECRET:
+        return False
+
+    current = session.get("admin_hash")
+
+    if not isinstance(current, str) or not current:
+        return False
+
+    allowed_hashes = {
+        admin_session_hash(email)
+        for email in admin_email_allowlist()
+    }
+
+    if current not in allowed_hashes:
+        session.clear()
+        return False
+
+    return True
+
+
+@app.after_request
+def security_headers(response):
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    response.headers["Permissions-Policy"] = (
+        "camera=(), microphone=(), geolocation=()"
+    )
+
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "base-uri 'self'; "
+        "object-src 'none'; "
+        "frame-ancestors 'none'; "
+        "script-src 'self' https://www.gstatic.com https://apis.google.com; "
+        "style-src 'self'; "
+        "img-src 'self' data:; "
+        "connect-src 'self' "
+        "https://www.gstatic.com "
+        "https://identitytoolkit.googleapis.com "
+        "https://securetoken.googleapis.com "
+        "https://www.googleapis.com; "
+        "frame-src "
+        "https://accounts.google.com "
+        "https://tulsahub.firebaseapp.com; "
+        "form-action 'self'; "
+        "upgrade-insecure-requests"
+    )
+
+    return response
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
+
+
+@app.route("/login", methods=["GET"])
+def login():
+    if valid_admin_session():
+        return redirect(url_for("dashboard"), code=303)
+
+    return render_template("login.html")
+
+
+@app.route("/session", methods=["POST"])
+def create_session():
+    if not same_origin_request():
+        return jsonify({"error": "origin not allowed"}), 403
+
+    if not SESSION_SECRET:
+        return jsonify({"error": "admin service unavailable"}), 503
+
+    if request.content_length and request.content_length > 16_000:
+        return jsonify({"error": "payload too large"}), 413
+
+    if not request.is_json:
+        return jsonify({"error": "invalid payload"}), 400
+
+    payload = request.get_json(silent=True) or {}
+    token = payload.get("id_token")
+
+    if not isinstance(token, str) or not token:
+        return jsonify({"error": "authentication required"}), 401
+
+    try:
+        decoded = firebase_auth.verify_id_token(
+            token,
+            app=firebase_app,
+        )
+    except Exception:
+        # Never log Firebase tokens or decoded authentication claims.
+        return jsonify({"error": "invalid authentication"}), 401
+
+    if decoded.get("email_verified") is not True:
+        return jsonify({"error": "verified account required"}), 403
+
+    email = decoded.get("email")
+
+    if not isinstance(email, str) or not email:
+        return jsonify({"error": "invalid authentication"}), 401
+
+    allowed = admin_email_allowlist()
+
+    if not allowed:
+        return jsonify({"error": "admin service unavailable"}), 503
+
+    normalized_email = email.strip().lower()
+
+    if normalized_email not in allowed:
+        return jsonify({"error": "admin access required"}), 403
+
+    session_hash = admin_session_hash(normalized_email)
+
+    if not session_hash:
+        return jsonify({"error": "admin service unavailable"}), 503
+
+    session.clear()
+    session.permanent = True
+    session["admin_hash"] = session_hash
+
+    return "", 204
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    if not same_origin_request():
+        return jsonify({"error": "origin not allowed"}), 403
+
+    session.clear()
+    return "", 204
+
+
+@app.route("/", methods=["GET"])
+def dashboard():
+    if not valid_admin_session():
+        return redirect(url_for("login"), code=303)
+
+    return render_template("dashboard.html")
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "8080"))
+    app.run(host="0.0.0.0", port=port)
