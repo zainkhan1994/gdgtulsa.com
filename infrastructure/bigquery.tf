@@ -34,6 +34,12 @@ resource "google_bigquery_dataset" "website_analytics" {
     user_by_email = "zain@thekhanstruct.com"
   }
 
+  # Private admin dashboard has read-only access to analytics.
+  access {
+    role          = "READER"
+    user_by_email = google_service_account.admin.email
+  }
+
   # Refuse to delete a dataset that still holds tables.
   delete_contents_on_destroy = false
 }

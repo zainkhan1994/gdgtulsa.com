@@ -102,11 +102,3 @@ resource "google_project_iam_member" "admin_bigquery_job_user" {
   role    = "roles/bigquery.jobUser"
   member  = "serviceAccount:${google_service_account.admin.email}"
 }
-
-# Read-only access scoped to the analytics dataset.
-resource "google_bigquery_dataset_iam_member" "admin_analytics_data_viewer" {
-  project    = var.project_id
-  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
-  role       = "roles/bigquery.dataViewer"
-  member     = "serviceAccount:${google_service_account.admin.email}"
-}
