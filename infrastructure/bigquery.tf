@@ -153,3 +153,73 @@ resource "google_bigquery_table" "visitor_journeys" {
     SQL
   }
 }
+
+# Reporting view: visitor-level conversion funnel.
+#
+# Each stage counts unique visitor journeys that reached that state.
+# Repeated clicks/events by the same anonymous visitor count only once.
+resource "google_bigquery_table" "conversion_funnel" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
+  table_id   = "conversion_funnel"
+
+  deletion_protection = true
+
+  view {
+    use_legacy_sql = false
+
+    query = <<-SQL
+      WITH totals AS (
+        SELECT
+          COUNT(*) AS total_visitors,
+          COUNTIF(registration_started) AS registration_started,
+          COUNTIF(verified_member) AS verified_members,
+          COUNTIF(schedule_opened) AS schedule_opened,
+          COUNTIF(schedule_submitted) AS schedule_submitted
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.visitor_journeys`
+      )
+      SELECT
+        1 AS stage_order,
+        'Visitors' AS stage,
+        total_visitors AS visitors,
+        1.0 AS percent_of_visitors
+      FROM totals
+
+      UNION ALL
+
+      SELECT
+        2,
+        'Registration started',
+        registration_started,
+        SAFE_DIVIDE(registration_started, total_visitors)
+      FROM totals
+
+      UNION ALL
+
+      SELECT
+        3,
+        'Verified members',
+        verified_members,
+        SAFE_DIVIDE(verified_members, total_visitors)
+      FROM totals
+
+      UNION ALL
+
+      SELECT
+        4,
+        'Scheduler opened',
+        schedule_opened,
+        SAFE_DIVIDE(schedule_opened, total_visitors)
+      FROM totals
+
+      UNION ALL
+
+      SELECT
+        5,
+        'Schedule submitted',
+        schedule_submitted,
+        SAFE_DIVIDE(schedule_submitted, total_visitors)
+      FROM totals
+    SQL
+  }
+}
