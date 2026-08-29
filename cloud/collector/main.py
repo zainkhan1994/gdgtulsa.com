@@ -47,7 +47,7 @@ def add_cors(response):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Vary"] = "Origin"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return response
 
 
@@ -78,6 +78,122 @@ def hash_firebase_uid(uid):
         uid.encode(),
         hashlib.sha256,
     ).hexdigest()
+
+
+def admin_email_allowlist():
+    raw = os.environ.get("ADMIN_EMAILS", "")
+    return {
+        email.strip().lower()
+        for email in raw.split(",")
+        if email.strip()
+    }
+
+
+def require_admin():
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, token = authorization.partition(" ")
+
+    if scheme.lower() != "bearer" or not token:
+        return None, (jsonify({"error": "authentication required"}), 401)
+
+    try:
+        decoded = firebase_auth.verify_id_token(
+            token,
+            app=firebase_app,
+        )
+    except Exception:
+        # Never log Firebase tokens or decoded claims.
+        return None, (jsonify({"error": "invalid authentication"}), 401)
+
+    if decoded.get("email_verified") is not True:
+        return None, (jsonify({"error": "verified account required"}), 403)
+
+    email = decoded.get("email")
+
+    if not isinstance(email, str) or not email:
+        return None, (jsonify({"error": "invalid authentication"}), 401)
+
+    allowed = admin_email_allowlist()
+
+    if not allowed:
+        return None, (jsonify({"error": "admin service unavailable"}), 503)
+
+    if email.strip().lower() not in allowed:
+        return None, (jsonify({"error": "admin access required"}), 403)
+
+    return decoded, None
+
+
+@app.route("/admin/analytics", methods=["OPTIONS"])
+def admin_analytics_options():
+    return "", 204
+
+
+@app.route("/admin/analytics", methods=["GET"])
+def admin_analytics():
+    origin = request.headers.get("Origin")
+
+    if origin not in ALLOWED_ORIGINS:
+        return jsonify({"error": "origin not allowed"}), 403
+
+    _, auth_error = require_admin()
+
+    if auth_error:
+        return auth_error
+
+    queries = {
+        "funnel": f"""
+            SELECT
+              stage_order,
+              stage,
+              visitors,
+              percent_of_visitors
+            FROM `{PROJECT_ID}.{DATASET_ID}.conversion_funnel`
+            ORDER BY stage_order
+        """,
+        "pages": f"""
+            SELECT
+              page_path,
+              page_views,
+              unique_visitors,
+              sessions,
+              page_views_per_visitor
+            FROM `{PROJECT_ID}.{DATASET_ID}.page_traffic`
+            ORDER BY page_views DESC
+            LIMIT 50
+        """,
+        "sources": f"""
+            SELECT
+              source_type,
+              source,
+              utm_medium,
+              utm_campaign,
+              sessions,
+              unique_visitors
+            FROM `{PROJECT_ID}.{DATASET_ID}.traffic_sources`
+            ORDER BY sessions DESC
+            LIMIT 50
+        """,
+    }
+
+    try:
+        payload = {}
+
+        for name, query in queries.items():
+            rows = bq.query(query).result()
+            payload[name] = [
+                {key: row[key] for key in row.keys()}
+                for row in rows
+            ]
+
+    except Exception:
+        # Do not expose query details or authentication information.
+        print("Admin analytics query failure")
+        return jsonify({"error": "analytics unavailable"}), 500
+
+    response = jsonify(payload)
+    response.headers["Cache-Control"] = "no-store"
+    return response, 200
 
 
 @app.route("/identify", methods=["OPTIONS"])

@@ -37,7 +37,7 @@ resource "google_cloud_run_v2_service" "collector" {
     }
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:56a250510100c1dca87fbc47c0e27c213699cba3d2248dccc3d42d06c5df7028"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:ae789d0e71187a4832b252c11e3425b44bc25fe457b73e98ed815f339d921672"
 
       ports {
         name           = "http1"
@@ -73,6 +73,16 @@ resource "google_cloud_run_v2_service" "collector" {
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.identity_hash_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "ADMIN_EMAILS"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.admin_emails.secret_id
             version = "latest"
           }
         }

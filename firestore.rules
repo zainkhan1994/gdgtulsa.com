@@ -13,7 +13,8 @@ service cloud.firestore {
     function isAdmin() {
       return verified() && request.auth.token.email in [
         "zain@gdgtulsa.com",
-        "zainkhan1994.zk@gmail.com"
+        "zainkhan1994.zk@gmail.com",
+        "swandev0702@gmail.com"
       ];
     }
 

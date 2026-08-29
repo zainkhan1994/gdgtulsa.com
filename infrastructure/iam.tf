@@ -66,3 +66,11 @@ resource "google_secret_manager_secret_iam_member" "collector_identity_hash_acce
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.collector.email}"
 }
+
+# Scoped access to the admin allowlist secret only.
+resource "google_secret_manager_secret_iam_member" "collector_admin_emails_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.admin_emails.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.collector.email}"
+}

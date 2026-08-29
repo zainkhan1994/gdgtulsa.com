@@ -1,4 +1,4 @@
-import { adminEmails, firebaseConfig, firebaseReady } from "./firebase-config.js";
+import { adminEmails, firebaseConfig, firebaseReady } from "./firebase-config.js?v=9e35f5939bdd03bf3dc53bb32b83512516bebbaf";
 
 const FIREBASE_SDK_VERSION = "10.12.5";
 const meter = document.querySelector(".scroll-meter");

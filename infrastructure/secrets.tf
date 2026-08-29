@@ -29,3 +29,17 @@ resource "google_secret_manager_secret" "identity_hash_secret" {
     auto {}
   }
 }
+
+# Server-side allowlist for analytics dashboard administrators.
+#
+# Terraform manages only the secret container. The actual email addresses are
+# added separately so they never enter Terraform state.
+resource "google_secret_manager_secret" "admin_emails" {
+  project             = var.project_id
+  secret_id           = "admin-emails"
+  deletion_protection = true
+
+  replication {
+    auto {}
+  }
+}

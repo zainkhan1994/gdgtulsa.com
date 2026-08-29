@@ -9,7 +9,8 @@ export const firebaseConfig = {
 
 export const adminEmails = [
   "zain@gdgtulsa.com",
-  "zainkhan1994.zk@gmail.com"
+  "zainkhan1994.zk@gmail.com",
+  "swandev0702@gmail.com"
 ];
 
 export const firebaseReady = Boolean(
