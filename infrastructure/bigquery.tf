@@ -253,3 +253,88 @@ resource "google_bigquery_table" "page_traffic" {
     SQL
   }
 }
+
+# Reporting view: session-level traffic sources.
+#
+# Uses only the first page view in each session so internal navigation does not
+# become a new acquisition source. Authentication and internal traffic remain
+# visible but can be excluded from acquisition metrics.
+resource "google_bigquery_table" "traffic_sources" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
+  table_id   = "traffic_sources"
+
+  deletion_protection = true
+
+  view {
+    use_legacy_sql = false
+
+    query = <<-SQL
+      WITH landing_pages AS (
+        SELECT
+          session_id,
+          anonymous_id,
+          page_path AS landing_page,
+          referrer,
+          NULLIF(utm_source, '') AS utm_source,
+          NULLIF(utm_medium, '') AS utm_medium,
+          NULLIF(utm_campaign, '') AS utm_campaign,
+          ROW_NUMBER() OVER (
+            PARTITION BY session_id
+            ORDER BY event_timestamp, event_id
+          ) AS row_num
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        WHERE event_name = 'page_view'
+      ),
+      classified AS (
+        SELECT
+          session_id,
+          anonymous_id,
+          landing_page,
+          CASE
+            WHEN utm_source IS NOT NULL THEN 'utm'
+            WHEN referrer IS NULL OR referrer = '' THEN 'direct'
+            WHEN REGEXP_CONTAINS(
+              referrer,
+              r'^https://tulsahub\.firebaseapp\.com'
+            ) THEN 'authentication'
+            WHEN REGEXP_CONTAINS(
+              referrer,
+              r'^https://(www\.)?gdgtulsa\.com'
+            ) THEN 'internal'
+            ELSE 'referral'
+          END AS source_type,
+          CASE
+            WHEN utm_source IS NOT NULL THEN utm_source
+            WHEN referrer IS NULL OR referrer = '' THEN '(direct / unknown)'
+            WHEN REGEXP_CONTAINS(
+              referrer,
+              r'^https://tulsahub\.firebaseapp\.com'
+            ) THEN 'tulsahub.firebaseapp.com'
+            WHEN REGEXP_CONTAINS(
+              referrer,
+              r'^https://(www\.)?gdgtulsa\.com'
+            ) THEN 'gdgtulsa.com'
+            ELSE COALESCE(NET.HOST(referrer), referrer)
+          END AS source,
+          utm_medium,
+          utm_campaign
+        FROM landing_pages
+        WHERE row_num = 1
+      )
+      SELECT
+        source_type,
+        source,
+        utm_medium,
+        utm_campaign,
+        COUNT(*) AS sessions,
+        COUNT(DISTINCT anonymous_id) AS unique_visitors
+      FROM classified
+      GROUP BY
+        source_type,
+        source,
+        utm_medium,
+        utm_campaign
+    SQL
+  }
+}
