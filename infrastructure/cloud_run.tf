@@ -37,7 +37,7 @@ resource "google_cloud_run_v2_service" "collector" {
     }
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:ae789d0e71187a4832b252c11e3425b44bc25fe457b73e98ed815f339d921672"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:a02570025736f6aa1a60d1c9546a9d90546549ebb84498bbf7cd00ea3458e000"
 
       ports {
         name           = "http1"

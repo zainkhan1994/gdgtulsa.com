@@ -97,6 +97,7 @@ resource "google_bigquery_table" "identity_links" {
     { name = "anonymous_id", type = "STRING", mode = "REQUIRED" },
     { name = "session_id", type = "STRING", mode = "REQUIRED" },
     { name = "firebase_uid_hash", type = "STRING", mode = "REQUIRED" },
+    { name = "is_admin", type = "BOOLEAN", mode = "NULLABLE" },
   ])
 }
 

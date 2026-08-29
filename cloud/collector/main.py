@@ -250,6 +250,12 @@ def identify():
     if not isinstance(uid, str) or not uid:
         return jsonify({"error": "invalid authentication"}), 401
 
+    email = decoded.get("email")
+    is_admin = (
+        isinstance(email, str)
+        and email.strip().lower() in admin_email_allowlist()
+    )
+
     firebase_uid_hash = hash_firebase_uid(uid)
 
     if not firebase_uid_hash:
@@ -273,23 +279,29 @@ def identify():
             @linked_at AS linked_at,
             @anonymous_id AS anonymous_id,
             @session_id AS session_id,
-            @firebase_uid_hash AS firebase_uid_hash
+            @firebase_uid_hash AS firebase_uid_hash,
+            @is_admin AS is_admin
         ) AS source
         ON target.link_id = source.link_id
+        WHEN MATCHED THEN
+          UPDATE SET
+            is_admin = source.is_admin
         WHEN NOT MATCHED THEN
           INSERT (
             link_id,
             linked_at,
             anonymous_id,
             session_id,
-            firebase_uid_hash
+            firebase_uid_hash,
+            is_admin
           )
           VALUES (
             source.link_id,
             source.linked_at,
             source.anonymous_id,
             source.session_id,
-            source.firebase_uid_hash
+            source.firebase_uid_hash,
+            source.is_admin
           )
     """
 
@@ -305,6 +317,9 @@ def identify():
             ),
             bigquery.ScalarQueryParameter(
                 "firebase_uid_hash", "STRING", firebase_uid_hash
+            ),
+            bigquery.ScalarQueryParameter(
+                "is_admin", "BOOL", is_admin
             ),
         ]
     )
