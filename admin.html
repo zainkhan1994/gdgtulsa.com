@@ -11,7 +11,7 @@
     <meta name="description" content="GDG Tulsa admin dashboard for member analytics, events, registrations, and sponsor tracking.">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css?v=20260819-badge-wall">
-    <script type="module" src="script.js?v=0039f460d98845e145582b2805bfdfc1ae1b9396"></script>
+    <script type="module" src="script.js?v=f4ed276bdfada106b9b392cac24a6dda827ac32f"></script>
   </head>
   <body class="admin-body">
     <main class="admin-app" data-admin-dashboard>
@@ -118,6 +118,85 @@
                 <li>No member activity yet.</li>
               </ul>
             </article>
+          </div>
+
+          <div class="admin-section-head admin-analytics-heading">
+            <div>
+              <h2>Website analytics</h2>
+              <p data-admin-analytics-status>
+                Sign in as an admin to load website analytics.
+              </p>
+            </div>
+          </div>
+
+          <div class="admin-table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Conversion stage</th>
+                  <th>Visitors</th>
+                  <th>Conversion rate</th>
+                </tr>
+              </thead>
+              <tbody data-admin-funnel-table>
+                <tr>
+                  <td colspan="3">Analytics have not loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-section-head admin-analytics-heading">
+            <div>
+              <h2>Top website pages</h2>
+              <p>Page views, visitors, sessions, and repeat viewing.</p>
+            </div>
+          </div>
+
+          <div class="admin-table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Page</th>
+                  <th>Page views</th>
+                  <th>Visitors</th>
+                  <th>Sessions</th>
+                  <th>Views / visitor</th>
+                </tr>
+              </thead>
+              <tbody data-admin-pages-table>
+                <tr>
+                  <td colspan="5">Analytics have not loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-section-head admin-analytics-heading">
+            <div>
+              <h2>Traffic sources</h2>
+              <p>Session entry sources with authentication and internal traffic separated.</p>
+            </div>
+          </div>
+
+          <div class="admin-table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Source</th>
+                  <th>Medium</th>
+                  <th>Campaign</th>
+                  <th>Sessions</th>
+                  <th>Visitors</th>
+                </tr>
+              </thead>
+              <tbody data-admin-sources-table>
+                <tr>
+                  <td colspan="6">Analytics have not loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 

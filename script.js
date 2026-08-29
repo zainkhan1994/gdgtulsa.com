@@ -155,6 +155,8 @@ let firebaseApi = null;
 
 const ANALYTICS_IDENTITY_ENDPOINT =
   "https://gdg-tulsa-collector-867531953739.us-central1.run.app/identify";
+const ANALYTICS_ADMIN_ENDPOINT =
+  "https://gdg-tulsa-collector-867531953739.us-central1.run.app/admin/analytics";
 const ANALYTICS_CONSENT_KEY = "gdg_analytics_consent";
 const ANALYTICS_ANON_KEY = "gdg_anonymous_id";
 const ANALYTICS_SESSION_KEY = "gdg_session_id";
@@ -843,6 +845,104 @@ function setText(selector, value) {
   if (element) element.textContent = value;
 }
 
+function renderAdminAnalyticsMessage(message) {
+  setText("[data-admin-analytics-status]", message);
+}
+
+async function renderAdminAnalytics() {
+  const funnelTable = document.querySelector("[data-admin-funnel-table]");
+  const pagesTable = document.querySelector("[data-admin-pages-table]");
+  const sourcesTable = document.querySelector("[data-admin-sources-table]");
+
+  if (!funnelTable || !pagesTable || !sourcesTable) return;
+
+  const user = firebaseApi?.auth?.currentUser;
+
+  if (!user || !state.admin) {
+    renderAdminAnalyticsMessage("Admin Google sign-in required.");
+    return;
+  }
+
+  renderAdminAnalyticsMessage("Loading website analytics...");
+
+  try {
+    const token = await user.getIdToken();
+
+    const response = await fetch(ANALYTICS_ADMIN_ENDPOINT, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      },
+      cache: "no-store"
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.error || `Analytics request failed (${response.status})`);
+    }
+
+    // The admin may have signed out while the request was in flight.
+    // Never repopulate analytics after the authenticated session changes.
+    if (firebaseApi?.auth?.currentUser !== user || !state.admin) {
+      return;
+    }
+
+    const funnel = Array.isArray(payload.funnel) ? payload.funnel : [];
+    const pages = Array.isArray(payload.pages) ? payload.pages : [];
+    const sources = Array.isArray(payload.sources) ? payload.sources : [];
+
+    funnelTable.innerHTML = funnel.length
+      ? funnel.map((row) => `
+        <tr>
+          <td>${escapeHTML(row.stage)}</td>
+          <td>${Number(row.visitors || 0).toLocaleString()}</td>
+          <td>${(Number(row.percent_of_visitors || 0) * 100).toFixed(1)}%</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="3">No funnel data yet.</td></tr>';
+
+    pagesTable.innerHTML = pages.length
+      ? pages.map((row) => `
+        <tr>
+          <td>${escapeHTML(row.page_path)}</td>
+          <td>${Number(row.page_views || 0).toLocaleString()}</td>
+          <td>${Number(row.unique_visitors || 0).toLocaleString()}</td>
+          <td>${Number(row.sessions || 0).toLocaleString()}</td>
+          <td>${Number(row.page_views_per_visitor || 0).toFixed(2)}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="5">No page traffic data yet.</td></tr>';
+
+    sourcesTable.innerHTML = sources.length
+      ? sources.map((row) => `
+        <tr>
+          <td>${escapeHTML(row.source_type)}</td>
+          <td>${escapeHTML(row.source)}</td>
+          <td>${escapeHTML(row.utm_medium || "—")}</td>
+          <td>${escapeHTML(row.utm_campaign || "—")}</td>
+          <td>${Number(row.sessions || 0).toLocaleString()}</td>
+          <td>${Number(row.unique_visitors || 0).toLocaleString()}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="6">No traffic source data yet.</td></tr>';
+
+    renderAdminAnalyticsMessage("Live BigQuery reporting loaded.");
+  } catch (error) {
+    renderAdminAnalyticsMessage("Website analytics are temporarily unavailable.");
+
+    funnelTable.innerHTML = '<tr><td colspan="3">Unable to load analytics.</td></tr>';
+    pagesTable.innerHTML = '<tr><td colspan="5">Unable to load analytics.</td></tr>';
+    sourcesTable.innerHTML = '<tr><td colspan="6">Unable to load analytics.</td></tr>';
+
+    console.warn(
+      "Admin analytics load failed.",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+}
+
+
 async function renderAdminDashboard() {
   if (!adminDashboard) return;
   if (!firebaseReady || !firebaseApi) {
@@ -853,6 +953,8 @@ async function renderAdminDashboard() {
     renderAdminMessage("Admin Google sign-in required.");
     return;
   }
+
+  void renderAdminAnalytics();
 
   const [membersSnapshot, registrationsSnapshot, schedulesSnapshot] = await Promise.all([
     firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "members")),
@@ -933,6 +1035,24 @@ async function renderAdminDashboard() {
 }
 
 function renderAdminMessage(message) {
+  renderAdminAnalyticsMessage(message);
+
+  const funnelTable = document.querySelector("[data-admin-funnel-table]");
+  const pagesTable = document.querySelector("[data-admin-pages-table]");
+  const sourcesTable = document.querySelector("[data-admin-sources-table]");
+
+  if (funnelTable) {
+    funnelTable.innerHTML = `<tr><td colspan="3">${escapeHTML(message)}</td></tr>`;
+  }
+
+  if (pagesTable) {
+    pagesTable.innerHTML = `<tr><td colspan="5">${escapeHTML(message)}</td></tr>`;
+  }
+
+  if (sourcesTable) {
+    sourcesTable.innerHTML = `<tr><td colspan="6">${escapeHTML(message)}</td></tr>`;
+  }
+
   setText("[data-admin-total-members]", "0");
   setText("[data-admin-new-members]", "0");
   setText("[data-admin-confirmed-members]", "0");
