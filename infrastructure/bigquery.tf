@@ -236,6 +236,18 @@ resource "google_bigquery_table" "page_traffic" {
     use_legacy_sql = false
 
     query = <<-SQL
+      WITH normalized_page_views AS (
+        SELECT
+          CASE
+            WHEN page_path IN ('/', '/index.html') THEN '/'
+            ELSE page_path
+          END AS page_path,
+          anonymous_id,
+          session_id,
+          event_timestamp
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        WHERE event_name = 'page_view'
+      )
       SELECT
         page_path,
         COUNT(*) AS page_views,
@@ -247,8 +259,7 @@ resource "google_bigquery_table" "page_traffic" {
         ) AS page_views_per_visitor,
         MIN(event_timestamp) AS first_seen,
         MAX(event_timestamp) AS last_seen
-      FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
-      WHERE event_name = 'page_view'
+      FROM normalized_page_views
       GROUP BY page_path
     SQL
   }
