@@ -99,3 +99,57 @@ resource "google_bigquery_table" "identity_links" {
     { name = "firebase_uid_hash", type = "STRING", mode = "REQUIRED" },
   ])
 }
+
+# Reporting view: one row per anonymous visitor.
+#
+# Conversion fields are booleans so repeated clicks by one visitor do not
+# inflate conversion counts. Verified membership is derived only from the
+# pseudonymous identity_links table.
+resource "google_bigquery_table" "visitor_journeys" {
+  project    = var.project_id
+  dataset_id = google_bigquery_dataset.website_analytics.dataset_id
+  table_id   = "visitor_journeys"
+
+  deletion_protection = true
+
+  view {
+    use_legacy_sql = false
+
+    query = <<-SQL
+      WITH event_rollup AS (
+        SELECT
+          anonymous_id,
+          MIN(event_timestamp) AS first_seen,
+          MAX(event_timestamp) AS last_seen,
+          COUNTIF(event_name = 'page_view') AS page_views,
+          COUNTIF(event_name = 'click') AS clicks,
+          COUNTIF(event_name = 'speaker_interest') > 0 AS speaker_interest,
+          COUNTIF(event_name = 'partner_interest') > 0 AS partner_interest,
+          COUNTIF(event_name = 'member_register_open') > 0 AS registration_started,
+          COUNTIF(event_name = 'schedule_open') > 0 AS schedule_opened,
+          COUNTIF(event_name = 'schedule_submit') > 0 AS schedule_submitted
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        GROUP BY anonymous_id
+      ),
+      verified_visitors AS (
+        SELECT DISTINCT anonymous_id
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.identity_links`
+      )
+      SELECT
+        events.anonymous_id,
+        events.first_seen,
+        events.last_seen,
+        events.page_views,
+        events.clicks,
+        events.speaker_interest,
+        events.partner_interest,
+        events.registration_started,
+        events.schedule_opened,
+        events.schedule_submitted,
+        verified.anonymous_id IS NOT NULL AS verified_member
+      FROM event_rollup AS events
+      LEFT JOIN verified_visitors AS verified
+        USING (anonymous_id)
+    SQL
+  }
+}
