@@ -43,3 +43,17 @@ resource "google_secret_manager_secret" "admin_emails" {
     auto {}
   }
 }
+
+# Signing key for the private admin application's server-side session.
+#
+# Terraform manages only the secret container. The secret VALUE is generated
+# and added separately so it never enters Git or Terraform state.
+resource "google_secret_manager_secret" "admin_session_secret" {
+  project             = var.project_id
+  secret_id           = "admin-session-secret"
+  deletion_protection = true
+
+  replication {
+    auto {}
+  }
+}

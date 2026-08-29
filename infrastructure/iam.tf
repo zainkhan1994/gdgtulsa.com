@@ -74,3 +74,22 @@ resource "google_secret_manager_secret_iam_member" "collector_admin_emails_acces
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.collector.email}"
 }
+
+# --- Private admin service account --------------------------------------
+
+# The private admin service may read only the existing administrator
+# allowlist secret.
+resource "google_secret_manager_secret_iam_member" "admin_admin_emails_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.admin_emails.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.admin.email}"
+}
+
+# The private admin service may read only its own session-signing secret.
+resource "google_secret_manager_secret_iam_member" "admin_session_secret_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.admin_session_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.admin.email}"
+}
