@@ -147,6 +147,142 @@
         </table>
       </div>
     </section>
+
+    <section class="community-section">
+      <div class="dashboard-heading community-heading">
+        <div>
+          <h2>Community</h2>
+          <p>
+            Member accounts, registrations, and scheduling activity.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="analytics-status"
+        data-community-status
+        role="status"
+        aria-live="polite"
+      >
+        Loading community data...
+      </div>
+
+      <section
+        class="metrics-grid community-metrics"
+        data-community-metrics
+        hidden
+        aria-label="Community overview"
+      >
+        <article class="metric-card">
+          <span class="metric-label">Chapter members</span>
+          <strong class="metric-value" data-chapter-members>0</strong>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">New accounts</span>
+          <strong class="metric-value" data-new-members>0</strong>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Confirmed</span>
+          <strong class="metric-value" data-confirmed-members>0</strong>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Registrations</span>
+          <strong class="metric-value" data-registration-count>0</strong>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Schedule requests</span>
+          <strong class="metric-value" data-schedule-count>0</strong>
+        </article>
+      </section>
+
+      <section class="analytics-card" data-community-content hidden>
+        <div class="card-heading">
+          <div>
+            <h3>Members</h3>
+            <p>Registered GDG Tulsa member accounts.</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Status</th>
+                <th scope="col">Created</th>
+                <th scope="col">Terms accepted</th>
+              </tr>
+            </thead>
+            <tbody data-members-body></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="analytics-card" data-community-content hidden>
+        <div class="card-heading">
+          <div>
+            <h3>Event Registrations</h3>
+            <p>Member registrations submitted through the website.</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Event</th>
+                <th scope="col">Type</th>
+                <th scope="col">Created</th>
+              </tr>
+            </thead>
+            <tbody data-registrations-body></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="analytics-card" data-community-content hidden>
+        <div class="card-heading">
+          <div>
+            <h3>Schedule Requests</h3>
+            <p>Office-hour and scheduling requests from members.</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Request</th>
+                <th scope="col">Type</th>
+                <th scope="col">Created</th>
+              </tr>
+            </thead>
+            <tbody data-schedules-body></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="analytics-card" data-community-content hidden>
+        <div class="card-heading">
+          <div>
+            <h3>Recent Activity</h3>
+            <p>Latest member and registration activity.</p>
+          </div>
+        </div>
+
+        <ul class="activity-list" data-activity-list></ul>
+      </section>
+    </section>
+
   </main>
 </body>
 </html>
