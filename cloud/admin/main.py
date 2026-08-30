@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 
 import firebase_admin
 from firebase_admin import auth as firebase_auth
+from firebase_admin import firestore
 from google.cloud import bigquery
 from flask import (
     Flask,
@@ -268,6 +269,90 @@ def analytics():
         return jsonify({"error": "analytics unavailable"}), 500
 
     return jsonify(payload), 200
+
+
+def firestore_timestamp(value):
+    if value is None:
+        return None
+
+    isoformat = getattr(value, "isoformat", None)
+
+    if callable(isoformat):
+        return isoformat()
+
+    return str(value)
+
+
+@app.route("/api/community", methods=["GET"])
+def community():
+    if not valid_admin_session():
+        return jsonify({"error": "authentication required"}), 401
+
+    try:
+        db = firestore.client(app=firebase_app)
+
+        members = []
+        for document in db.collection("members").stream():
+            data = document.to_dict() or {}
+
+            members.append({
+                "name": str(data.get("name") or ""),
+                "email": str(data.get("email") or ""),
+                "confirmed": bool(data.get("confirmed")),
+                "created_at": firestore_timestamp(data.get("createdAt")),
+                "terms_accepted_at": firestore_timestamp(
+                    data.get("termsAcceptedAt")
+                ),
+            })
+
+        registrations = []
+        for document in db.collection("registrations").stream():
+            data = document.to_dict() or {}
+
+            registrations.append({
+                "name": str(data.get("name") or ""),
+                "email": str(data.get("email") or ""),
+                "title": str(data.get("title") or ""),
+                "type": str(data.get("type") or ""),
+                "created_at": firestore_timestamp(data.get("createdAt")),
+            })
+
+        schedule_requests = []
+        for document in db.collection("scheduleRequests").stream():
+            data = document.to_dict() or {}
+
+            schedule_requests.append({
+                "name": str(data.get("name") or ""),
+                "email": str(data.get("email") or ""),
+                "title": str(data.get("title") or ""),
+                "type": str(data.get("type") or ""),
+                "created_at": firestore_timestamp(data.get("createdAt")),
+            })
+
+        payload = {
+            "members": members,
+            "registrations": registrations,
+            "schedule_requests": schedule_requests,
+            "summary": {
+                "chapter_members_all_time": 39 + len(members),
+                "new_members": len(members),
+                "confirmed_members": sum(
+                    1 for member in members
+                    if member["confirmed"]
+                ),
+                "event_registrations": len(registrations),
+                "schedule_requests": len(schedule_requests),
+                "tickets_reserved": len(registrations),
+            },
+        }
+
+        return jsonify(payload), 200
+
+    except Exception:
+        # Do not expose Firestore, IAM, project, or document details
+        # to the browser.
+        print("Private admin community query failure")
+        return jsonify({"error": "community data unavailable"}), 500
 
 
 @app.route("/logout", methods=["POST"])
