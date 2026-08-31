@@ -41,7 +41,7 @@ A community of developers, designers, and builders in Tulsa, Oklahoma — powere
 | **Hackathons** | `/hackathons.html` | Hackathon programs and resources |
 | **About GDGs** | `/about-gdg.html` | What Google Developer Groups are |
 | **Organizer** | `/organizer.html` | Organizer bio and verified credentials |
-| **Admin** | `/admin.html` | Firebase-backed member portal (auth-gated) |
+| **Members** | `/#members` | Firebase-backed member portal on the public site |
 
 All pages live at the repo root so public URLs stay clean and stable.
 
@@ -53,7 +53,7 @@ All pages live at the repo root so public URLs stay clean and stable.
 |-------|-----------|
 | **Frontend** | Vanilla HTML, CSS, JavaScript — zero build step |
 | **Hosting** | GitHub Pages with custom domain (`CNAME`) |
-| **Backend** | Firebase Auth + Firestore (member portal only) |
+| **Backend** | Firebase Auth + Firestore for members; Cloud Run + BigQuery for the private admin system |
 | **Maps** | MapLibre GL (pinned, vendored) |
 | **Fonts/Icons** | Google Fonts via CDN |
 
@@ -75,7 +75,6 @@ gdgtulsa.com/
 ├── hackathons.html             # Hackathons
 ├── about-gdg.html              # About GDGs
 ├── organizer.html              # Organizer profile
-├── admin.html                  # Member portal
 │
 ├── styles.css                  # All site styles (design tokens → components)
 ├── script.js                   # Nav, auth, member portal, filtering
@@ -155,7 +154,7 @@ python3 -m http.server 8000
 
 Open [http://localhost:8000](http://localhost:8000).
 
-> **Note:** The member portal (`admin.html`) requires Firebase credentials. All other pages work fully offline.
+> **Note:** The member portal is part of the public homepage and requires Firebase. The admin dashboard runs separately as a private Cloud Run application and is not part of the public GitHub Pages site.
 
 ---
 

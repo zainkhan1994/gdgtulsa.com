@@ -88,7 +88,7 @@ The public site uses:
 - `consent.js`
 - `tracker.js`
 
-`admin.html` is intentionally excluded from visitor analytics.
+The admin dashboard runs separately as a private Cloud Run application and is not part of the public website analytics surface.
 
 ## Security
 
