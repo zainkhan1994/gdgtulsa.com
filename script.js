@@ -1,4 +1,4 @@
-import { adminEmails, firebaseConfig, firebaseReady } from "./firebase-config.js?v=9e35f5939bdd03bf3dc53bb32b83512516bebbaf";
+import { firebaseConfig, firebaseReady } from "./firebase-config.js?v=9e35f5939bdd03bf3dc53bb32b83512516bebbaf";
 
 const FIREBASE_SDK_VERSION = "10.12.5";
 const meter = document.querySelector(".scroll-meter");
@@ -9,7 +9,6 @@ const memberSection = document.querySelector("[data-member-section]");
 const memberFeed = document.querySelector("[data-member-feed]");
 const authModal = document.querySelector("[data-auth-modal]");
 const scheduleModal = document.querySelector("[data-schedule-modal]");
-const adminDashboard = document.querySelector("[data-admin-dashboard]");
 
 (function initRotatingHeadline() {
   const container = document.querySelector(".rotating-container");
@@ -148,15 +147,12 @@ const state = {
   resources: [],
   events: [],
   registeredEvents: new Set(),
-  admin: false
 };
 
 let firebaseApi = null;
 
 const ANALYTICS_IDENTITY_ENDPOINT =
   "https://gdg-tulsa-collector-867531953739.us-central1.run.app/identify";
-const ANALYTICS_ADMIN_ENDPOINT =
-  "https://gdg-tulsa-collector-867531953739.us-central1.run.app/admin/analytics";
 const ANALYTICS_CONSENT_KEY = "gdg_analytics_consent";
 const ANALYTICS_ANON_KEY = "gdg_anonymous_id";
 const ANALYTICS_SESSION_KEY = "gdg_session_id";
@@ -240,9 +236,6 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
-function isAdminEmail(email) {
-  return adminEmails.map(normalizeEmail).includes(normalizeEmail(email));
-}
 
 function readJSON(key, fallback) {
   try {
@@ -373,7 +366,6 @@ async function setupFirebase() {
   if (!firebaseReady) {
     state.authReady = true;
     renderAll();
-    await renderAdminDashboard();
     showToast("Firebase config is not filled in yet. Real email verification is waiting on Firebase setup.");
     return;
   }
@@ -399,7 +391,6 @@ async function setupFirebase() {
     firebaseApi.onAuthStateChanged(auth, async (user) => {
       if (!user) {
         state.currentMember = null;
-        state.admin = false;
         state.resources = [];
         state.events = [];
         state.registeredEvents.clear();
@@ -415,11 +406,9 @@ async function setupFirebase() {
       writeJSON(storageKeys.hasSignedIn, true);
       state.currentMember = await saveMemberFromFirebaseUser(user);
       void linkAnalyticsIdentity(user);
-      state.admin = isAdminEmail(user.email);
       state.authReady = true;
       await loadProtectedMemberContent();
       renderAll();
-      await renderAdminDashboard();
     });
   } catch (error) {
     console.error(error);
@@ -459,7 +448,6 @@ async function saveMemberFromFirebaseUser(user, pending = null) {
     name: pending?.name || existing.name || user.displayName || email.split("@")[0],
     authProvider: provider,
     confirmed: Boolean(user.emailVerified || provider === "google.com"),
-    admin: isAdminEmail(email),
     lastSeenAt: firebaseApi.serverTimestamp()
   };
 
@@ -547,17 +535,15 @@ async function loginMember(form) {
   });
 }
 
-async function continueWithGoogle({ adminLogin = false } = {}) {
+async function continueWithGoogle() {
   if (!firebaseApi) {
     showToast("Firebase is not configured yet, so Google sign-in cannot run.");
     return;
   }
 
-  const existingUser = firebaseApi.auth.currentUser;
-  const existingAdmin = existingUser && isAdminEmail(existingUser.email);
   const termsAccepted = document.querySelector("[data-auth-form='register'] input[name='terms']")?.checked;
 
-  if (!adminLogin && !existingAdmin && !termsAccepted) {
+  if (!termsAccepted) {
     switchAuthTab("register");
     openAuth("register");
     showToast("Accept member terms before creating a new Google member account.");
@@ -571,12 +557,10 @@ async function continueWithGoogle({ adminLogin = false } = {}) {
   try {
     const credential = await firebaseApi.signInWithPopup(firebaseApi.auth, firebaseApi.googleProvider);
     state.currentMember = await saveMemberFromFirebaseUser(credential.user);
-    state.admin = isAdminEmail(credential.user.email);
     closeAuth();
     await loadProtectedMemberContent();
     renderAll();
-    await renderAdminDashboard();
-    showToast(state.admin ? "Admin signed in with Google." : "Signed in with Google.");
+    showToast("Signed in with Google.");
   } catch (error) {
     console.error(error);
     showToast(formatAuthError(error));
@@ -588,7 +572,6 @@ async function signOutMember() {
     await firebaseApi.signOut(firebaseApi.auth);
   }
   state.currentMember = null;
-  state.admin = false;
   state.resources = [];
   state.events = [];
   state.registeredEvents.clear();
@@ -623,7 +606,6 @@ async function registerForEvent(eventName) {
   state.registeredEvents.add(eventName);
   renderMemberFeed();
   showToast(`Registered for ${eventName}.`);
-  await renderAdminDashboard();
 }
 
 function openScheduler() {
@@ -690,7 +672,6 @@ async function requestScheduleTime(form) {
   form.reset();
   closeScheduler();
   showToast("Office-hour request saved.");
-  await renderAdminDashboard();
 }
 
 function renderMemberSection() {
@@ -698,13 +679,7 @@ function renderMemberSection() {
   const isUnlocked = Boolean(member?.confirmed);
 
   document.querySelectorAll("[data-member-signout]").forEach((button) => {
-    button.hidden = !isUnlocked && !state.admin;
-  });
-  document.querySelectorAll("[data-admin-only]").forEach((element) => {
-    element.hidden = !state.admin;
-  });
-  document.querySelectorAll("[data-admin-google-login]").forEach((button) => {
-    button.hidden = state.admin;
+    button.hidden = !isUnlocked;
   });
   document.querySelectorAll(".header-member").forEach((button) => {
     button.textContent = isUnlocked ? "Member Portal" : "Member Sign In";
@@ -793,8 +768,7 @@ function renderMemberFeed() {
     memberFeed.innerHTML = `
       <div class="member-empty-state">
         <h3>Member content is ready for Firebase.</h3>
-        <p>No Firestore resources have been published yet. Add documents to <code>memberResources</code> and <code>memberEvents</code>, or use the admin seed action.</p>
-        ${state.admin ? '<button class="button primary" type="button" data-seed-content>Publish starter content</button>' : ""}
+        <p>No member resources or events have been published yet.</p>
       </div>
     `;
     return;
@@ -827,274 +801,6 @@ function renderMemberFeed() {
       </div>
     </article>
   `).join("");
-}
-
-function setAdminTab(tabName) {
-  if (!adminDashboard) return;
-  const selected = tabName || "overview";
-  document.querySelectorAll("[data-admin-tab]").forEach((tab) => {
-    tab.classList.toggle("is-active", tab.dataset.adminTab === selected);
-  });
-  document.querySelectorAll("[data-admin-panel]").forEach((panel) => {
-    panel.classList.toggle("is-active", panel.dataset.adminPanel === selected);
-  });
-}
-
-function setText(selector, value) {
-  const element = document.querySelector(selector);
-  if (element) element.textContent = value;
-}
-
-function renderAdminAnalyticsMessage(message) {
-  setText("[data-admin-analytics-status]", message);
-}
-
-async function renderAdminAnalytics() {
-  const funnelTable = document.querySelector("[data-admin-funnel-table]");
-  const pagesTable = document.querySelector("[data-admin-pages-table]");
-  const sourcesTable = document.querySelector("[data-admin-sources-table]");
-
-  if (!funnelTable || !pagesTable || !sourcesTable) return;
-
-  const user = firebaseApi?.auth?.currentUser;
-
-  if (!user || !state.admin) {
-    renderAdminAnalyticsMessage("Admin Google sign-in required.");
-    return;
-  }
-
-  renderAdminAnalyticsMessage("Loading website analytics...");
-
-  try {
-    const token = await user.getIdToken();
-
-    const response = await fetch(ANALYTICS_ADMIN_ENDPOINT, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      cache: "no-store"
-    });
-
-    const payload = await response.json();
-
-    if (!response.ok) {
-      throw new Error(payload?.error || `Analytics request failed (${response.status})`);
-    }
-
-    // The admin may have signed out while the request was in flight.
-    // Never repopulate analytics after the authenticated session changes.
-    if (firebaseApi?.auth?.currentUser !== user || !state.admin) {
-      return;
-    }
-
-    const funnel = Array.isArray(payload.funnel) ? payload.funnel : [];
-    const pages = Array.isArray(payload.pages) ? payload.pages : [];
-    const sources = Array.isArray(payload.sources) ? payload.sources : [];
-
-    funnelTable.innerHTML = funnel.length
-      ? funnel.map((row) => `
-        <tr>
-          <td>${escapeHTML(row.stage)}</td>
-          <td>${Number(row.visitors || 0).toLocaleString()}</td>
-          <td>${(Number(row.percent_of_visitors || 0) * 100).toFixed(1)}%</td>
-        </tr>
-      `).join("")
-      : '<tr><td colspan="3">No funnel data yet.</td></tr>';
-
-    pagesTable.innerHTML = pages.length
-      ? pages.map((row) => `
-        <tr>
-          <td>${escapeHTML(row.page_path)}</td>
-          <td>${Number(row.page_views || 0).toLocaleString()}</td>
-          <td>${Number(row.unique_visitors || 0).toLocaleString()}</td>
-          <td>${Number(row.sessions || 0).toLocaleString()}</td>
-          <td>${Number(row.page_views_per_visitor || 0).toFixed(2)}</td>
-        </tr>
-      `).join("")
-      : '<tr><td colspan="5">No page traffic data yet.</td></tr>';
-
-    sourcesTable.innerHTML = sources.length
-      ? sources.map((row) => `
-        <tr>
-          <td>${escapeHTML(row.source_type)}</td>
-          <td>${escapeHTML(row.source)}</td>
-          <td>${escapeHTML(row.utm_medium || "—")}</td>
-          <td>${escapeHTML(row.utm_campaign || "—")}</td>
-          <td>${Number(row.sessions || 0).toLocaleString()}</td>
-          <td>${Number(row.unique_visitors || 0).toLocaleString()}</td>
-        </tr>
-      `).join("")
-      : '<tr><td colspan="6">No traffic source data yet.</td></tr>';
-
-    renderAdminAnalyticsMessage("Live BigQuery reporting loaded.");
-  } catch (error) {
-    renderAdminAnalyticsMessage("Website analytics are temporarily unavailable.");
-
-    funnelTable.innerHTML = '<tr><td colspan="3">Unable to load analytics.</td></tr>';
-    pagesTable.innerHTML = '<tr><td colspan="5">Unable to load analytics.</td></tr>';
-    sourcesTable.innerHTML = '<tr><td colspan="6">Unable to load analytics.</td></tr>';
-
-    console.warn(
-      "Admin analytics load failed.",
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-}
-
-
-async function renderAdminDashboard() {
-  if (!adminDashboard) return;
-  if (!firebaseReady || !firebaseApi) {
-    renderAdminMessage("Firebase is not configured yet.");
-    return;
-  }
-  if (!state.admin) {
-    renderAdminMessage("Admin Google sign-in required.");
-    return;
-  }
-
-  void renderAdminAnalytics();
-
-  const [membersSnapshot, registrationsSnapshot, schedulesSnapshot] = await Promise.all([
-    firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "members")),
-    firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "registrations")),
-    firebaseApi.getDocs(firebaseApi.collection(firebaseApi.db, "scheduleRequests"))
-  ]);
-
-  const members = membersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  const registrations = registrationsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  const schedules = schedulesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  const allRequests = [...registrations, ...schedules].sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
-
-  setText("[data-admin-total-members]", 39 + members.length);
-  setText("[data-admin-new-members]", members.length);
-  setText("[data-admin-confirmed-members]", members.filter((member) => member.confirmed).length);
-  setText("[data-admin-registration-count]", registrations.length);
-  setText("[data-admin-ticket-count]", registrations.length);
-
-  const memberTable = document.querySelector("[data-admin-members-table]");
-  if (memberTable) {
-    memberTable.innerHTML = members.length
-      ? members.map((member) => `
-        <tr>
-          <td>${escapeHTML(member.name)}</td>
-          <td>${escapeHTML(member.email)}</td>
-          <td><span class="status-pill ${member.confirmed ? "" : "pending"}">${member.confirmed ? "Confirmed" : "Pending"}</span></td>
-          <td>${formatDate(member.createdAt)}</td>
-          <td>${formatDate(member.termsAcceptedAt)}</td>
-        </tr>
-      `).join("")
-      : "<tr><td colspan='5'>No members registered yet.</td></tr>";
-  }
-
-  const registrationsTable = document.querySelector("[data-admin-registrations-table]");
-  if (registrationsTable) {
-    registrationsTable.innerHTML = allRequests.length
-      ? allRequests.map((request) => `
-        <tr>
-          <td>${escapeHTML(request.name)}</td>
-          <td>${escapeHTML(request.email)}</td>
-          <td>${escapeHTML(request.title)}</td>
-          <td>${escapeHTML(request.type)}</td>
-          <td>${formatDate(request.createdAt)}</td>
-        </tr>
-      `).join("")
-      : "<tr><td colspan='5'>No registrations yet.</td></tr>";
-  }
-
-  const activityList = document.querySelector("[data-admin-activity-list]");
-  if (activityList) {
-    const memberActivity = members.map((member) => ({
-      createdAt: member.createdAt,
-      label: `${member.name} ${member.confirmed ? "confirmed membership" : "started registration"}`
-    }));
-    const requestActivity = allRequests.map((request) => ({
-      createdAt: request.createdAt,
-      label: `${request.name} submitted ${String(request.type || "").toLowerCase()}: ${request.title}`
-    }));
-    const activity = [...memberActivity, ...requestActivity]
-      .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
-      .slice(0, 5);
-
-    activityList.innerHTML = activity.length
-      ? activity.map((item) => `<li>${escapeHTML(item.label)}<br><small>${formatDate(item.createdAt)}</small></li>`).join("")
-      : "<li>No member activity yet.</li>";
-  }
-
-  document.querySelectorAll("[data-admin-events-list] article").forEach((card) => {
-    const title = card.querySelector("h3")?.textContent || "";
-    const count = registrations.filter((registration) => registration.title === title).length;
-    let countNode = card.querySelector("small");
-    if (!countNode) {
-      countNode = document.createElement("small");
-      card.append(countNode);
-    }
-    countNode.textContent = `${count} registrations`;
-  });
-}
-
-function renderAdminMessage(message) {
-  renderAdminAnalyticsMessage(message);
-
-  const funnelTable = document.querySelector("[data-admin-funnel-table]");
-  const pagesTable = document.querySelector("[data-admin-pages-table]");
-  const sourcesTable = document.querySelector("[data-admin-sources-table]");
-
-  if (funnelTable) {
-    funnelTable.innerHTML = `<tr><td colspan="3">${escapeHTML(message)}</td></tr>`;
-  }
-
-  if (pagesTable) {
-    pagesTable.innerHTML = `<tr><td colspan="5">${escapeHTML(message)}</td></tr>`;
-  }
-
-  if (sourcesTable) {
-    sourcesTable.innerHTML = `<tr><td colspan="6">${escapeHTML(message)}</td></tr>`;
-  }
-
-  setText("[data-admin-total-members]", "0");
-  setText("[data-admin-new-members]", "0");
-  setText("[data-admin-confirmed-members]", "0");
-  setText("[data-admin-registration-count]", "0");
-  setText("[data-admin-ticket-count]", "0");
-  const memberTable = document.querySelector("[data-admin-members-table]");
-  const registrationsTable = document.querySelector("[data-admin-registrations-table]");
-  const activityList = document.querySelector("[data-admin-activity-list]");
-  if (memberTable) memberTable.innerHTML = `<tr><td colspan="5">${escapeHTML(message)}</td></tr>`;
-  if (registrationsTable) registrationsTable.innerHTML = `<tr><td colspan="5">${escapeHTML(message)}</td></tr>`;
-  if (activityList) activityList.innerHTML = `<li>${escapeHTML(message)}</li>`;
-}
-
-async function seedStarterContent() {
-  if (!firebaseApi || !state.admin) {
-    showToast("Admin sign-in is required to publish starter content.");
-    return;
-  }
-  await Promise.all(starterResources.map((resource) => firebaseApi.setDoc(
-    firebaseApi.doc(firebaseApi.db, "memberResources", slug(resource.title)),
-    resource,
-    { merge: true }
-  )));
-  await Promise.all(starterEvents.map((event) => firebaseApi.setDoc(
-    firebaseApi.doc(firebaseApi.db, "memberEvents", slug(event.title)),
-    event,
-    { merge: true }
-  )));
-  await loadProtectedMemberContent();
-  renderAll();
-  showToast("Starter member content published.");
-}
-
-function slug(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function exportCSV(type) {
-  showToast(`Use the Firebase Console export for ${type} once Firestore is live.`);
 }
 
 function renderAll() {
@@ -1183,7 +889,6 @@ document.addEventListener("click", async (event) => {
   const authTab = target.closest("[data-auth-tab]");
   if (authTab) switchAuthTab(authTab.dataset.authTab);
   if (target.closest("[data-google-login]")) await continueWithGoogle();
-  if (target.closest("[data-admin-google-login]")) await continueWithGoogle({ adminLogin: true });
   if (target.closest("[data-member-signout]")) await signOutMember();
 
   const memberResource = target.closest("[data-requires-member]");
@@ -1196,12 +901,7 @@ document.addEventListener("click", async (event) => {
   if (eventSignup) await registerForEvent(eventSignup.dataset.eventSignup);
   if (target.closest("[data-open-scheduler]")) openScheduler();
   if (target.closest("[data-close-scheduler]")) closeScheduler();
-  if (target.closest("[data-seed-content]")) await seedStarterContent();
 
-  const adminTab = target.closest("[data-admin-tab]");
-  if (adminTab) setAdminTab(adminTab.dataset.adminTab);
-  const exportButton = target.closest("[data-admin-export]");
-  if (exportButton) exportCSV(exportButton.dataset.adminExport);
 });
 
 
@@ -1316,7 +1016,6 @@ function isEmailLinkCallback() {
 }
 
 (function initFirebaseTriggers() {
-  const isPortalPage = Boolean(adminDashboard);
   const returning = readJSON(storageKeys.hasSignedIn, false);
   const emailLinkCallback = isEmailLinkCallback();
 
@@ -1330,7 +1029,7 @@ function isEmailLinkCallback() {
     return;
   }
 
-  if (isPortalPage || returning) {
+  if (returning) {
     if ("requestIdleCallback" in window) window.requestIdleCallback(scheduleFirebaseSetup, { timeout: 2200 });
     else window.setTimeout(scheduleFirebaseSetup, 0);
     return;
@@ -1339,7 +1038,7 @@ function isEmailLinkCallback() {
   // Otherwise wait for intent. Capture phase so the SDK starts loading before
   // the click handlers that need it run.
   const wake = (event) => {
-    if (!event.target?.closest?.("[data-open-auth], [data-member-signout], [data-open-scheduler], [data-admin-tab]")) return;
+    if (!event.target?.closest?.("[data-open-auth], [data-member-signout], [data-open-scheduler]")) return;
     scheduleFirebaseSetup();
   };
   document.addEventListener("pointerdown", wake, true);
