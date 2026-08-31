@@ -37,7 +37,7 @@ resource "google_cloud_run_v2_service" "collector" {
     }
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:a02570025736f6aa1a60d1c9546a9d90546549ebb84498bbf7cd00ea3458e000"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-collector@sha256:04b85bafbe84c331d407afb74fd51b1433ff9c586fb34775f25be2719a483fcb"
 
       ports {
         name           = "http1"
@@ -46,7 +46,7 @@ resource "google_cloud_run_v2_service" "collector" {
 
       resources {
         limits = {
-          cpu    = "1000m"
+          cpu    = "1"
           memory = "256Mi"
         }
         # Both are real runtime settings and stay actively managed.
