@@ -368,6 +368,8 @@ def analytics():
               schedule_submitted,
               SAFE_DIVIDE(schedule_submitted, total_visitors)
             FROM totals
+
+            ORDER BY stage_order
         """,
 
         "pages": f"""
@@ -556,6 +558,11 @@ def analytics():
                 {key: row[key] for key in row.keys()}
                 for row in rows
             ]
+
+        # stage_order is the canonical ordering field for the funnel. UNION ALL
+        # gives BigQuery no ordering obligation, so never let the rendered stage
+        # sequence depend on the order rows happen to come back in.
+        payload["funnel"].sort(key=lambda stage: stage["stage_order"])
 
     except Exception:
         # Never expose SQL, credentials, service-account details or query

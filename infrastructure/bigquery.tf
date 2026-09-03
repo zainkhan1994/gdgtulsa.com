@@ -301,6 +301,8 @@ resource "google_bigquery_table" "conversion_funnel" {
         schedule_submitted,
         SAFE_DIVIDE(schedule_submitted, total_visitors)
       FROM totals
+
+      ORDER BY stage_order
     SQL
   }
 }

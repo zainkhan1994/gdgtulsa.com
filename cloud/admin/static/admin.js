@@ -298,7 +298,13 @@ function renderFunnel(rows) {
 
   body.replaceChildren();
 
-  for (const item of rows) {
+  // stage_order is the canonical ordering field. Sort defensively so the funnel
+  // always renders 1 -> 5 and never depends on database row ordering.
+  const stages = [...rows].sort(
+    (a, b) => numericValue(a.stage_order) - numericValue(b.stage_order)
+  );
+
+  for (const item of stages) {
     const row = document.createElement("tr");
 
     appendCell(row, item.stage);
