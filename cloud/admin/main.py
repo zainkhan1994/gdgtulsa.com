@@ -217,43 +217,244 @@ def analytics():
     if not valid_admin_session():
         return jsonify({"error": "authentication required"}), 401
 
+    range_key = request.args.get("range", "30d").strip().lower()
+
+    range_days = {
+        "7d": 7,
+        "30d": 30,
+        "90d": 90,
+    }
+
+    if range_key == "all":
+        event_date_filter = "TRUE"
+    elif range_key in range_days:
+        days = range_days[range_key]
+        event_date_filter = (
+            "event_timestamp >= "
+            f"TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)"
+        )
+    else:
+        return jsonify({"error": "invalid analytics range"}), 400
+
     queries = {
         "funnel": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            event_rollup AS (
+              SELECT
+                anonymous_id,
+                COUNTIF(event_name = 'member_register_open') > 0
+                  AS registration_started,
+                COUNTIF(event_name = 'schedule_open') > 0
+                  AS schedule_opened,
+                COUNTIF(event_name = 'schedule_submit') > 0
+                  AS schedule_submitted
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE {event_date_filter}
+                AND NOT EXISTS (
+                  SELECT 1
+                  FROM admin_visitors AS admin
+                  WHERE admin.anonymous_id = event.anonymous_id
+                )
+              GROUP BY anonymous_id
+            ),
+            verified_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+            ),
+            journeys AS (
+              SELECT
+                events.anonymous_id,
+                events.registration_started,
+                events.schedule_opened,
+                events.schedule_submitted,
+                verified.anonymous_id IS NOT NULL AS verified_member
+              FROM event_rollup AS events
+              LEFT JOIN verified_visitors AS verified
+                USING (anonymous_id)
+            ),
+            totals AS (
+              SELECT
+                COUNT(*) AS total_visitors,
+                COUNTIF(registration_started) AS registration_started,
+                COUNTIF(verified_member) AS verified_members,
+                COUNTIF(schedule_opened) AS schedule_opened,
+                COUNTIF(schedule_submitted) AS schedule_submitted
+              FROM journeys
+            )
             SELECT
-              stage_order,
-              stage,
-              visitors,
-              percent_of_visitors
-            FROM `{PROJECT_ID}.{DATASET_ID}.conversion_funnel`
-            ORDER BY stage_order
+              1 AS stage_order,
+              'Visitors' AS stage,
+              total_visitors AS visitors,
+              1.0 AS percent_of_visitors
+            FROM totals
+
+            UNION ALL
+
+            SELECT
+              2,
+              'Registration started',
+              registration_started,
+              SAFE_DIVIDE(registration_started, total_visitors)
+            FROM totals
+
+            UNION ALL
+
+            SELECT
+              3,
+              'Verified members',
+              verified_members,
+              SAFE_DIVIDE(verified_members, total_visitors)
+            FROM totals
+
+            UNION ALL
+
+            SELECT
+              4,
+              'Scheduler opened',
+              schedule_opened,
+              SAFE_DIVIDE(schedule_opened, total_visitors)
+            FROM totals
+
+            UNION ALL
+
+            SELECT
+              5,
+              'Schedule submitted',
+              schedule_submitted,
+              SAFE_DIVIDE(schedule_submitted, total_visitors)
+            FROM totals
         """,
+
         "pages": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            normalized_page_views AS (
+              SELECT
+                CASE
+                  WHEN page_path IN ('/', '/index.html') THEN '/'
+                  ELSE page_path
+                END AS page_path,
+                anonymous_id,
+                session_id,
+                event_timestamp
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE event_name = 'page_view'
+                AND {event_date_filter}
+                AND NOT EXISTS (
+                  SELECT 1
+                  FROM admin_visitors AS admin
+                  WHERE admin.anonymous_id = event.anonymous_id
+                )
+            )
             SELECT
               page_path,
-              page_views,
-              unique_visitors,
-              sessions,
-              page_views_per_visitor
-            FROM `{PROJECT_ID}.{DATASET_ID}.page_traffic`
+              COUNT(*) AS page_views,
+              COUNT(DISTINCT anonymous_id) AS unique_visitors,
+              COUNT(DISTINCT session_id) AS sessions,
+              SAFE_DIVIDE(
+                COUNT(*),
+                COUNT(DISTINCT anonymous_id)
+              ) AS page_views_per_visitor
+            FROM normalized_page_views
+            GROUP BY page_path
             ORDER BY page_views DESC
             LIMIT 50
         """,
+
         "sources": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            landing_pages AS (
+              SELECT
+                session_id,
+                anonymous_id,
+                page_path AS landing_page,
+                referrer,
+                NULLIF(utm_source, '') AS utm_source,
+                NULLIF(utm_medium, '') AS utm_medium,
+                NULLIF(utm_campaign, '') AS utm_campaign,
+                ROW_NUMBER() OVER (
+                  PARTITION BY session_id
+                  ORDER BY event_timestamp, event_id
+                ) AS row_num
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE event_name = 'page_view'
+                AND {event_date_filter}
+                AND NOT EXISTS (
+                  SELECT 1
+                  FROM admin_visitors AS admin
+                  WHERE admin.anonymous_id = event.anonymous_id
+                )
+            ),
+            classified AS (
+              SELECT
+                session_id,
+                anonymous_id,
+                landing_page,
+                CASE
+                  WHEN utm_source IS NOT NULL THEN 'utm'
+                  WHEN referrer IS NULL OR referrer = '' THEN 'direct'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://tulsahub\\.firebaseapp\\.com'
+                  ) THEN 'authentication'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://(www\\.)?gdgtulsa\\.com'
+                  ) THEN 'internal'
+                  ELSE 'referral'
+                END AS source_type,
+                CASE
+                  WHEN utm_source IS NOT NULL THEN utm_source
+                  WHEN referrer IS NULL OR referrer = ''
+                    THEN '(direct / unknown)'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://tulsahub\\.firebaseapp\\.com'
+                  ) THEN 'tulsahub.firebaseapp.com'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://(www\\.)?gdgtulsa\\.com'
+                  ) THEN 'gdgtulsa.com'
+                  ELSE COALESCE(NET.HOST(referrer), referrer)
+                END AS source,
+                utm_medium,
+                utm_campaign
+              FROM landing_pages
+              WHERE row_num = 1
+            )
             SELECT
               source_type,
               source,
               utm_medium,
               utm_campaign,
-              sessions,
-              unique_visitors
-            FROM `{PROJECT_ID}.{DATASET_ID}.traffic_sources`
+              COUNT(*) AS sessions,
+              COUNT(DISTINCT anonymous_id) AS unique_visitors
+            FROM classified
+            GROUP BY
+              source_type,
+              source,
+              utm_medium,
+              utm_campaign
             ORDER BY sessions DESC
             LIMIT 50
         """,
     }
 
     try:
-        payload = {}
+        payload = {
+            "range": range_key,
+        }
 
         for name, query in queries.items():
             rows = bq.query(query).result()
@@ -269,6 +470,7 @@ def analytics():
         return jsonify({"error": "analytics unavailable"}), 500
 
     return jsonify(payload), 200
+
 
 
 def firestore_timestamp(value):

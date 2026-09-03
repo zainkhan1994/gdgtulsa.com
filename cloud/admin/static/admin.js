@@ -11,6 +11,7 @@ const analyticsStatus = document.querySelector("[data-analytics-status]");
 const analyticsContents = document.querySelectorAll("[data-analytics-content]");
 const metrics = document.querySelector("[data-metrics]");
 const refreshButton = document.querySelector("[data-analytics-refresh]");
+const rangeSelect = document.querySelector("[data-analytics-range]");
 const updatedAt = document.querySelector("[data-updated-at]");
 
 const communityStatus = document.querySelector("[data-community-status]");
@@ -519,6 +520,10 @@ function setAnalyticsLoading(isLoading) {
       ? "Refreshing..."
       : "Refresh";
   }
+
+  if (rangeSelect) {
+    rangeSelect.disabled = isLoading;
+  }
 }
 
 async function loadAnalytics() {
@@ -533,10 +538,15 @@ async function loadAnalytics() {
   }
 
   try {
-    const response = await fetch("/api/analytics", {
-      credentials: "same-origin",
-      cache: "no-store"
-    });
+    const range = rangeSelect?.value || "30d";
+
+    const response = await fetch(
+      `/api/analytics?range=${encodeURIComponent(range)}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store"
+      }
+    );
 
     if (response.status === 401) {
       window.location.replace("/login");
@@ -681,6 +691,7 @@ async function loadDashboard() {
 loginButton?.addEventListener("click", loginWithGoogle);
 signOutButton?.addEventListener("click", logout);
 refreshButton?.addEventListener("click", loadDashboard);
+rangeSelect?.addEventListener("change", loadAnalytics);
 
 if (analyticsRoot) {
   loadDashboard();

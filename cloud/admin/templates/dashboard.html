@@ -34,6 +34,20 @@
       </div>
 
       <div class="dashboard-actions">
+        <label class="analytics-range-control">
+          <span class="sr-only">Analytics date range</span>
+          <select
+            class="analytics-range-select"
+            data-analytics-range
+            aria-label="Analytics date range"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d" selected>Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
+        </label>
+
         <span class="updated-at" data-updated-at></span>
 
         <button
