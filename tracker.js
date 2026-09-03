@@ -6,31 +6,56 @@
   const ANON_KEY = "gdg_anonymous_id";
   const SESSION_KEY = "gdg_session_id";
   const LANDING_KEY = "gdg_landing_attribution";
+  const CHANGED_EVENT = "gdg:consent-changed";
 
-  if (localStorage.getItem(CONSENT_KEY) !== "granted") {
-    return;
+  // Storage access can throw, not merely return null. Analytics is the least
+  // important thing on the page, so it never gets to break it.
+  function readLocal(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
   }
+
+  function writeLocal(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function readSession(key) {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSession(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Everything mutable about a tracking run. Cleared by stop() so a later
+  // start() cannot inherit an identifier from a period the visitor has since
+  // revoked consent for.
+  let running = false;
+  let listeners = null;
+  let anonymousId = null;
+  let sessionId = null;
 
   const createId = () =>
     crypto.randomUUID
       ? crypto.randomUUID()
       : Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-  let anonymousId = localStorage.getItem(ANON_KEY);
-
-  if (!anonymousId) {
-    anonymousId = createId();
-    localStorage.setItem(ANON_KEY, anonymousId);
-  }
-
-  let sessionId = sessionStorage.getItem(SESSION_KEY);
-
-  if (!sessionId) {
-    sessionId = createId();
-    sessionStorage.setItem(SESSION_KEY, sessionId);
-  }
-
-  const params = new URLSearchParams(window.location.search);
 
   // Conversion events. Only these names are ever sent; anything else arriving
   // on the gdg:analytics channel is discarded. Keeping this an explicit
@@ -82,7 +107,7 @@
     let snapshot;
 
     try {
-      const raw = sessionStorage.getItem(LANDING_KEY);
+      const raw = readSession(LANDING_KEY);
       if (!raw) return null;
 
       snapshot = JSON.parse(raw);
@@ -94,10 +119,9 @@
       return null;
     }
 
-    try {
-      snapshot.consumed = true;
-      sessionStorage.setItem(LANDING_KEY, JSON.stringify(snapshot));
-    } catch {
+    snapshot.consumed = true;
+
+    if (!writeSession(LANDING_KEY, JSON.stringify(snapshot))) {
       // Could not mark it consumed, so do not risk applying it more than once.
       return null;
     }
@@ -113,6 +137,13 @@
   }
 
   function sendEvent(eventName, extra = {}, useBeacon = false) {
+    // The consent gate, checked at the moment of sending rather than only at
+    // startup. A revocation while the page is open takes effect here: a click
+    // handler that is already mid-flight still cannot get a request out.
+    if (!running) return;
+
+    const params = new URLSearchParams(window.location.search);
+
     const payload = {
       consent: true,
       anonymous_id: anonymousId,
@@ -150,14 +181,7 @@
     }).catch(() => {});
   }
 
-  sendEvent("page_view", takeLandingAttribution() || {});
-
-  // Tell application code that consent is granted and the analytics browser
-  // and session IDs now exist. No identifiers or authentication data are
-  // included in the event itself.
-  window.dispatchEvent(new Event("gdg:analytics-ready"));
-
-  document.addEventListener("click", event => {
+  function onDocumentClick(event) {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;
 
@@ -196,7 +220,7 @@
     } else if (subject === "partnership interest") {
       sendEvent("partner_interest", {}, true);
     }
-  });
+  }
 
   // Conversion channel for application code:
   //
@@ -208,9 +232,85 @@
   // Every other property of detail is ignored by construction, so a caller
   // cannot leak an email, uid or form field into analytics even by mistake.
   // anonymous_id and session_id stay private to this closure.
-  window.addEventListener("gdg:analytics", event => {
+  function onAnalyticsEvent(event) {
     const name = event && event.detail && event.detail.event_name;
     if (typeof name !== "string" || !CONVERSION_EVENTS.has(name)) return;
     sendEvent(name);
+  }
+
+  // Both listeners share one AbortController, so stop() detaches them in a
+  // single call and cannot leave one behind. This is what keeps repeated
+  // enable/disable cycles from stacking duplicate handlers and sending the
+  // same click several times.
+  function attachListeners(signal) {
+    document.addEventListener("click", onDocumentClick, { signal });
+    window.addEventListener("gdg:analytics", onAnalyticsEvent, { signal });
+  }
+
+  function start() {
+    // Idempotent. A second call while already running must not produce a
+    // second page_view or a second set of listeners.
+    if (running) return;
+
+    if (readLocal(CONSENT_KEY) !== "granted") return;
+
+    // Identifiers are minted here rather than at load, so a visitor who
+    // revoked and re-granted gets genuinely new ones. The old anonymous id was
+    // removed at revocation and is never brought back.
+    let nextAnonymous = readLocal(ANON_KEY);
+
+    if (!nextAnonymous) {
+      nextAnonymous = createId();
+      if (!writeLocal(ANON_KEY, nextAnonymous)) return;
+    }
+
+    let nextSession = readSession(SESSION_KEY);
+
+    if (!nextSession) {
+      nextSession = createId();
+      if (!writeSession(SESSION_KEY, nextSession)) return;
+    }
+
+    anonymousId = nextAnonymous;
+    sessionId = nextSession;
+
+    running = true;
+    listeners = new AbortController();
+    attachListeners(listeners.signal);
+
+    sendEvent("page_view", takeLandingAttribution() || {});
+
+    // Tell application code that consent is granted and the analytics browser
+    // and session IDs now exist. No identifiers or authentication data are
+    // included in the event itself.
+    window.dispatchEvent(new Event("gdg:analytics-ready"));
+  }
+
+  function stop() {
+    if (!running) return;
+
+    // Order matters: clear the gate first, so anything that fires while the
+    // listeners are being detached is already refused by sendEvent.
+    running = false;
+
+    if (listeners) {
+      listeners.abort();
+      listeners = null;
+    }
+
+    anonymousId = null;
+    sessionId = null;
+  }
+
+  window.addEventListener(CHANGED_EVENT, event => {
+    const next = event && event.detail && event.detail.consent;
+
+    if (next === "granted") {
+      start();
+    } else if (next === "denied") {
+      stop();
+    }
   });
+
+  start();
 })();
