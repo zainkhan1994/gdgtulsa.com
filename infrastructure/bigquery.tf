@@ -123,7 +123,12 @@ resource "google_bigquery_table" "visitor_journeys" {
     use_legacy_sql = false
 
     query = <<-SQL
-      WITH event_rollup AS (
+      WITH admin_visitors AS (
+        SELECT DISTINCT anonymous_id
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.identity_links`
+        WHERE is_admin IS TRUE
+      ),
+      event_rollup AS (
         SELECT
           anonymous_id,
           MIN(event_timestamp) AS first_seen,
@@ -135,7 +140,12 @@ resource "google_bigquery_table" "visitor_journeys" {
           COUNTIF(event_name = 'member_register_open') > 0 AS registration_started,
           COUNTIF(event_name = 'schedule_open') > 0 AS schedule_opened,
           COUNTIF(event_name = 'schedule_submit') > 0 AS schedule_submitted
-        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM admin_visitors AS admin
+          WHERE admin.anonymous_id = event.anonymous_id
+        )
         GROUP BY anonymous_id
       ),
       verified_visitors AS (
@@ -243,7 +253,12 @@ resource "google_bigquery_table" "page_traffic" {
     use_legacy_sql = false
 
     query = <<-SQL
-      WITH normalized_page_views AS (
+      WITH admin_visitors AS (
+        SELECT DISTINCT anonymous_id
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.identity_links`
+        WHERE is_admin IS TRUE
+      ),
+      normalized_page_views AS (
         SELECT
           CASE
             WHEN page_path IN ('/', '/index.html') THEN '/'
@@ -252,8 +267,13 @@ resource "google_bigquery_table" "page_traffic" {
           anonymous_id,
           session_id,
           event_timestamp
-        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event_name = 'page_view'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM admin_visitors AS admin
+            WHERE admin.anonymous_id = event.anonymous_id
+          )
       )
       SELECT
         page_path,
@@ -288,7 +308,12 @@ resource "google_bigquery_table" "traffic_sources" {
     use_legacy_sql = false
 
     query = <<-SQL
-      WITH landing_pages AS (
+      WITH admin_visitors AS (
+        SELECT DISTINCT anonymous_id
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.identity_links`
+        WHERE is_admin IS TRUE
+      ),
+      landing_pages AS (
         SELECT
           session_id,
           anonymous_id,
@@ -301,8 +326,13 @@ resource "google_bigquery_table" "traffic_sources" {
             PARTITION BY session_id
             ORDER BY event_timestamp, event_id
           ) AS row_num
-        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events`
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event_name = 'page_view'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM admin_visitors AS admin
+            WHERE admin.anonymous_id = event.anonymous_id
+          )
       ),
       classified AS (
         SELECT
