@@ -348,6 +348,53 @@ function renderPages(rows) {
   }
 }
 
+function renderAcquisition(rows) {
+  const body = document.querySelector("[data-acquisition-body]");
+  if (!body) return;
+
+  body.replaceChildren();
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 8;
+    cell.textContent =
+      "No acquisition sources were recorded for this period.";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    appendCell(row, item.source_type);
+    appendCell(row, item.source);
+    appendCell(row, item.utm_medium);
+    appendCell(row, item.utm_campaign);
+    appendCell(row, formatNumber(item.visitors), "number-cell");
+    appendCell(
+      row,
+      formatNumber(item.registration_started),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.verified_members),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.schedule_submitted),
+      "number-cell"
+    );
+
+    body.appendChild(row);
+  }
+}
+
 function renderSources(rows) {
   const body = document.querySelector("[data-sources-body]");
   if (!body) return;
@@ -630,6 +677,10 @@ async function loadAnalytics() {
       ? payload.sources
       : [];
 
+    const acquisition = Array.isArray(payload.acquisition)
+      ? payload.acquisition
+      : [];
+
     const trends = Array.isArray(payload.trends)
       ? payload.trends
       : [];
@@ -637,6 +688,7 @@ async function loadAnalytics() {
     renderMetrics(payload);
     renderTrends(trends);
     renderFunnel(funnel);
+    renderAcquisition(acquisition);
     renderPages(pages);
     renderSources(sources);
 

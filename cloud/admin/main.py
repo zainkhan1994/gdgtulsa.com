@@ -372,6 +372,189 @@ def analytics():
             ORDER BY stage_order
         """,
 
+        # First-touch acquisition attribution.
+        #
+        # A visitor's acquisition source is their FIRST-EVER page_view, found
+        # across all history and deliberately NOT restricted by the selected
+        # range: someone acquired from a UTM campaign in August who returns
+        # directly in September stays attributed to that campaign rather than
+        # being reclassified as Direct.
+        #
+        # Funnel activity, by contrast, IS restricted to the selected range and
+        # reuses the same strict sequential logic as the "funnel" query above.
+        #
+        # Visitors with no page_view anywhere in history are reported as
+        # 'unknown' rather than dropped, so acquisition visitor totals
+        # reconcile with the main funnel instead of silently under-counting.
+        "acquisition": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            first_touch AS (
+              SELECT
+                anonymous_id,
+                referrer,
+                utm_source,
+                utm_medium,
+                utm_campaign
+              FROM (
+                SELECT
+                  event.anonymous_id,
+                  event.referrer,
+                  NULLIF(event.utm_source, '') AS utm_source,
+                  NULLIF(event.utm_medium, '') AS utm_medium,
+                  NULLIF(event.utm_campaign, '') AS utm_campaign,
+                  ROW_NUMBER() OVER (
+                    PARTITION BY event.anonymous_id
+                    ORDER BY event.event_timestamp, event.event_id
+                  ) AS row_num
+                FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+                WHERE event.event_name = 'page_view'
+                  AND event.anonymous_id IS NOT NULL
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM admin_visitors AS admin
+                    WHERE admin.anonymous_id = event.anonymous_id
+                  )
+              )
+              WHERE row_num = 1
+            ),
+            attribution AS (
+              SELECT
+                anonymous_id,
+                CASE
+                  WHEN utm_source IS NOT NULL THEN 'utm'
+                  WHEN referrer IS NULL OR referrer = '' THEN 'direct'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://tulsahub\\.firebaseapp\\.com'
+                  ) THEN 'authentication'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://(www\\.)?gdgtulsa\\.com'
+                  ) THEN 'internal'
+                  ELSE 'referral'
+                END AS source_type,
+                CASE
+                  WHEN utm_source IS NOT NULL THEN utm_source
+                  WHEN referrer IS NULL OR referrer = ''
+                    THEN '(direct / unknown)'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://tulsahub\\.firebaseapp\\.com'
+                  ) THEN 'tulsahub.firebaseapp.com'
+                  WHEN REGEXP_CONTAINS(
+                    referrer,
+                    r'^https://(www\\.)?gdgtulsa\\.com'
+                  ) THEN 'gdgtulsa.com'
+                  ELSE COALESCE(NET.HOST(referrer), referrer)
+                END AS source,
+                utm_medium,
+                utm_campaign
+              FROM first_touch
+            ),
+            filtered_events AS (
+              SELECT
+                event.anonymous_id,
+                event.event_name,
+                event.event_timestamp
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE {event_date_filter}
+                AND event.anonymous_id IS NOT NULL
+                AND NOT EXISTS (
+                  SELECT 1
+                  FROM admin_visitors AS admin
+                  WHERE admin.anonymous_id = event.anonymous_id
+                )
+            ),
+            visitors AS (
+              SELECT
+                anonymous_id,
+                MIN(event_timestamp) AS visitor_at
+              FROM filtered_events
+              GROUP BY anonymous_id
+            ),
+            registration AS (
+              SELECT
+                visitor.anonymous_id,
+                MIN(event.event_timestamp) AS registration_at
+              FROM visitors AS visitor
+              JOIN filtered_events AS event
+                ON event.anonymous_id = visitor.anonymous_id
+              WHERE event.event_name = 'member_register_open'
+                AND event.event_timestamp >= visitor.visitor_at
+              GROUP BY visitor.anonymous_id
+            ),
+            verified AS (
+              SELECT
+                registered.anonymous_id,
+                MIN(event.event_timestamp) AS verified_at
+              FROM registration AS registered
+              JOIN filtered_events AS event
+                ON event.anonymous_id = registered.anonymous_id
+              WHERE event.event_name = 'member_verified'
+                AND event.event_timestamp >= registered.registration_at
+              GROUP BY registered.anonymous_id
+            ),
+            scheduler AS (
+              SELECT
+                member.anonymous_id,
+                MIN(event.event_timestamp) AS scheduler_at
+              FROM verified AS member
+              JOIN filtered_events AS event
+                ON event.anonymous_id = member.anonymous_id
+              WHERE event.event_name = 'schedule_open'
+                AND event.event_timestamp >= member.verified_at
+              GROUP BY member.anonymous_id
+            ),
+            submitted AS (
+              SELECT
+                opened.anonymous_id,
+                MIN(event.event_timestamp) AS schedule_submitted_at
+              FROM scheduler AS opened
+              JOIN filtered_events AS event
+                ON event.anonymous_id = opened.anonymous_id
+              WHERE event.event_name = 'schedule_submit'
+                AND event.event_timestamp >= opened.scheduler_at
+              GROUP BY opened.anonymous_id
+            )
+            SELECT
+              COALESCE(source.source_type, 'unknown') AS source_type,
+              COALESCE(source.source, '(unknown)') AS source,
+              source.utm_medium,
+              source.utm_campaign,
+              COUNT(*) AS visitors,
+              COUNTIF(registered.anonymous_id IS NOT NULL)
+                AS registration_started,
+              COUNTIF(member.anonymous_id IS NOT NULL) AS verified_members,
+              COUNTIF(opened.anonymous_id IS NOT NULL) AS schedule_opened,
+              COUNTIF(sent.anonymous_id IS NOT NULL) AS schedule_submitted
+            FROM visitors AS visitor
+            LEFT JOIN attribution AS source
+              ON source.anonymous_id = visitor.anonymous_id
+            LEFT JOIN registration AS registered
+              ON registered.anonymous_id = visitor.anonymous_id
+            LEFT JOIN verified AS member
+              ON member.anonymous_id = visitor.anonymous_id
+            LEFT JOIN scheduler AS opened
+              ON opened.anonymous_id = visitor.anonymous_id
+            LEFT JOIN submitted AS sent
+              ON sent.anonymous_id = visitor.anonymous_id
+            GROUP BY
+              source_type,
+              source,
+              utm_medium,
+              utm_campaign
+            ORDER BY
+              visitors DESC,
+              source_type,
+              source,
+              utm_campaign
+            LIMIT 50
+        """,
+
         "pages": f"""
             WITH admin_visitors AS (
               SELECT DISTINCT anonymous_id
