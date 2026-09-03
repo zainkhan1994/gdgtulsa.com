@@ -5,6 +5,7 @@
   const CONSENT_KEY = "gdg_analytics_consent";
   const ANON_KEY = "gdg_anonymous_id";
   const SESSION_KEY = "gdg_session_id";
+  const LANDING_KEY = "gdg_landing_attribution";
 
   if (localStorage.getItem(CONSENT_KEY) !== "granted") {
     return;
@@ -67,6 +68,50 @@
     }
   }
 
+  // Acquisition fields preserved from the pre-consent landing snapshot that
+  // consent.js writes. Consumed exactly once, by the first tracked page_view,
+  // so that later internal navigation cannot overwrite the original entry
+  // source. The snapshot is left in place and marked instead of deleted:
+  // consent.js only captures when the key is absent, so keeping it prevents a
+  // later internal page from being recorded as a new landing.
+  //
+  // Only referrer and the three UTM fields are taken. page_url and page_path
+  // stay the page actually being viewed, so Page Traffic keeps reporting real
+  // page views rather than a page the visitor may have left long ago.
+  function takeLandingAttribution() {
+    let snapshot;
+
+    try {
+      const raw = sessionStorage.getItem(LANDING_KEY);
+      if (!raw) return null;
+
+      snapshot = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+
+    if (!snapshot || typeof snapshot !== "object" || snapshot.consumed) {
+      return null;
+    }
+
+    try {
+      snapshot.consumed = true;
+      sessionStorage.setItem(LANDING_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Could not mark it consumed, so do not risk applying it more than once.
+      return null;
+    }
+
+    const text = value => (typeof value === "string" ? value : "");
+
+    return {
+      referrer: text(snapshot.referrer),
+      utm_source: text(snapshot.utm_source),
+      utm_medium: text(snapshot.utm_medium),
+      utm_campaign: text(snapshot.utm_campaign)
+    };
+  }
+
   function sendEvent(eventName, extra = {}, useBeacon = false) {
     const payload = {
       consent: true,
@@ -105,7 +150,7 @@
     }).catch(() => {});
   }
 
-  sendEvent("page_view");
+  sendEvent("page_view", takeLandingAttribution() || {});
 
   // Tell application code that consent is granted and the analytics browser
   // and session IDs now exist. No identifiers or authentication data are
