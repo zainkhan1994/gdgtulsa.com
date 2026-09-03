@@ -3643,9 +3643,17 @@ body:not(.ready) .hero-feature-grid article {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
+}
+
+/* Spell the option colours out too. Left to the platform default a dark
+   select can render its popup list with a light system background, which
+   puts near-white option text on near-white. */
+.privacy-field select option {
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .privacy-actions {
