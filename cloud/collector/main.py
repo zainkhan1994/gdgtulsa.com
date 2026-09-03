@@ -27,6 +27,10 @@ ALLOWED_ORIGINS = {
     "https://www.gdgtulsa.com",
 }
 
+SERVER_ONLY_EVENTS = {
+    "member_verified",
+}
+
 BOT_PATTERN = re.compile(
     r"bot|crawler|spider|slurp|bingpreview|facebookexternalhit",
     re.IGNORECASE,
@@ -88,6 +92,88 @@ def admin_email_allowlist():
         if email.strip()
     }
 
+
+def store_member_verified_event(
+    event_id,
+    event_timestamp,
+    anonymous_id,
+    session_id,
+):
+    query = f"""
+        MERGE `{TABLE}` AS target
+        USING (
+          SELECT
+            @event_id AS event_id,
+            @event_timestamp AS event_timestamp,
+            @anonymous_id AS anonymous_id,
+            @session_id AS session_id
+        ) AS source
+        ON target.event_id = source.event_id
+        WHEN NOT MATCHED THEN
+          INSERT (
+            event_id,
+            event_timestamp,
+            anonymous_id,
+            session_id,
+            event_name,
+            page_url,
+            page_path,
+            page_title,
+            referrer,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            click_text,
+            click_url,
+            user_agent,
+            ip_hash
+          )
+          VALUES (
+            source.event_id,
+            source.event_timestamp,
+            source.anonymous_id,
+            source.session_id,
+            'member_verified',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            NULL
+          )
+    """
+
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter(
+                "event_id",
+                "STRING",
+                event_id,
+            ),
+            bigquery.ScalarQueryParameter(
+                "event_timestamp",
+                "TIMESTAMP",
+                event_timestamp,
+            ),
+            bigquery.ScalarQueryParameter(
+                "anonymous_id",
+                "STRING",
+                anonymous_id,
+            ),
+            bigquery.ScalarQueryParameter(
+                "session_id",
+                "STRING",
+                session_id,
+            ),
+        ]
+    )
+
+    bq.query(query, job_config=job_config).result()
 
 
 @app.route("/identify", methods=["OPTIONS"])
@@ -154,6 +240,15 @@ def identify():
 
     if not firebase_uid_hash:
         return jsonify({"error": "identity service unavailable"}), 503
+
+    # One trusted verification milestone per Firebase identity and browser.
+    # The raw Firebase UID is never stored in analytics.
+    member_verified_event_id = hashlib.sha256(
+        (
+            "member_verified:"
+            f"{firebase_uid_hash}:{anonymous_id}"
+        ).encode()
+    ).hexdigest()
 
     # Stable for the same verified member/browser/session, so page refreshes
     # cannot create another identity row for that same session.
@@ -225,6 +320,18 @@ def identify():
         print("Identity link storage failure")
         return jsonify({"error": "storage failure"}), 500
 
+    try:
+        store_member_verified_event(
+            member_verified_event_id,
+            linked_at,
+            anonymous_id,
+            session_id,
+        )
+    except Exception:
+        # The deterministic event ID makes a later /identify retry safe.
+        print("Verified member analytics storage failure")
+        return jsonify({"error": "storage failure"}), 500
+
     return "", 204
 
 
@@ -266,6 +373,9 @@ def collect():
 
     if not event_name or not session_id or not anonymous_id:
         return jsonify({"error": "missing required fields"}), 400
+
+    if event_name in SERVER_ONLY_EVENTS:
+        return jsonify({"error": "event not allowed"}), 400
 
     forwarded = request.headers.get("X-Forwarded-For", "")
     ip = forwarded.split(",")[0].strip() if forwarded else (request.remote_addr or "")

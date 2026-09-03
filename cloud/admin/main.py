@@ -237,53 +237,94 @@ def analytics():
         return jsonify({"error": "invalid analytics range"}), 400
 
     queries = {
+        # Strict sequential funnel. Each stage must occur at or after the
+        # previous stage for the SAME anonymous visitor, inside the selected
+        # range. The previous implementation tested each stage independently,
+        # so a visitor could be counted at "Scheduler opened" without ever
+        # having registered or verified, producing impossible orderings.
+        #
+        # Verified membership comes from the trusted server-only
+        # member_verified event, never from identity_links.linked_at: that
+        # column records when the link row was written, and historical data
+        # shows schedule_open/schedule_submit predating it.
         "funnel": f"""
             WITH admin_visitors AS (
               SELECT DISTINCT anonymous_id
               FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
               WHERE is_admin IS TRUE
             ),
-            event_rollup AS (
+            filtered_events AS (
               SELECT
-                anonymous_id,
-                COUNTIF(event_name = 'member_register_open') > 0
-                  AS registration_started,
-                COUNTIF(event_name = 'schedule_open') > 0
-                  AS schedule_opened,
-                COUNTIF(event_name = 'schedule_submit') > 0
-                  AS schedule_submitted
+                event.anonymous_id,
+                event.event_name,
+                event.event_timestamp
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE {event_date_filter}
+                AND event.anonymous_id IS NOT NULL
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
                   WHERE admin.anonymous_id = event.anonymous_id
                 )
+            ),
+            visitors AS (
+              SELECT
+                anonymous_id,
+                MIN(event_timestamp) AS visitor_at
+              FROM filtered_events
               GROUP BY anonymous_id
             ),
-            verified_visitors AS (
-              SELECT DISTINCT anonymous_id
-              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
-            ),
-            journeys AS (
+            registration AS (
               SELECT
-                events.anonymous_id,
-                events.registration_started,
-                events.schedule_opened,
-                events.schedule_submitted,
-                verified.anonymous_id IS NOT NULL AS verified_member
-              FROM event_rollup AS events
-              LEFT JOIN verified_visitors AS verified
-                USING (anonymous_id)
+                visitor.anonymous_id,
+                MIN(event.event_timestamp) AS registration_at
+              FROM visitors AS visitor
+              JOIN filtered_events AS event
+                ON event.anonymous_id = visitor.anonymous_id
+              WHERE event.event_name = 'member_register_open'
+                AND event.event_timestamp >= visitor.visitor_at
+              GROUP BY visitor.anonymous_id
+            ),
+            verified AS (
+              SELECT
+                registered.anonymous_id,
+                MIN(event.event_timestamp) AS verified_at
+              FROM registration AS registered
+              JOIN filtered_events AS event
+                ON event.anonymous_id = registered.anonymous_id
+              WHERE event.event_name = 'member_verified'
+                AND event.event_timestamp >= registered.registration_at
+              GROUP BY registered.anonymous_id
+            ),
+            scheduler AS (
+              SELECT
+                member.anonymous_id,
+                MIN(event.event_timestamp) AS scheduler_at
+              FROM verified AS member
+              JOIN filtered_events AS event
+                ON event.anonymous_id = member.anonymous_id
+              WHERE event.event_name = 'schedule_open'
+                AND event.event_timestamp >= member.verified_at
+              GROUP BY member.anonymous_id
+            ),
+            submitted AS (
+              SELECT
+                opened.anonymous_id,
+                MIN(event.event_timestamp) AS schedule_submitted_at
+              FROM scheduler AS opened
+              JOIN filtered_events AS event
+                ON event.anonymous_id = opened.anonymous_id
+              WHERE event.event_name = 'schedule_submit'
+                AND event.event_timestamp >= opened.scheduler_at
+              GROUP BY opened.anonymous_id
             ),
             totals AS (
               SELECT
-                COUNT(*) AS total_visitors,
-                COUNTIF(registration_started) AS registration_started,
-                COUNTIF(verified_member) AS verified_members,
-                COUNTIF(schedule_opened) AS schedule_opened,
-                COUNTIF(schedule_submitted) AS schedule_submitted
-              FROM journeys
+                (SELECT COUNT(*) FROM visitors) AS total_visitors,
+                (SELECT COUNT(*) FROM registration) AS registration_started,
+                (SELECT COUNT(*) FROM verified) AS verified_members,
+                (SELECT COUNT(*) FROM scheduler) AS schedule_opened,
+                (SELECT COUNT(*) FROM submitted) AS schedule_submitted
             )
             SELECT
               1 AS stage_order,

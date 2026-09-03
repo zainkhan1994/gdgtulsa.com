@@ -171,10 +171,20 @@ resource "google_bigquery_table" "visitor_journeys" {
   }
 }
 
-# Reporting view: visitor-level conversion funnel.
+# Reporting view: strict sequential conversion funnel (all time).
 #
-# Each stage counts unique visitor journeys that reached that state.
-# Repeated clicks/events by the same anonymous visitor count only once.
+# Each stage counts unique visitors who reached that stage AFTER the previous
+# one. Sequencing is done here against raw events rather than against
+# visitor_journeys, whose boolean flags cannot express ordering — that is what
+# allowed impossible funnels such as "scheduler opened" without registration.
+#
+# visitor_journeys is deliberately left unchanged: it is a general
+# visitor-level rollup and altering its schema would be a larger, riskier
+# change than this view requires.
+#
+# Verified membership comes from the trusted server-only member_verified event.
+# identity_links.linked_at is NOT used: it records when the link row was
+# written, and historical rows show schedule events predating it.
 resource "google_bigquery_table" "conversion_funnel" {
   project    = var.project_id
   dataset_id = google_bigquery_dataset.website_analytics.dataset_id
@@ -186,14 +196,68 @@ resource "google_bigquery_table" "conversion_funnel" {
     use_legacy_sql = false
 
     query = <<-SQL
-      WITH totals AS (
+      WITH admin_visitors AS (
+        SELECT DISTINCT anonymous_id
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.identity_links`
+        WHERE is_admin IS TRUE
+      ),
+      filtered_events AS (
         SELECT
-          COUNT(*) AS total_visitors,
-          COUNTIF(registration_started) AS registration_started,
-          COUNTIF(verified_member) AS verified_members,
-          COUNTIF(schedule_opened) AS schedule_opened,
-          COUNTIF(schedule_submitted) AS schedule_submitted
-        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.visitor_journeys`
+          event.anonymous_id,
+          event.event_name,
+          event.event_timestamp
+        FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
+        WHERE event.anonymous_id IS NOT NULL
+          AND NOT EXISTS (
+            SELECT 1
+            FROM admin_visitors AS admin
+            WHERE admin.anonymous_id = event.anonymous_id
+          )
+      ),
+      visitors AS (
+        SELECT anonymous_id, MIN(event_timestamp) AS visitor_at
+        FROM filtered_events
+        GROUP BY anonymous_id
+      ),
+      registration AS (
+        SELECT visitor.anonymous_id, MIN(event.event_timestamp) AS registration_at
+        FROM visitors AS visitor
+        JOIN filtered_events AS event ON event.anonymous_id = visitor.anonymous_id
+        WHERE event.event_name = 'member_register_open'
+          AND event.event_timestamp >= visitor.visitor_at
+        GROUP BY visitor.anonymous_id
+      ),
+      verified AS (
+        SELECT registered.anonymous_id, MIN(event.event_timestamp) AS verified_at
+        FROM registration AS registered
+        JOIN filtered_events AS event ON event.anonymous_id = registered.anonymous_id
+        WHERE event.event_name = 'member_verified'
+          AND event.event_timestamp >= registered.registration_at
+        GROUP BY registered.anonymous_id
+      ),
+      scheduler AS (
+        SELECT member.anonymous_id, MIN(event.event_timestamp) AS scheduler_at
+        FROM verified AS member
+        JOIN filtered_events AS event ON event.anonymous_id = member.anonymous_id
+        WHERE event.event_name = 'schedule_open'
+          AND event.event_timestamp >= member.verified_at
+        GROUP BY member.anonymous_id
+      ),
+      submitted AS (
+        SELECT opened.anonymous_id, MIN(event.event_timestamp) AS schedule_submitted_at
+        FROM scheduler AS opened
+        JOIN filtered_events AS event ON event.anonymous_id = opened.anonymous_id
+        WHERE event.event_name = 'schedule_submit'
+          AND event.event_timestamp >= opened.scheduler_at
+        GROUP BY opened.anonymous_id
+      ),
+      totals AS (
+        SELECT
+          (SELECT COUNT(*) FROM visitors) AS total_visitors,
+          (SELECT COUNT(*) FROM registration) AS registration_started,
+          (SELECT COUNT(*) FROM verified) AS verified_members,
+          (SELECT COUNT(*) FROM scheduler) AS schedule_opened,
+          (SELECT COUNT(*) FROM submitted) AS schedule_submitted
       )
       SELECT
         1 AS stage_order,
