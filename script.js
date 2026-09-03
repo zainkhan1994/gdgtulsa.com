@@ -160,15 +160,27 @@ const ANALYTICS_SESSION_KEY = "gdg_session_id";
 let analyticsIdentityLinked = "";
 let analyticsIdentityInFlight = null;
 
+// Blocked site data makes these accessors throw rather than return null.
+// This runs inside an async function whose rejection nobody awaits, so an
+// unguarded read would surface as an unhandled rejection and skip the consent
+// check below it. A failed read counts as absent, which stops linking.
+function readAnalyticsStore(store, key) {
+  try {
+    return store.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 async function linkAnalyticsIdentity(user = firebaseApi?.auth?.currentUser) {
   if (!user || user.emailVerified !== true) return;
 
-  if (window.localStorage.getItem(ANALYTICS_CONSENT_KEY) !== "granted") {
+  if (readAnalyticsStore(window.localStorage, ANALYTICS_CONSENT_KEY) !== "granted") {
     return;
   }
 
-  const anonymousId = window.localStorage.getItem(ANALYTICS_ANON_KEY);
-  const sessionId = window.sessionStorage.getItem(ANALYTICS_SESSION_KEY);
+  const anonymousId = readAnalyticsStore(window.localStorage, ANALYTICS_ANON_KEY);
+  const sessionId = readAnalyticsStore(window.sessionStorage, ANALYTICS_SESSION_KEY);
 
   if (!anonymousId || !sessionId) return;
 

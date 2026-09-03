@@ -7,28 +7,53 @@
   const SESSION_KEY = "gdg_session_id";
   const LANDING_KEY = "gdg_landing_attribution";
 
-  if (localStorage.getItem(CONSENT_KEY) !== "granted") {
-    return;
+  // Storage may throw in private mode or when site data is blocked. A failed
+  // read must never be mistaken for consent, so every accessor fails closed.
+  function readLocal(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
   }
+
+  function writeLocal(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Best effort: an id that cannot be persisted still works for this page.
+    }
+  }
+
+  function readSession(key) {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSession(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // Best effort, as above.
+    }
+  }
+
+  // Tracking state. `active` is the single gate every send passes through, so
+  // revoking consent silences the tracker instantly without unbinding
+  // anything. `listenersBound` guarantees the DOM listeners are attached at
+  // most once for the life of the page, however many times consent is toggled.
+  let active = false;
+  let listenersBound = false;
+  let anonymousId = null;
+  let sessionId = null;
 
   const createId = () =>
     crypto.randomUUID
       ? crypto.randomUUID()
       : Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-  let anonymousId = localStorage.getItem(ANON_KEY);
-
-  if (!anonymousId) {
-    anonymousId = createId();
-    localStorage.setItem(ANON_KEY, anonymousId);
-  }
-
-  let sessionId = sessionStorage.getItem(SESSION_KEY);
-
-  if (!sessionId) {
-    sessionId = createId();
-    sessionStorage.setItem(SESSION_KEY, sessionId);
-  }
 
   const params = new URLSearchParams(window.location.search);
 
@@ -82,7 +107,7 @@
     let snapshot;
 
     try {
-      const raw = sessionStorage.getItem(LANDING_KEY);
+      const raw = readSession(LANDING_KEY);
       if (!raw) return null;
 
       snapshot = JSON.parse(raw);
@@ -113,6 +138,10 @@
   }
 
   function sendEvent(eventName, extra = {}, useBeacon = false) {
+    // Every path out of the tracker passes here, so a visitor who revokes
+    // consent stops producing requests the instant the decision is made.
+    if (!active || !anonymousId || !sessionId) return;
+
     const payload = {
       consent: true,
       anonymous_id: anonymousId,
@@ -150,67 +179,123 @@
     }).catch(() => {});
   }
 
-  sendEvent("page_view", takeLandingAttribution() || {});
+  // Bound once per page. The handlers are cheap no-ops while tracking is
+  // inactive, which is what stops repeated consent toggles from stacking
+  // duplicate listeners or emitting an event more than once per action.
+  function bindListeners() {
+    if (listenersBound) return;
+    listenersBound = true;
 
-  // Tell application code that consent is granted and the analytics browser
-  // and session IDs now exist. No identifiers or authentication data are
-  // included in the event itself.
-  window.dispatchEvent(new Event("gdg:analytics-ready"));
+    document.addEventListener("click", event => {
+      if (!active) return;
 
-  document.addEventListener("click", event => {
-    const target = event.target instanceof Element ? event.target : null;
-    if (!target) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
 
-    // Opens a modal rather than navigating, so no beacon is needed. Nothing is
-    // prevented or stopped here, so script.js handles the click exactly as before.
+      // Opens a modal rather than navigating, so no beacon is needed. Nothing is
+      // prevented or stopped here, so script.js handles the click exactly as before.
+      //
+      // schedule_open is deliberately NOT tracked here. A click on
+      // [data-open-scheduler] is only an attempt — openScheduler() still returns
+      // early for a non-confirmed member or a missing modal. script.js emits
+      // schedule_open once the modal is actually shown.
+      if (target.closest('[data-open-auth="register"]')) {
+        sendEvent("member_register_open");
+      }
+
+      const link = target.closest("a");
+
+      if (!link) return;
+
+      // Existing generic link tracking — unchanged.
+      sendEvent("click", {
+        click_text: (link.innerText || link.textContent || "").trim().slice(0, 500),
+        click_url: link.href || ""
+      }, true);
+
+      // Additionally classify contact links. Sent with no extra fields: the
+      // page context sendEvent already attaches is enough to attribute the
+      // conversion, and adding the href here would serve no purpose.
+      const href = link.getAttribute("href") || "";
+      if (!href.toLowerCase().startsWith("mailto:")) return;
+
+      sendEvent("email_click", {}, true);
+
+      const subject = mailtoSubject(href);
+      if (subject === "speaker interest") {
+        sendEvent("speaker_interest", {}, true);
+      } else if (subject === "partnership interest") {
+        sendEvent("partner_interest", {}, true);
+      }
+    });
+
+    // Conversion channel for application code:
     //
-    // schedule_open is deliberately NOT tracked here. A click on
-    // [data-open-scheduler] is only an attempt — openScheduler() still returns
-    // early for a non-confirmed member or a missing modal. script.js emits
-    // schedule_open once the modal is actually shown.
-    if (target.closest('[data-open-auth="register"]')) {
-      sendEvent("member_register_open");
+    //   window.dispatchEvent(new CustomEvent("gdg:analytics", {
+    //     detail: { event_name: "schedule_submit" }
+    //   }));
+    //
+    // Only detail.event_name is read, and only if it is on the allowlist above.
+    // Every other property of detail is ignored by construction, so a caller
+    // cannot leak an email, uid or form field into analytics even by mistake.
+    // anonymous_id and session_id stay private to this closure.
+    window.addEventListener("gdg:analytics", event => {
+      if (!active) return;
+
+      const name = event && event.detail && event.detail.event_name;
+      if (typeof name !== "string" || !CONVERSION_EVENTS.has(name)) return;
+      sendEvent(name);
+    });  }
+
+  // Idempotent. Calling start() while already tracking does nothing, so a
+  // repeated "granted" signal cannot produce a second page_view or a second
+  // pair of identifiers.
+  function start() {
+    if (active) return;
+    if (readLocal(CONSENT_KEY) !== "granted") return;
+
+    // After a revocation these keys are gone, so a fresh pair is minted here.
+    // The pre-revocation anonymous id is deliberately never restored.
+    anonymousId = readLocal(ANON_KEY);
+    if (!anonymousId) {
+      anonymousId = createId();
+      writeLocal(ANON_KEY, anonymousId);
     }
 
-    const link = target.closest("a");
+    sessionId = readSession(SESSION_KEY);
+    if (!sessionId) {
+      sessionId = createId();
+      writeSession(SESSION_KEY, sessionId);
+    }
 
-    if (!link) return;
+    active = true;
+    bindListeners();
 
-    // Existing generic link tracking — unchanged.
-    sendEvent("click", {
-      click_text: (link.innerText || link.textContent || "").trim().slice(0, 500),
-      click_url: link.href || ""
-    }, true);
+    sendEvent("page_view", takeLandingAttribution() || {});
 
-    // Additionally classify contact links. Sent with no extra fields: the
-    // page context sendEvent already attaches is enough to attribute the
-    // conversion, and adding the href here would serve no purpose.
-    const href = link.getAttribute("href") || "";
-    if (!href.toLowerCase().startsWith("mailto:")) return;
+    // Tell application code that consent is granted and the analytics browser
+    // and session IDs now exist. No identifiers or authentication data are
+    // included in the event itself.
+    window.dispatchEvent(new Event("gdg:analytics-ready"));
+  }
 
-    sendEvent("email_click", {}, true);
+  // Listeners stay bound but every send is gated on `active`, so nothing more
+  // leaves the page. consent.js has already removed the stored identifiers.
+  function stop() {
+    active = false;
+    anonymousId = null;
+    sessionId = null;
+  }
 
-    const subject = mailtoSubject(href);
-    if (subject === "speaker interest") {
-      sendEvent("speaker_interest", {}, true);
-    } else if (subject === "partnership interest") {
-      sendEvent("partner_interest", {}, true);
+  window.addEventListener("gdg:consent-changed", event => {
+    const state = event && event.detail && event.detail.state;
+
+    if (state === "granted") {
+      start();
+    } else {
+      stop();
     }
   });
 
-  // Conversion channel for application code:
-  //
-  //   window.dispatchEvent(new CustomEvent("gdg:analytics", {
-  //     detail: { event_name: "schedule_submit" }
-  //   }));
-  //
-  // Only detail.event_name is read, and only if it is on the allowlist above.
-  // Every other property of detail is ignored by construction, so a caller
-  // cannot leak an email, uid or form field into analytics even by mistake.
-  // anonymous_id and session_id stay private to this closure.
-  window.addEventListener("gdg:analytics", event => {
-    const name = event && event.detail && event.detail.event_name;
-    if (typeof name !== "string" || !CONVERSION_EVENTS.has(name)) return;
-    sendEvent(name);
-  });
+  start();
 })();

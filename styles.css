@@ -3595,3 +3595,61 @@ body:not(.ready) .hero-feature-grid article {
   .orbit-band{stroke-width:32}
   .eco-switch-btn{font-size:.92rem}
 }
+
+/* Privacy preferences
+   Footer trigger + dialog. The trigger ships hidden in the markup and is
+   revealed by consent.js, so it is never a dead control on a page where the
+   script did not run. Colours inherit so it sits correctly in both the
+   .site-footer and .bwai-footer families. */
+.privacy-preferences-trigger {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.privacy-preferences-trigger:hover {
+  opacity: 1;
+}
+
+.privacy-preferences-trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.privacy-panel {
+  padding: 30px;
+}
+
+.privacy-field {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 24px;
+}
+
+.privacy-field label {
+  font-weight: 600;
+}
+
+.privacy-field select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
