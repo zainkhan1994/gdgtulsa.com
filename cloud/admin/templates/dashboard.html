@@ -94,6 +94,35 @@
     <section class="analytics-card" data-analytics-content hidden>
       <div class="card-heading">
         <div>
+          <h3>Daily Trends</h3>
+          <p>
+            Daily website activity for the selected reporting period.
+          </p>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col" class="number-cell">Visitors</th>
+              <th scope="col" class="number-cell">Sessions</th>
+              <th scope="col" class="number-cell">Page Views</th>
+              <th scope="col" class="number-cell">Registrations</th>
+              <th scope="col" class="number-cell">
+                Schedule Submits
+              </th>
+            </tr>
+          </thead>
+          <tbody data-trends-body></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="analytics-card" data-analytics-content hidden>
+      <div class="card-heading">
+        <div>
           <h3>Conversion Funnel</h3>
           <p>Unique visitors reaching each tracked conversion stage.</p>
         </div>

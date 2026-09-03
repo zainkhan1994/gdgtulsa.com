@@ -449,6 +449,59 @@ def analytics():
             ORDER BY sessions DESC
             LIMIT 50
         """,
+
+        "trends": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            filtered_events AS (
+              SELECT
+                FORMAT_DATE(
+                  '%Y-%m-%d',
+                  DATE(event_timestamp, 'America/Chicago')
+                ) AS event_date,
+                anonymous_id,
+                session_id,
+                event_name
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE {event_date_filter}
+                AND NOT EXISTS (
+                  SELECT 1
+                  FROM admin_visitors AS admin
+                  WHERE admin.anonymous_id = event.anonymous_id
+                )
+            )
+            SELECT
+              event_date AS date,
+              COUNT(DISTINCT anonymous_id) AS visitors,
+              COUNT(
+                DISTINCT IF(
+                  event_name = 'page_view',
+                  session_id,
+                  NULL
+                )
+              ) AS sessions,
+              COUNTIF(event_name = 'page_view') AS page_views,
+              COUNT(
+                DISTINCT IF(
+                  event_name = 'member_register_open',
+                  anonymous_id,
+                  NULL
+                )
+              ) AS registration_starts,
+              COUNT(
+                DISTINCT IF(
+                  event_name = 'schedule_submit',
+                  anonymous_id,
+                  NULL
+                )
+              ) AS schedule_submits
+            FROM filtered_events
+            GROUP BY event_date
+            ORDER BY event_date
+        """,
     }
 
     try:

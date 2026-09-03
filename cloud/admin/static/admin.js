@@ -239,6 +239,59 @@ function renderMetrics(payload) {
   }
 }
 
+function renderTrends(rows) {
+  const body = document.querySelector("[data-trends-body]");
+  if (!body) return;
+
+  body.replaceChildren();
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 6;
+    cell.textContent =
+      "No website activity was recorded for this period.";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    appendCell(row, item.date);
+    appendCell(
+      row,
+      formatNumber(item.visitors),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.sessions),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.page_views),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.registration_starts),
+      "number-cell"
+    );
+    appendCell(
+      row,
+      formatNumber(item.schedule_submits),
+      "number-cell"
+    );
+
+    body.appendChild(row);
+  }
+}
+
 function renderFunnel(rows) {
   const body = document.querySelector("[data-funnel-body]");
   if (!body) return;
@@ -571,7 +624,12 @@ async function loadAnalytics() {
       ? payload.sources
       : [];
 
+    const trends = Array.isArray(payload.trends)
+      ? payload.trends
+      : [];
+
     renderMetrics(payload);
+    renderTrends(trends);
     renderFunnel(funnel);
     renderPages(pages);
     renderSources(sources);
