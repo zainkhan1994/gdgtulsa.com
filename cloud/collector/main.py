@@ -31,6 +31,31 @@ SERVER_ONLY_EVENTS = {
     "member_verified",
 }
 
+# Reporting hygiene, never authorisation. traffic_type only decides which rows
+# the clean production dashboards leave out; verified-admin exclusion stays
+# authoritative and server-side via identity_links.is_admin.
+#
+# Validated here independently of tracker.js: the browser is not trusted just
+# because the shipped tracker happens to validate too.
+TRAFFIC_TYPES = {
+    "production",
+    "internal",
+    "test",
+}
+
+
+def normalize_traffic_type(value):
+    """Anything unrecognised becomes 'production'.
+
+    Normalising rather than rejecting is deliberate. Rejecting would let a
+    malformed or future client value silently destroy real events, and would
+    hand anyone a way to make the collector drop writes. Normalising keeps the
+    event and lands it in the default bucket that IS reported, so bad input can
+    never quietly hide traffic.
+    """
+    candidate = str(value or "").strip().lower()
+    return candidate if candidate in TRAFFIC_TYPES else "production"
+
 BOT_PATTERN = re.compile(
     r"bot|crawler|spider|slurp|bingpreview|facebookexternalhit",
     re.IGNORECASE,
@@ -98,6 +123,7 @@ def store_member_verified_event(
     event_timestamp,
     anonymous_id,
     session_id,
+    traffic_type,
 ):
     query = f"""
         MERGE `{TABLE}` AS target
@@ -106,7 +132,8 @@ def store_member_verified_event(
             @event_id AS event_id,
             @event_timestamp AS event_timestamp,
             @anonymous_id AS anonymous_id,
-            @session_id AS session_id
+            @session_id AS session_id,
+            @traffic_type AS traffic_type
         ) AS source
         ON target.event_id = source.event_id
         WHEN NOT MATCHED THEN
@@ -126,7 +153,8 @@ def store_member_verified_event(
             click_text,
             click_url,
             user_agent,
-            ip_hash
+            ip_hash,
+            traffic_type
           )
           VALUES (
             source.event_id,
@@ -144,7 +172,8 @@ def store_member_verified_event(
             '',
             '',
             '',
-            NULL
+            NULL,
+            source.traffic_type
           )
     """
 
@@ -169,6 +198,11 @@ def store_member_verified_event(
                 "session_id",
                 "STRING",
                 session_id,
+            ),
+            bigquery.ScalarQueryParameter(
+                "traffic_type",
+                "STRING",
+                traffic_type,
             ),
         ]
     )
@@ -326,6 +360,7 @@ def identify():
             linked_at,
             anonymous_id,
             session_id,
+            normalize_traffic_type(payload.get("traffic_type")),
         )
     except Exception:
         # The deterministic event ID makes a later /identify retry safe.
@@ -408,6 +443,7 @@ def collect():
         "click_url": str(payload.get("click_url", ""))[:2000],
         "user_agent": user_agent[:1000],
         "ip_hash": ip_hash,
+        "traffic_type": normalize_traffic_type(payload.get("traffic_type")),
     }
 
     errors = bq.insert_rows_json(TABLE, [row])

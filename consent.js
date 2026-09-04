@@ -3,6 +3,8 @@
   const LANDING_KEY = "gdg_landing_attribution";
   const ANON_KEY = "gdg_anonymous_id";
   const SESSION_KEY = "gdg_session_id";
+  const TRAFFIC_KEY = "gdg_traffic_type";
+  const TRAFFIC_PARAM = "gdg_traffic";
 
   // Storage throws outright in private mode or when site data is blocked, so
   // every access goes through these. A failed read must never be mistaken for
@@ -40,6 +42,15 @@
     }
   }
 
+  function writeSession(key, value) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // Best effort. A marker that cannot be stored simply means this session
+      // reports as ordinary production traffic.
+    }
+  }
+
   function dropSession(key) {
     try {
       sessionStorage.removeItem(key);
@@ -47,6 +58,66 @@
       // Nothing to clean up if storage is unavailable.
     }
   }
+
+  // Internal / test traffic marking.
+  //
+  // Reporting hygiene only, never an authorisation signal: it says which
+  // rows to leave out of the clean production dashboards, nothing more.
+  // Verified-admin exclusion stays authoritative and server-side via
+  // identity_links.is_admin.
+  //
+  // The marker is session-scoped on purpose. It survives ordinary same-tab
+  // navigation and disappears when the browser session ends, so a tester
+  // cannot accidentally suppress their own real traffic forever.
+  //
+  // This runs before consent is decided, which is acceptable because it is
+  // purely local: no analytics identifier is created and no request is sent.
+  const TRAFFIC_TYPES = ["internal", "test"];
+
+  function processTrafficMarker() {
+    let params;
+
+    try {
+      params = new URLSearchParams(window.location.search);
+    } catch {
+      return;
+    }
+
+    if (!params.has(TRAFFIC_PARAM)) return;
+
+    const requested = (params.get(TRAFFIC_PARAM) || "").trim().toLowerCase();
+
+    if (TRAFFIC_TYPES.indexOf(requested) !== -1) {
+      writeSession(TRAFFIC_KEY, requested);
+    } else if (requested === "production") {
+      // Explicitly return this session to ordinary reporting.
+      dropSession(TRAFFIC_KEY);
+    }
+    // Anything else is ignored rather than reset: an unrecognised value is
+    // meaningless, and only the allowlist above is ever written, so no
+    // arbitrary string can reach analytics.
+
+    // Strip only this parameter. Every other query value, the UTM parameters
+    // and the fragment are preserved, so acquisition reporting is unaffected
+    // and the marker never becomes part of attribution.
+    params.delete(TRAFFIC_PARAM);
+
+    const query = params.toString();
+    const next =
+      window.location.pathname +
+      (query ? `?${query}` : "") +
+      window.location.hash;
+
+    try {
+      window.history.replaceState(null, "", next);
+    } catch {
+      // Leaving the parameter visible is cosmetic only.
+    }
+  }
+
+  // Consumed before the landing snapshot is taken, so gdg_traffic is already
+  // gone from the URL by the time attribution reads the query string.
+  processTrafficMarker();
 
   // Pre-consent landing attribution.
   //
@@ -130,6 +201,7 @@
       dropLocal(ANON_KEY);
       dropSession(SESSION_KEY);
       dropSession(LANDING_KEY);
+      dropSession(TRAFFIC_KEY);
     }
 
     if (banner) {

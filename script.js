@@ -156,6 +156,7 @@ const ANALYTICS_IDENTITY_ENDPOINT =
 const ANALYTICS_CONSENT_KEY = "gdg_analytics_consent";
 const ANALYTICS_ANON_KEY = "gdg_anonymous_id";
 const ANALYTICS_SESSION_KEY = "gdg_session_id";
+const ANALYTICS_TRAFFIC_KEY = "gdg_traffic_type";
 
 let analyticsIdentityLinked = "";
 let analyticsIdentityInFlight = null;
@@ -170,6 +171,14 @@ function readAnalyticsStore(store, key) {
   } catch {
     return null;
   }
+}
+
+// Reporting-hygiene classification for this browsing session. Read through the
+// allowlist so an edited sessionStorage value cannot reach analytics, and
+// default to production whenever it is absent or unreadable.
+function analyticsTrafficType() {
+  const stored = readAnalyticsStore(window.sessionStorage, ANALYTICS_TRAFFIC_KEY);
+  return stored === "internal" || stored === "test" ? stored : "production";
 }
 
 async function linkAnalyticsIdentity(user = firebaseApi?.auth?.currentUser) {
@@ -206,7 +215,13 @@ async function linkAnalyticsIdentity(user = firebaseApi?.auth?.currentUser) {
       body: JSON.stringify({
         consent: true,
         anonymous_id: anonymousId,
-        session_id: sessionId
+        session_id: sessionId,
+        // The verification event this creates must carry the same
+        // reporting classification as the rest of the session, or a test
+        // visitor's member_verified row would land in clean production
+        // reporting on its own. Same allowlist the tracker uses; the
+        // collector validates it again regardless.
+        traffic_type: analyticsTrafficType()
       })
     });
 

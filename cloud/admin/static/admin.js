@@ -395,6 +395,36 @@ function renderAcquisition(rows) {
   }
 }
 
+function renderTrafficQuality(rows) {
+  const body = document.querySelector("[data-traffic-quality-body]");
+  if (!body) return;
+
+  body.replaceChildren();
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 4;
+    cell.textContent = "No traffic was recorded for this period.";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    appendCell(row, item.traffic_type);
+    appendCell(row, formatNumber(item.visitors), "number-cell");
+    appendCell(row, formatNumber(item.sessions), "number-cell");
+    appendCell(row, formatNumber(item.page_views), "number-cell");
+
+    body.appendChild(row);
+  }
+}
+
 function renderSources(rows) {
   const body = document.querySelector("[data-sources-body]");
   if (!body) return;
@@ -681,6 +711,10 @@ async function loadAnalytics() {
       ? payload.acquisition
       : [];
 
+    const trafficQuality = Array.isArray(payload.traffic_quality)
+      ? payload.traffic_quality
+      : [];
+
     const trends = Array.isArray(payload.trends)
       ? payload.trends
       : [];
@@ -691,6 +725,7 @@ async function loadAnalytics() {
     renderAcquisition(acquisition);
     renderPages(pages);
     renderSources(sources);
+    renderTrafficQuality(trafficQuality);
 
     if (metrics) {
       metrics.hidden = false;

@@ -261,6 +261,7 @@ def analytics():
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE {event_date_filter}
                 AND event.anonymous_id IS NOT NULL
+                AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
@@ -413,6 +414,7 @@ def analytics():
                 FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
                 WHERE event.event_name = 'page_view'
                   AND event.anonymous_id IS NOT NULL
+                  AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                   AND NOT EXISTS (
                     SELECT 1
                     FROM admin_visitors AS admin
@@ -463,6 +465,7 @@ def analytics():
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE {event_date_filter}
                 AND event.anonymous_id IS NOT NULL
+                AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
@@ -573,6 +576,7 @@ def analytics():
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE event_name = 'page_view'
                 AND {event_date_filter}
+                AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
@@ -616,6 +620,7 @@ def analytics():
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE event_name = 'page_view'
                 AND {event_date_filter}
+                AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
@@ -693,6 +698,7 @@ def analytics():
                 event_name
               FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
               WHERE {event_date_filter}
+                AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
                 AND NOT EXISTS (
                   SELECT 1
                   FROM admin_visitors AS admin
@@ -727,6 +733,48 @@ def analytics():
             FROM filtered_events
             GROUP BY event_date
             ORDER BY event_date
+        """,
+
+        # Traffic Quality.
+        #
+        # The audit surface for every exclusion the clean dashboards apply, so
+        # this query deliberately does NOT filter admin or internal/test out.
+        # It is the one place they stay visible.
+        #
+        # Precedence matches the reporting rule: a verified admin is reported
+        # as admin whatever their browser claimed, because is_admin is trusted
+        # server-side identity while traffic_type is only a browser hint.
+        "traffic_quality": f"""
+            WITH admin_visitors AS (
+              SELECT DISTINCT anonymous_id
+              FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+              WHERE is_admin IS TRUE
+            ),
+            classified AS (
+              SELECT
+                CASE
+                  WHEN EXISTS (
+                    SELECT 1
+                    FROM admin_visitors AS admin
+                    WHERE admin.anonymous_id = event.anonymous_id
+                  ) THEN 'admin'
+                  ELSE COALESCE(NULLIF(event.traffic_type, ''), 'production')
+                END AS traffic_type,
+                event.anonymous_id,
+                event.session_id,
+                event.event_name
+              FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+              WHERE {event_date_filter}
+                AND event.anonymous_id IS NOT NULL
+            )
+            SELECT
+              traffic_type,
+              COUNT(DISTINCT anonymous_id) AS visitors,
+              COUNT(DISTINCT session_id) AS sessions,
+              COUNTIF(event_name = 'page_view') AS page_views
+            FROM classified
+            GROUP BY traffic_type
+            ORDER BY visitors DESC, traffic_type
         """,
     }
 

@@ -6,6 +6,7 @@
   const ANON_KEY = "gdg_anonymous_id";
   const SESSION_KEY = "gdg_session_id";
   const LANDING_KEY = "gdg_landing_attribution";
+  const TRAFFIC_KEY = "gdg_traffic_type";
 
   // Storage may throw in private mode or when site data is blocked. A failed
   // read must never be mistaken for consent, so every accessor fails closed.
@@ -137,6 +138,15 @@
     };
   }
 
+  // Reporting hygiene marker set by consent.js from ?gdg_traffic=. Read through
+  // the allowlist every time so an edited sessionStorage value cannot put an
+  // arbitrary string into analytics, and default to production whenever the
+  // marker is absent, unrecognised or unreadable.
+  function trafficType() {
+    const stored = readSession(TRAFFIC_KEY);
+    return stored === "internal" || stored === "test" ? stored : "production";
+  }
+
   function sendEvent(eventName, extra = {}, useBeacon = false) {
     // Every path out of the tracker passes here, so a visitor who revokes
     // consent stops producing requests the instant the decision is made.
@@ -154,6 +164,7 @@
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
       utm_campaign: params.get("utm_campaign") || "",
+      traffic_type: trafficType(),
       ...extra
     };
 

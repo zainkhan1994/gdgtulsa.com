@@ -76,6 +76,9 @@ resource "google_bigquery_table" "events" {
     { name = "click_url", type = "STRING" },
     { name = "user_agent", type = "STRING" },
     { name = "ip_hash", type = "STRING" },
+    # Reporting hygiene only. NULL/empty on every historical row, which
+    # COALESCE treats as production, so adding this changes no existing data.
+    { name = "traffic_type", type = "STRING" },
   ])
 }
 
@@ -141,11 +144,12 @@ resource "google_bigquery_table" "visitor_journeys" {
           COUNTIF(event_name = 'schedule_open') > 0 AS schedule_opened,
           COUNTIF(event_name = 'schedule_submit') > 0 AS schedule_submitted
         FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
-        WHERE NOT EXISTS (
-          SELECT 1
-          FROM admin_visitors AS admin
-          WHERE admin.anonymous_id = event.anonymous_id
-        )
+        WHERE COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM admin_visitors AS admin
+            WHERE admin.anonymous_id = event.anonymous_id
+          )
         GROUP BY anonymous_id
       ),
       verified_visitors AS (
@@ -208,6 +212,7 @@ resource "google_bigquery_table" "conversion_funnel" {
           event.event_timestamp
         FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event.anonymous_id IS NOT NULL
+          AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
           AND NOT EXISTS (
             SELECT 1
             FROM admin_visitors AS admin
@@ -335,6 +340,7 @@ resource "google_bigquery_table" "page_traffic" {
           event_timestamp
         FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event_name = 'page_view'
+          AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
           AND NOT EXISTS (
             SELECT 1
             FROM admin_visitors AS admin
@@ -394,6 +400,7 @@ resource "google_bigquery_table" "traffic_sources" {
           ) AS row_num
         FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event_name = 'page_view'
+          AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
           AND NOT EXISTS (
             SELECT 1
             FROM admin_visitors AS admin
@@ -496,6 +503,7 @@ resource "google_bigquery_table" "acquisition_attribution" {
           FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
           WHERE event.event_name = 'page_view'
             AND event.anonymous_id IS NOT NULL
+            AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
             AND NOT EXISTS (
               SELECT 1
               FROM admin_visitors AS admin
@@ -545,6 +553,7 @@ resource "google_bigquery_table" "acquisition_attribution" {
           event.event_timestamp
         FROM `${var.project_id}.${google_bigquery_dataset.website_analytics.dataset_id}.events` AS event
         WHERE event.anonymous_id IS NOT NULL
+          AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
           AND NOT EXISTS (
             SELECT 1
             FROM admin_visitors AS admin
