@@ -94,6 +94,16 @@ resource "google_secret_manager_secret_iam_member" "admin_session_secret_accesso
   member    = "serviceAccount:${google_service_account.admin.email}"
 }
 
+# Read-only access to the existing identity hashing secret. Needed so the admin
+# can hash a verified member's Firebase UID forward into the analytics
+# firebase_uid_hash; it never reverses a hash and never writes identity data.
+resource "google_secret_manager_secret_iam_member" "admin_identity_hash_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.identity_hash_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.admin.email}"
+}
+
 # --- Private admin analytics access -------------------------------------
 
 # Allows the private admin service to execute BigQuery query jobs.

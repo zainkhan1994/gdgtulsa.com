@@ -425,6 +425,102 @@ function renderTrafficQuality(rows) {
   }
 }
 
+function journeyDate(value) {
+  if (!value) return "—";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "—";
+
+  return parsed.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function renderJourneys(rows) {
+  const body = document.querySelector("[data-journeys-body]");
+  if (!body) return;
+
+  body.replaceChildren();
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 8;
+    cell.textContent = "No verified members yet.";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    // Name over email, both from Firestore. Nothing here comes from analytics.
+    const member = document.createElement("td");
+    const name = document.createElement("div");
+    name.textContent = displayValue(item.name);
+    member.appendChild(name);
+
+    if (item.email) {
+      const email = document.createElement("div");
+      email.className = "journey-secondary";
+      email.textContent = item.email;
+      member.appendChild(email);
+    }
+
+    // Only that some activity was withheld, never whose it was.
+    if (item.has_ambiguous_activity) {
+      const note = document.createElement("div");
+      note.className = "journey-note";
+      note.textContent =
+        "Some activity omitted due to shared-browser linkage.";
+      member.appendChild(note);
+    }
+
+    row.appendChild(member);
+
+    const interest = document.createElement("td");
+    const level = document.createElement("div");
+    level.textContent = displayValue(item.interest_level);
+    interest.appendChild(level);
+
+    const reason = document.createElement("div");
+    reason.className = "journey-secondary";
+    reason.textContent = displayValue(item.interest_reason);
+    interest.appendChild(reason);
+    row.appendChild(interest);
+
+    if (item.activity_status === "none") {
+      const empty = document.createElement("td");
+      empty.colSpan = 6;
+      empty.className = "journey-secondary";
+      empty.textContent = "No website activity recorded";
+      row.appendChild(empty);
+      body.appendChild(row);
+      continue;
+    }
+
+    if (item.activity_status === "no_activity_in_range") {
+      const empty = document.createElement("td");
+      empty.colSpan = 6;
+      empty.className = "journey-secondary";
+      empty.textContent = "No activity in selected range";
+      row.appendChild(empty);
+      body.appendChild(row);
+      continue;
+    }
+
+    appendCell(row, item.first_source);
+    appendCell(row, journeyDate(item.first_seen));
+    appendCell(row, journeyDate(item.last_seen));
+    appendCell(row, formatNumber(item.session_count), "number-cell");
+    appendCell(row, formatNumber(item.page_view_count), "number-cell");
+    appendCell(row, journeyDate(item.last_meaningful_activity_at));
+
+    body.appendChild(row);
+  }
+}
+
 function renderSources(rows) {
   const body = document.querySelector("[data-sources-body]");
   if (!body) return;
@@ -676,13 +772,18 @@ async function loadAnalytics() {
   try {
     const range = rangeSelect?.value || "30d";
 
-    const response = await fetch(
-      `/api/analytics?range=${encodeURIComponent(range)}`,
-      {
+    // Journeys is its own endpoint: it needs Firestore as well as BigQuery, and
+    // a failure there must not take the analytics dashboard down with it.
+    const [response, journeysResponse] = await Promise.all([
+      fetch(`/api/analytics?range=${encodeURIComponent(range)}`, {
         credentials: "same-origin",
         cache: "no-store"
-      }
-    );
+      }),
+      fetch(`/api/journeys?range=${encodeURIComponent(range)}`, {
+        credentials: "same-origin",
+        cache: "no-store"
+      }).catch(() => null)
+    ]);
 
     if (response.status === 401) {
       window.location.replace("/login");
@@ -726,6 +827,17 @@ async function loadAnalytics() {
     renderPages(pages);
     renderSources(sources);
     renderTrafficQuality(trafficQuality);
+
+    let journeys = [];
+
+    if (journeysResponse && journeysResponse.ok) {
+      const journeysPayload = await journeysResponse.json();
+      journeys = Array.isArray(journeysPayload.members)
+        ? journeysPayload.members
+        : [];
+    }
+
+    renderJourneys(journeys);
 
     if (metrics) {
       metrics.hidden = false;

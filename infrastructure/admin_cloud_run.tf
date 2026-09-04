@@ -20,7 +20,7 @@ resource "google_cloud_run_v2_service" "admin" {
     max_instance_request_concurrency = 40
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:ee9f2c6a73a6cc550c5253456d307206c751175a55f1a536cbca8d00998d3ee0"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:5ec1de37ef0ba9f4743febf1c2b4438c3a46483457c0f44dc14be70cccfc9e58"
 
       ports {
         name           = "http1"
@@ -54,6 +54,21 @@ resource "google_cloud_run_v2_service" "admin" {
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.admin_emails.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # Same keyed hash the collector uses, so the admin can resolve a verified
+      # member's Firebase UID to the firebase_uid_hash already stored in
+      # identity_links. The UID never leaves admin memory and the hash is never
+      # returned to the browser.
+      env {
+        name = "IDENTITY_HASH_SECRET"
+
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.identity_hash_secret.secret_id
             version = "latest"
           }
         }

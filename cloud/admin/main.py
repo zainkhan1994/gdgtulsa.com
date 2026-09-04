@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlsplit
 
 import firebase_admin
@@ -805,6 +805,99 @@ def analytics():
 
 
 
+IDENTITY_HASH_SECRET = os.environ.get("IDENTITY_HASH_SECRET", "")
+
+# Meaningful milestones. Ordinary clicks are deliberately excluded: they add
+# noise to a member timeline without changing the follow-up decision.
+JOURNEY_MILESTONES = (
+    "member_register_open",
+    "member_verified",
+    "schedule_open",
+    "schedule_submit",
+)
+
+RECENTLY_ACTIVE_DAYS = 14
+
+
+def member_uid_hash(uid):
+    """Hash a Firebase UID forward into the analytics identity space.
+
+    Same keyed HMAC the collector uses when it writes identity_links, so the
+    admin can resolve a member to their existing rows without the UID ever
+    leaving this process. The reverse direction is never performed: a hash is
+    never mapped back to a person, and the hash itself is never returned.
+    """
+    if not IDENTITY_HASH_SECRET or not isinstance(uid, str) or not uid:
+        return None
+
+    return hmac.new(
+        IDENTITY_HASH_SECRET.encode(),
+        uid.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def iso_timestamp(value):
+    if value is None:
+        return None
+
+    isoformat = getattr(value, "isoformat", None)
+    return isoformat() if callable(isoformat) else str(value)
+
+
+def format_signal_date(value):
+    if value is None:
+        return ""
+
+    strftime = getattr(value, "strftime", None)
+    return strftime("%b %-d") if callable(strftime) else ""
+
+
+def follow_up_signal(activity):
+    """Deterministic, ordered, first match wins.
+
+    Every branch is decided by a stored timestamp or a count, so the reason can
+    always be stated in plain language. No scoring, no model, no opaque number.
+    """
+    if activity is None:
+        return "none", "No website activity recorded"
+
+    submitted = activity.get("schedule_submitted_at")
+    opened = activity.get("schedule_opened_at")
+    verified = activity.get("member_verified_at")
+    registered = activity.get("registration_started_at")
+    last_seen = activity.get("last_seen")
+    sessions = int(activity.get("session_count") or 0)
+    page_views = int(activity.get("page_view_count") or 0)
+
+    if submitted is not None:
+        return "high", f"Submitted a schedule request {format_signal_date(submitted)}"
+
+    if opened is not None:
+        return "high", f"Opened scheduler {format_signal_date(opened)}"
+
+    if verified is not None and last_seen is not None:
+        recent_cutoff = datetime.now(timezone.utc) - timedelta(
+            days=RECENTLY_ACTIVE_DAYS
+        )
+        if last_seen >= recent_cutoff:
+            return "medium", f"Verified member, active {format_signal_date(last_seen)}"
+
+    if registered is not None:
+        return "medium", f"Started registration {format_signal_date(registered)}"
+
+    if sessions >= 3 or page_views >= 5:
+        return "medium", (
+            f"{page_views} page view{'' if page_views == 1 else 's'} "
+            f"across {sessions} session{'' if sessions == 1 else 's'}"
+        )
+
+    if sessions == 0 and page_views == 0:
+        return "none", "No activity in selected range"
+
+    return "low", "Ordinary browsing"
+
+
 def firestore_timestamp(value):
     if value is None:
         return None
@@ -887,6 +980,384 @@ def community():
         # to the browser.
         print("Private admin community query failure")
         return jsonify({"error": "community data unavailable"}), 500
+
+
+def journey_query(event_date_filter):
+    """One batched query for every member, keyed only by hashed identity.
+
+    Shared-browser safety is enforced here rather than in Python: an
+    anonymous_id linked to more than one distinct member is ambiguous, and
+    ambiguous browsers are dropped from named aggregation entirely so the same
+    history can never be attributed to two people. Members only learn that some
+    activity was withheld, never whose it was.
+    """
+    return f"""
+        WITH member_hashes AS (
+          SELECT DISTINCT hash_value
+          FROM UNNEST(@member_hashes) AS hash_value
+        ),
+        admin_visitors AS (
+          SELECT DISTINCT anonymous_id
+          FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+          WHERE is_admin IS TRUE
+        ),
+        -- Counted across every link, not just this batch: a browser shared with
+        -- a member outside the batch is still ambiguous.
+        anon_owners AS (
+          SELECT
+            anonymous_id,
+            COUNT(DISTINCT firebase_uid_hash) AS owner_count
+          FROM `{PROJECT_ID}.{DATASET_ID}.identity_links`
+          GROUP BY anonymous_id
+        ),
+        member_links AS (
+          SELECT DISTINCT
+            link.firebase_uid_hash AS hash_value,
+            link.anonymous_id
+          FROM `{PROJECT_ID}.{DATASET_ID}.identity_links` AS link
+          JOIN member_hashes
+            ON member_hashes.hash_value = link.firebase_uid_hash
+        ),
+        eligible_links AS (
+          SELECT member_links.hash_value, member_links.anonymous_id
+          FROM member_links
+          JOIN anon_owners
+            ON anon_owners.anonymous_id = member_links.anonymous_id
+          WHERE anon_owners.owner_count = 1
+            AND NOT EXISTS (
+              SELECT 1
+              FROM admin_visitors AS admin
+              WHERE admin.anonymous_id = member_links.anonymous_id
+            )
+        ),
+        ambiguity AS (
+          SELECT
+            member_links.hash_value,
+            COUNTIF(anon_owners.owner_count > 1) AS ambiguous_identity_count
+          FROM member_links
+          JOIN anon_owners
+            ON anon_owners.anonymous_id = member_links.anonymous_id
+          GROUP BY member_links.hash_value
+        ),
+        linked_counts AS (
+          SELECT hash_value, COUNT(DISTINCT anonymous_id) AS linked_identity_count
+          FROM eligible_links
+          GROUP BY hash_value
+        ),
+        member_events AS (
+          SELECT
+            eligible_links.hash_value,
+            event.session_id,
+            event.event_name,
+            event.event_timestamp,
+            event.page_path,
+            event.page_title
+          FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+          JOIN eligible_links
+            ON eligible_links.anonymous_id = event.anonymous_id
+          WHERE {event_date_filter}
+            AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
+        ),
+        activity AS (
+          SELECT
+            hash_value,
+            MIN(event_timestamp) AS first_seen,
+            MAX(event_timestamp) AS last_seen,
+            COUNT(DISTINCT session_id) AS session_count,
+            COUNTIF(event_name = 'page_view') AS page_view_count,
+            MIN(IF(event_name = 'member_register_open', event_timestamp, NULL))
+              AS registration_started_at,
+            MIN(IF(event_name = 'member_verified', event_timestamp, NULL))
+              AS member_verified_at,
+            MIN(IF(event_name = 'schedule_open', event_timestamp, NULL))
+              AS schedule_opened_at,
+            MIN(IF(event_name = 'schedule_submit', event_timestamp, NULL))
+              AS schedule_submitted_at,
+            MAX(IF(
+              event_name IN (
+                'member_register_open',
+                'member_verified',
+                'schedule_open',
+                'schedule_submit'
+              ),
+              event_timestamp,
+              NULL
+            )) AS last_meaningful_activity_at
+          FROM member_events
+          GROUP BY hash_value
+        ),
+        -- Acquisition is deliberately all-time and production-only: the range
+        -- selector must not change where somebody originally came from, and an
+        -- earlier test/internal/admin visit must never become the first touch.
+        first_touch AS (
+          SELECT
+            hash_value,
+            referrer,
+            utm_source,
+            utm_medium,
+            utm_campaign
+          FROM (
+            SELECT
+              eligible_links.hash_value,
+              event.referrer,
+              NULLIF(event.utm_source, '') AS utm_source,
+              NULLIF(event.utm_medium, '') AS utm_medium,
+              NULLIF(event.utm_campaign, '') AS utm_campaign,
+              ROW_NUMBER() OVER (
+                PARTITION BY eligible_links.hash_value
+                ORDER BY event.event_timestamp, event.event_id
+              ) AS row_num
+            FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+            JOIN eligible_links
+              ON eligible_links.anonymous_id = event.anonymous_id
+            WHERE event.event_name = 'page_view'
+              AND COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
+          )
+          WHERE row_num = 1
+        ),
+        recent_pages AS (
+          SELECT
+            hash_value,
+            ARRAY_AGG(
+              STRUCT(page_path, page_title, event_timestamp)
+              ORDER BY event_timestamp DESC
+              LIMIT 10
+            ) AS pages
+          FROM member_events
+          WHERE event_name = 'page_view'
+          GROUP BY hash_value
+        )
+        SELECT
+          member_hashes.hash_value,
+          activity.first_seen,
+          activity.last_seen,
+          activity.session_count,
+          activity.page_view_count,
+          activity.registration_started_at,
+          activity.member_verified_at,
+          activity.schedule_opened_at,
+          activity.schedule_submitted_at,
+          activity.last_meaningful_activity_at,
+          COALESCE(linked_counts.linked_identity_count, 0) AS linked_identity_count,
+          COALESCE(ambiguity.ambiguous_identity_count, 0) AS ambiguous_identity_count,
+          -- Guarded: without a first_touch row the CASE would fall through to
+          -- 'direct' and invent an acquisition source for a member who has no
+          -- recorded activity at all.
+          CASE
+            WHEN first_touch.hash_value IS NULL THEN NULL
+            WHEN first_touch.utm_source IS NOT NULL THEN 'utm'
+            WHEN first_touch.referrer IS NULL OR first_touch.referrer = '' THEN 'direct'
+            WHEN REGEXP_CONTAINS(
+              first_touch.referrer,
+              r'^https://tulsahub\\.firebaseapp\\.com'
+            ) THEN 'authentication'
+            WHEN REGEXP_CONTAINS(
+              first_touch.referrer,
+              r'^https://(www\\.)?gdgtulsa\\.com'
+            ) THEN 'internal'
+            ELSE 'referral'
+          END AS first_source_type,
+          CASE
+            WHEN first_touch.hash_value IS NULL THEN NULL
+            WHEN first_touch.utm_source IS NOT NULL THEN first_touch.utm_source
+            WHEN first_touch.referrer IS NULL OR first_touch.referrer = ''
+              THEN '(direct / unknown)'
+            WHEN REGEXP_CONTAINS(
+              first_touch.referrer,
+              r'^https://tulsahub\\.firebaseapp\\.com'
+            ) THEN 'tulsahub.firebaseapp.com'
+            WHEN REGEXP_CONTAINS(
+              first_touch.referrer,
+              r'^https://(www\\.)?gdgtulsa\\.com'
+            ) THEN 'gdgtulsa.com'
+            ELSE COALESCE(NET.HOST(first_touch.referrer), first_touch.referrer)
+          END AS first_source,
+          first_touch.utm_medium AS first_medium,
+          first_touch.utm_campaign AS first_campaign,
+          recent_pages.pages AS recent_pages
+        FROM member_hashes
+        LEFT JOIN activity ON activity.hash_value = member_hashes.hash_value
+        LEFT JOIN linked_counts ON linked_counts.hash_value = member_hashes.hash_value
+        LEFT JOIN ambiguity ON ambiguity.hash_value = member_hashes.hash_value
+        LEFT JOIN first_touch ON first_touch.hash_value = member_hashes.hash_value
+        LEFT JOIN recent_pages ON recent_pages.hash_value = member_hashes.hash_value
+    """
+
+
+@app.route("/api/journeys", methods=["GET"])
+def journeys():
+    if not valid_admin_session():
+        return jsonify({"error": "authentication required"}), 401
+
+    range_key = request.args.get("range", "30d").strip().lower()
+
+    range_days = {
+        "7d": 7,
+        "30d": 30,
+        "90d": 90,
+    }
+
+    if range_key == "all":
+        event_date_filter = "TRUE"
+    elif range_key in range_days:
+        days = range_days[range_key]
+        event_date_filter = (
+            "event.event_timestamp >= "
+            f"TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL {days} DAY)"
+        )
+    else:
+        return jsonify({"error": "invalid journey range"}), 400
+
+    if not IDENTITY_HASH_SECRET:
+        print("Private admin journeys identity secret unavailable")
+        return jsonify({"error": "journeys unavailable"}), 500
+
+    try:
+        db = firestore.client(app=firebase_app)
+
+        # One Firestore read for every member, mirroring /api/community.
+        members = []
+        hashes = []
+
+        for document in db.collection("members").stream():
+            data = document.to_dict() or {}
+
+            # The document id is the Firebase UID. It is hashed immediately and
+            # never stored, logged or returned.
+            uid_hash = member_uid_hash(data.get("uid") or document.id)
+
+            if not uid_hash:
+                continue
+
+            members.append({
+                "name": str(data.get("name") or ""),
+                "email": str(data.get("email") or ""),
+                "confirmed": bool(data.get("confirmed")),
+                "created_at": firestore_timestamp(data.get("createdAt")),
+                "hash_value": uid_hash,
+            })
+            hashes.append(uid_hash)
+
+        activity_by_hash = {}
+
+        if hashes:
+            # One batched query for the whole member set, never one per member.
+            job_config = bigquery.QueryJobConfig(
+                query_parameters=[
+                    bigquery.ArrayQueryParameter(
+                        "member_hashes", "STRING", sorted(set(hashes))
+                    )
+                ]
+            )
+
+            rows = bq.query(
+                journey_query(event_date_filter),
+                job_config=job_config,
+            ).result()
+
+            for row in rows:
+                activity_by_hash[row["hash_value"]] = row
+
+        payload_members = []
+
+        for member in members:
+            row = activity_by_hash.get(member["hash_value"])
+
+            linked = int(row["linked_identity_count"]) if row else 0
+            ambiguous = int(row["ambiguous_identity_count"]) if row else 0
+            has_events = bool(row and row["first_seen"] is not None)
+
+            if has_events:
+                activity_status = "active"
+            elif linked or ambiguous:
+                activity_status = "no_activity_in_range"
+            else:
+                activity_status = "none"
+
+            activity = None
+
+            if has_events:
+                activity = {
+                    "schedule_submitted_at": row["schedule_submitted_at"],
+                    "schedule_opened_at": row["schedule_opened_at"],
+                    "member_verified_at": row["member_verified_at"],
+                    "registration_started_at": row["registration_started_at"],
+                    "last_seen": row["last_seen"],
+                    "session_count": row["session_count"],
+                    "page_view_count": row["page_view_count"],
+                }
+            elif activity_status == "no_activity_in_range":
+                activity = {
+                    "session_count": 0,
+                    "page_view_count": 0,
+                    "last_seen": None,
+                    "schedule_submitted_at": None,
+                    "schedule_opened_at": None,
+                    "member_verified_at": None,
+                    "registration_started_at": None,
+                }
+
+            interest_level, interest_reason = follow_up_signal(activity)
+
+            recent = []
+
+            if row and row["recent_pages"]:
+                for page in row["recent_pages"]:
+                    recent.append({
+                        "page_path": page.get("page_path") or "",
+                        "page_title": page.get("page_title") or "",
+                        "viewed_at": iso_timestamp(page.get("event_timestamp")),
+                    })
+
+            payload_members.append({
+                "name": member["name"],
+                "email": member["email"],
+                "confirmed": member["confirmed"],
+                "created_at": member["created_at"],
+                "activity_status": activity_status,
+                "interest_level": interest_level,
+                "interest_reason": interest_reason,
+                "first_seen": iso_timestamp(row["first_seen"]) if row else None,
+                "last_seen": iso_timestamp(row["last_seen"]) if row else None,
+                "first_source_type": row["first_source_type"] if row else None,
+                "first_source": row["first_source"] if row else None,
+                "first_medium": row["first_medium"] if row else None,
+                "first_campaign": row["first_campaign"] if row else None,
+                "linked_identity_count": linked,
+                "session_count": int(row["session_count"] or 0) if row else 0,
+                "page_view_count": int(row["page_view_count"] or 0) if row else 0,
+                "registration_started_at":
+                    iso_timestamp(row["registration_started_at"]) if row else None,
+                "member_verified_at":
+                    iso_timestamp(row["member_verified_at"]) if row else None,
+                "schedule_opened_at":
+                    iso_timestamp(row["schedule_opened_at"]) if row else None,
+                "schedule_submitted_at":
+                    iso_timestamp(row["schedule_submitted_at"]) if row else None,
+                "last_meaningful_activity_at":
+                    iso_timestamp(row["last_meaningful_activity_at"]) if row else None,
+                "recent_pages": recent,
+                "has_ambiguous_activity": ambiguous > 0,
+            })
+
+        order = {"high": 0, "medium": 1, "low": 2, "none": 3}
+        payload_members.sort(
+            key=lambda member: (
+                order.get(member["interest_level"], 4),
+                member["last_seen"] is None,
+                member["name"].lower(),
+            )
+        )
+
+        return jsonify({
+            "range": range_key,
+            "members": payload_members,
+        }), 200
+
+    except Exception:
+        # Never expose Firestore, BigQuery, UID or identity details.
+        print("Private admin journeys query failure")
+        return jsonify({"error": "journeys unavailable"}), 500
 
 
 @app.route("/logout", methods=["POST"])
