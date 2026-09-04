@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlsplit
 
@@ -41,6 +42,14 @@ app.config.update(
 
 firebase_app = firebase_admin.initialize_app(
     options={"projectId": FIREBASE_PROJECT_ID}
+)
+
+# Operational follow-up state lives in gdg-tulsa, not tulsahub. Kept as a
+# separate named app so a member read can never accidentally become a member
+# write: the admin holds only datastore.viewer in tulsahub.
+followup_app = firebase_admin.initialize_app(
+    options={"projectId": PROJECT_ID},
+    name="followup",
 )
 
 bq = bigquery.Client(project=PROJECT_ID)
@@ -819,6 +828,82 @@ JOURNEY_MILESTONES = (
 RECENTLY_ACTIVE_DAYS = 14
 
 
+FOLLOWUP_MEMBER_REF_SECRET = os.environ.get("FOLLOWUP_MEMBER_REF_SECRET", "")
+
+FOLLOW_UP_COLLECTION = "followUpStatus"
+
+FOLLOW_UP_STATUSES = (
+    "new",
+    "reviewed",
+    "contacted",
+    "dismissed",
+)
+
+# Queue placement. Lower sorts first. Completed states sink to the bottom but
+# stay visible: a dismissed member who has since submitted a schedule request
+# still needs to be seen.
+FOLLOW_UP_ORDER = {
+    ("high", "new"): 0,
+    ("high", "reviewed"): 1,
+    ("medium", "new"): 2,
+    ("medium", "reviewed"): 3,
+}
+
+FOLLOW_UP_COMPLETED_ORDER = {
+    "contacted": 4,
+    "dismissed": 5,
+}
+
+MEMBER_REF_PATTERN = re.compile(r"\A[0-9a-f]{64}\Z")
+
+
+def member_ref(uid):
+    """Stable opaque handle for a member, safe to hand to the browser.
+
+    Keyed on its own long-lived secret rather than SESSION_SECRET: this value
+    is a Firestore document id, so rotating the session signing key must not
+    orphan every follow-up record. Distinct from firebase_uid_hash too, so the
+    operational store cannot be correlated with analytics identity.
+    """
+    if not FOLLOWUP_MEMBER_REF_SECRET or not isinstance(uid, str) or not uid:
+        return None
+
+    return hmac.new(
+        FOLLOWUP_MEMBER_REF_SECRET.encode(),
+        f"gdg-followup-member-ref:{uid}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def follow_up_eligible(member):
+    """Reuses the journey signal rather than scoring a second time."""
+    return (
+        member.get("activity_status") == "active"
+        and member.get("interest_level") in ("high", "medium")
+    )
+
+
+def follow_up_sort_key(member):
+    status = member.get("follow_up_status") or "new"
+    level = member.get("interest_level") or "low"
+
+    rank = FOLLOW_UP_COMPLETED_ORDER.get(
+        status,
+        FOLLOW_UP_ORDER.get((level, status), 6),
+    )
+
+    # Most recent meaningful activity first inside each group, then name so the
+    # order never depends on dict or query iteration order.
+    activity = member.get("last_meaningful_activity_at") or ""
+
+    return (rank, activity == "", _invert_timestamp(activity), member.get("name", "").lower())
+
+
+def _invert_timestamp(value):
+    """Descending sort on an ISO string without reversing the whole tuple."""
+    return tuple(-ord(character) for character in str(value))
+
+
 def member_uid_hash(uid):
     """Hash a Firebase UID forward into the analytics identity space.
 
@@ -1235,6 +1320,7 @@ def journeys():
                 "confirmed": bool(data.get("confirmed")),
                 "created_at": firestore_timestamp(data.get("createdAt")),
                 "hash_value": uid_hash,
+                "member_ref": member_ref(data.get("uid") or document.id),
             })
             hashes.append(uid_hash)
 
@@ -1257,6 +1343,25 @@ def journeys():
 
             for row in rows:
                 activity_by_hash[row["hash_value"]] = row
+
+        # One read of the operational collection for the whole queue. Absent
+        # document means "new"; nothing is created just because somebody became
+        # eligible, so the queue stays dynamic.
+        follow_up_by_ref = {}
+
+        try:
+            follow_up_db = firestore.client(app=followup_app)
+
+            for document in follow_up_db.collection(FOLLOW_UP_COLLECTION).stream():
+                data = document.to_dict() or {}
+                status = data.get("status")
+
+                if status in FOLLOW_UP_STATUSES:
+                    follow_up_by_ref[document.id] = status
+        except Exception:
+            # Follow-up state is operational metadata. If it cannot be read the
+            # journeys still render, every member simply shows as "new".
+            print("Private admin follow-up status read failure")
 
         payload_members = []
 
@@ -1338,6 +1443,9 @@ def journeys():
                     iso_timestamp(row["last_meaningful_activity_at"]) if row else None,
                 "recent_pages": recent,
                 "has_ambiguous_activity": ambiguous > 0,
+                "member_ref": member["member_ref"],
+                "follow_up_status":
+                    follow_up_by_ref.get(member["member_ref"], "new"),
             })
 
         order = {"high": 0, "medium": 1, "low": 2, "none": 3}
@@ -1358,6 +1466,102 @@ def journeys():
         # Never expose Firestore, BigQuery, UID or identity details.
         print("Private admin journeys query failure")
         return jsonify({"error": "journeys unavailable"}), 500
+
+
+@app.route("/api/follow-ups/<member_reference>", methods=["PATCH"])
+def update_follow_up(member_reference):
+    """Record a manual follow-up decision.
+
+    The only state-changing endpoint in the admin service. Validation runs
+    before anything is resolved or written, and the write targets the gdg-tulsa
+    operational database only: member records in tulsahub stay read-only.
+    """
+    if not valid_admin_session():
+        return jsonify({"error": "authentication required"}), 401
+
+    # Same CSRF control the existing state-changing endpoints use. Fails closed
+    # when Origin is absent, and the session cookie is already SameSite=Strict.
+    if not same_origin_request():
+        return jsonify({"error": "origin not allowed"}), 403
+
+    if request.content_length and request.content_length > 4_000:
+        return jsonify({"error": "payload too large"}), 413
+
+    if not request.is_json:
+        return jsonify({"error": "invalid payload"}), 400
+
+    if not MEMBER_REF_PATTERN.match(str(member_reference or "")):
+        return jsonify({"error": "invalid member reference"}), 400
+
+    payload = request.get_json(silent=True) or {}
+    status = payload.get("status")
+
+    if status not in FOLLOW_UP_STATUSES:
+        return jsonify({"error": "invalid status"}), 400
+
+    if not FOLLOWUP_MEMBER_REF_SECRET:
+        print("Private admin follow-up reference secret unavailable")
+        return jsonify({"error": "follow-up unavailable"}), 500
+
+    try:
+        # Resolve against the live member list so a well-formed but unknown
+        # reference cannot create an orphan document.
+        member_db = firestore.client(app=firebase_app)
+        known = False
+
+        for document in member_db.collection("members").stream():
+            data = document.to_dict() or {}
+
+            if member_ref(data.get("uid") or document.id) == member_reference:
+                known = True
+                break
+
+        if not known:
+            return jsonify({"error": "member not found"}), 404
+
+        follow_up_db = firestore.client(app=followup_app)
+        reference = follow_up_db.collection(FOLLOW_UP_COLLECTION).document(
+            member_reference
+        )
+
+        previous = "new"
+
+        try:
+            snapshot = reference.get()
+
+            if snapshot.exists:
+                stored = (snapshot.to_dict() or {}).get("status")
+
+                if stored in FOLLOW_UP_STATUSES:
+                    previous = stored
+        except Exception:
+            # A missing prior value only affects the log line below.
+            pass
+
+        # merge keeps the document to exactly these three fields whether it is
+        # being created or updated. updatedBy is the existing non-PII session
+        # hash: no email, name, uid or cookie.
+        reference.set(
+            {
+                "status": status,
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+                "updatedBy": session.get("admin_hash"),
+            },
+            merge=True,
+        )
+
+        # Short prefix only: enough to correlate, not enough to identify.
+        print(
+            "follow_up_status_updated "
+            f"ref={member_reference[:8]} old={previous} new={status}"
+        )
+
+        return jsonify({"status": status}), 200
+
+    except Exception:
+        # Never expose Firestore, IAM, project or document details.
+        print("Private admin follow-up status write failure")
+        return jsonify({"error": "follow-up unavailable"}), 500
 
 
 @app.route("/logout", methods=["POST"])

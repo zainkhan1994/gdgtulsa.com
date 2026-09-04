@@ -521,6 +521,154 @@ function renderJourneys(rows) {
   }
 }
 
+const FOLLOW_UP_RANK = {
+  "high:new": 0,
+  "high:reviewed": 1,
+  "medium:new": 2,
+  "medium:reviewed": 3
+};
+
+const FOLLOW_UP_COMPLETED_RANK = { contacted: 4, dismissed: 5 };
+
+function followUpRank(member) {
+  const status = member.follow_up_status || "new";
+
+  if (status in FOLLOW_UP_COMPLETED_RANK) {
+    return FOLLOW_UP_COMPLETED_RANK[status];
+  }
+
+  const key = `${member.interest_level}:${status}`;
+  return key in FOLLOW_UP_RANK ? FOLLOW_UP_RANK[key] : 6;
+}
+
+function followUpSortKey(a, b) {
+  const rank = followUpRank(a) - followUpRank(b);
+  if (rank !== 0) return rank;
+
+  const left = a.last_meaningful_activity_at || "";
+  const right = b.last_meaningful_activity_at || "";
+
+  if (left !== right) return left < right ? 1 : -1;
+
+  return (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase());
+}
+
+const FOLLOW_UP_STATUSES = ["new", "reviewed", "contacted", "dismissed"];
+
+function followUpLabel(status) {
+  if (!status) return "New";
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+async function saveFollowUpStatus(memberRef, status) {
+  const response = await fetch(
+    `/api/follow-ups/${encodeURIComponent(memberRef)}`,
+    {
+      method: "PATCH",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status })
+    }
+  );
+
+  if (response.status === 401) {
+    window.location.replace("/login");
+    return false;
+  }
+
+  return response.ok;
+}
+
+function renderFollowUps(rows) {
+  const body = document.querySelector("[data-follow-ups-body]");
+  if (!body) return;
+
+  body.replaceChildren();
+
+  if (!rows.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 6;
+    cell.textContent = "Nobody needs follow-up right now.";
+
+    row.appendChild(cell);
+    body.appendChild(row);
+    return;
+  }
+
+  for (const item of rows) {
+    const row = document.createElement("tr");
+
+    const member = document.createElement("td");
+    const name = document.createElement("div");
+    name.textContent = displayValue(item.name);
+    member.appendChild(name);
+
+    if (item.email) {
+      const email = document.createElement("div");
+      email.className = "journey-secondary";
+      email.textContent = item.email;
+      member.appendChild(email);
+    }
+
+    row.appendChild(member);
+
+    appendCell(row, displayValue(item.interest_level));
+    appendCell(row, displayValue(item.interest_reason));
+    appendCell(row, journeyDate(item.last_meaningful_activity_at));
+    appendCell(row, followUpLabel(item.follow_up_status));
+
+    const action = document.createElement("td");
+    const select = document.createElement("select");
+    select.className = "follow-up-select";
+
+    for (const status of FOLLOW_UP_STATUSES) {
+      const option = document.createElement("option");
+      option.value = status;
+      option.textContent = followUpLabel(status);
+      select.appendChild(option);
+    }
+
+    select.value = item.follow_up_status || "new";
+
+    select.addEventListener("change", async () => {
+      const previous = item.follow_up_status || "new";
+      const next = select.value;
+
+      select.disabled = true;
+
+      const saved = await saveFollowUpStatus(item.member_ref, next);
+
+      select.disabled = false;
+
+      if (!saved) {
+        // Never leave a value on screen that did not persist.
+        select.value = previous;
+
+        if (analyticsStatus) {
+          analyticsStatus.hidden = false;
+          analyticsStatus.classList.add("error");
+          analyticsStatus.textContent = "Follow-up status could not be saved.";
+        }
+
+        return;
+      }
+
+      item.follow_up_status = next;
+
+      // Status changes placement, so re-render rather than leave a stale order.
+      renderFollowUps(rows);
+    });
+
+    action.appendChild(select);
+    row.appendChild(action);
+
+    body.appendChild(row);
+  }
+}
+
 function renderSources(rows) {
   const body = document.querySelector("[data-sources-body]");
   if (!body) return;
@@ -838,6 +986,16 @@ async function loadAnalytics() {
     }
 
     renderJourneys(journeys);
+
+    // All-time operational queue: eligibility comes from the journey signal,
+    // not from the analytics range selector.
+    const followUps = journeys
+      .filter(member =>
+        member.activity_status === "active" &&
+        (member.interest_level === "high" || member.interest_level === "medium"))
+      .sort(followUpSortKey);
+
+    renderFollowUps(followUps);
 
     if (metrics) {
       metrics.hidden = false;
