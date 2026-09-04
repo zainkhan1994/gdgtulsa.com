@@ -104,6 +104,14 @@ resource "google_secret_manager_secret_iam_member" "admin_identity_hash_accessor
   member    = "serviceAccount:${google_service_account.admin.email}"
 }
 
+# Read-only access to the follow-up member reference key. Admin service only.
+resource "google_secret_manager_secret_iam_member" "admin_followup_member_ref_accessor" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.followup_member_ref_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.admin.email}"
+}
+
 # --- Private admin analytics access -------------------------------------
 
 # Allows the private admin service to execute BigQuery query jobs.

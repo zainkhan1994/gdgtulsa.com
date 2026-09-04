@@ -57,3 +57,21 @@ resource "google_secret_manager_secret" "admin_session_secret" {
     auto {}
   }
 }
+
+# Long-lived key for the opaque follow-up member reference.
+#
+# Kept separate from admin-session-secret on purpose: member_ref is a Firestore
+# document id, so rotating the session signing key must not orphan every
+# follow-up record.
+#
+# Terraform manages only the secret container. The secret VALUE is generated
+# separately and never enters Git or Terraform state.
+resource "google_secret_manager_secret" "followup_member_ref_secret" {
+  project             = var.project_id
+  secret_id           = "followup-member-ref-secret"
+  deletion_protection = true
+
+  replication {
+    auto {}
+  }
+}

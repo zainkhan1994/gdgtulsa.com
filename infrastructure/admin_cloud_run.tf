@@ -20,7 +20,7 @@ resource "google_cloud_run_v2_service" "admin" {
     max_instance_request_concurrency = 40
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:5ec1de37ef0ba9f4743febf1c2b4438c3a46483457c0f44dc14be70cccfc9e58"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:f2c199b2d3e2a37f4926e34131eefc572d7bce74967ca074b60814c55dbb16cb"
 
       ports {
         name           = "http1"
@@ -69,6 +69,19 @@ resource "google_cloud_run_v2_service" "admin" {
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.identity_hash_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      # Stable key for the opaque follow-up member reference. Separate from
+      # SESSION_SECRET so session-key rotation never orphans Firestore records.
+      env {
+        name = "FOLLOWUP_MEMBER_REF_SECRET"
+
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.followup_member_ref_secret.secret_id
             version = "latest"
           }
         }
