@@ -33,3 +33,17 @@ variable "org_id" {
   type        = string
   default     = "956552594595"
 }
+
+variable "monitoring_notification_email" {
+  description = <<-EOT
+    Destination for operational alert notifications.
+
+    Deliberately has no default: the address is personal and must not be
+    committed. Supply it at plan/apply time, e.g.
+
+      export TF_VAR_monitoring_notification_email="ops@example.com"
+  EOT
+  type        = string
+  sensitive   = true
+}
+
