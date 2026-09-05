@@ -70,11 +70,6 @@ import {
   id = "projects/gdg-tulsa/secrets/ip-hash-secret roles/secretmanager.secretAccessor serviceAccount:gdg-tulsa@gdg-tulsa.iam.gserviceaccount.com"
 }
 
-import {
-  to = google_project_iam_member.billing_shutdown_project_manager
-  id = "gdg-tulsa roles/billing.projectManager serviceAccount:billing-shutdown@gdg-tulsa.iam.gserviceaccount.com"
-}
-
 # --- Budgets --------------------------------------------------------------
 
 import {
@@ -85,13 +80,6 @@ import {
 import {
   to = google_billing_budget.alert_100
   id = "billingAccounts/01A239-502350-6B64D0/budgets/fc47ec40-1049-418a-8e1a-ee7dc60f9f69"
-}
-
-# Verified on the billing account (not the project) via
-# `gcloud billing accounts get-iam-policy 01A239-502350-6B64D0`.
-import {
-  to = google_billing_account_iam_member.billing_shutdown_admin
-  id = "01A239-502350-6B64D0 roles/billing.admin serviceAccount:billing-shutdown@gdg-tulsa.iam.gserviceaccount.com"
 }
 
 # ============================================================

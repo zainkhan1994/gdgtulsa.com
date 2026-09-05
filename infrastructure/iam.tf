@@ -70,14 +70,6 @@ resource "google_project_iam_member" "billing_shutdown_custom" {
   member  = "serviceAccount:${google_service_account.billing_shutdown.email}"
 }
 
-# Superseded by billing_shutdown_custom above. Kept only until the narrow role
-# has been proved working against a real budget notification in production.
-resource "google_project_iam_member" "billing_shutdown_project_manager" {
-  project = var.project_id
-  role    = "roles/billing.projectManager"
-  member  = "serviceAccount:${google_service_account.billing_shutdown.email}"
-}
-
 # --- Billing-account level role ------------------------------------------
 #
 # Verified present on billing account 01A239-502350-6B64D0 via
@@ -88,18 +80,12 @@ resource "google_project_iam_member" "billing_shutdown_project_manager" {
 # any other principal on the billing account.
 
 # Read-only. Supplies billing.budgets.get for the GetBudget verification and
-# nothing that can mutate the account, its budgets or its associations.
+# nothing that can mutate the account, its budgets or its associations. It
+# replaced roles/billing.admin, which additionally allowed this identity to
+# delete the very budgets protecting the project and to close the account.
 resource "google_billing_account_iam_member" "billing_shutdown_viewer" {
   billing_account_id = var.billing_account
   role               = "roles/billing.viewer"
-  member             = "serviceAccount:${google_service_account.billing_shutdown.email}"
-}
-
-# Superseded by billing_shutdown_viewer above. Retained only until the narrow
-# roles are proved in production; removing it is the point of this change.
-resource "google_billing_account_iam_member" "billing_shutdown_admin" {
-  billing_account_id = var.billing_account
-  role               = "roles/billing.admin"
   member             = "serviceAccount:${google_service_account.billing_shutdown.email}"
 }
 
