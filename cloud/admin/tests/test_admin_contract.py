@@ -21,7 +21,7 @@ def test_api_urls_unchanged(admin_js):
 
 
 def test_follow_up_uses_patch(admin_js):
-    block = admin_js[admin_js.index("async function saveFollowUpStatus"):]
+    block = admin_js[admin_js.index("async function saveFollowUp("):]
     assert 'method: "PATCH"' in block[:600]
     assert 'credentials: "same-origin"' in block[:600]
 
@@ -32,12 +32,15 @@ def test_follow_up_statuses_unchanged(admin_js):
     assert statuses == ["new", "reviewed", "contacted", "dismissed"]
 
 
-def test_failed_status_save_restores_previous_value(admin_js):
-    block = admin_js[admin_js.index("select.addEventListener"):]
-    block = block[: block.index("action.appendChild")]
-    assert "const previous = item.follow_up_status" in block
-    assert "select.value = previous;" in block
-    assert "Follow-up status could not be saved." in block
+def test_failed_save_never_shows_unpersisted_state(admin_js):
+    """V2 edits in the drawer: nothing is applied to the row until the server
+    confirms it, so a failure cannot leave a value on screen that did not save."""
+    block = admin_js[admin_js.index("async function submitFollowUp"):]
+    block = block[: block.index("drawerField(\"save\")?.addEventListener")]
+    assert "if (!result.ok)" in block
+    assert "Follow-up could not be saved." in block
+    # The row is only updated after a confirmed response.
+    assert block.index("if (!result.ok)") < block.index("followUpEditing.follow_up =")
 
 
 def test_unauthorised_response_redirects_to_login(admin_js):

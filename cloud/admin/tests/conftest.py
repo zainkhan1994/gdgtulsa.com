@@ -17,6 +17,8 @@ REPO_ROOT = ADMIN_DIR.parents[1]
 
 TEST_SECRET = "test-session-secret-not-a-real-value"
 TEST_ADMIN_EMAIL = "admin@example.test"
+TEST_FOLLOWUP_SECRET = "test-followup-secret-not-a-real-value"
+TEST_MEMBER_UID = "test-member-uid"
 ORIGIN = "https://admin.test"
 
 
@@ -33,6 +35,7 @@ def _install_stubs():
 def admin_module():
     os.environ["SESSION_SECRET"] = TEST_SECRET
     os.environ["ADMIN_EMAILS"] = TEST_ADMIN_EMAIL
+    os.environ["FOLLOWUP_MEMBER_REF_SECRET"] = TEST_FOLLOWUP_SECRET
 
     _install_stubs()
 

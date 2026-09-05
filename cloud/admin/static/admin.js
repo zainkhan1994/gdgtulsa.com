@@ -776,38 +776,6 @@ function renderJourneys(rows) {
   }
 }
 
-const FOLLOW_UP_RANK = {
-  "high:new": 0,
-  "high:reviewed": 1,
-  "medium:new": 2,
-  "medium:reviewed": 3
-};
-
-const FOLLOW_UP_COMPLETED_RANK = { contacted: 4, dismissed: 5 };
-
-function followUpRank(member) {
-  const status = member.follow_up_status || "new";
-
-  if (status in FOLLOW_UP_COMPLETED_RANK) {
-    return FOLLOW_UP_COMPLETED_RANK[status];
-  }
-
-  const key = `${member.interest_level}:${status}`;
-  return key in FOLLOW_UP_RANK ? FOLLOW_UP_RANK[key] : 6;
-}
-
-function followUpSortKey(a, b) {
-  const rank = followUpRank(a) - followUpRank(b);
-  if (rank !== 0) return rank;
-
-  const left = a.last_meaningful_activity_at || "";
-  const right = b.last_meaningful_activity_at || "";
-
-  if (left !== right) return left < right ? 1 : -1;
-
-  return (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase());
-}
-
 const FOLLOW_UP_STATUSES = ["new", "reviewed", "contacted", "dismissed"];
 
 function followUpLabel(status) {
@@ -815,50 +783,182 @@ function followUpLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
-async function saveFollowUpStatus(memberRef, status) {
-  const response = await fetch(
-    `/api/follow-ups/${encodeURIComponent(memberRef)}`,
-    {
-      method: "PATCH",
-      credentials: "same-origin",
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
-    }
-  );
+// ===================== Follow-up workflow (V2) =====================
+//
+// Firestore holds operational state only; member details and activity still
+// come from the existing member/analytics join. Nothing here writes anything
+// that is not echoed back by the server.
 
-  if (response.status === 401) {
-    window.location.replace("/login");
+const FOLLOW_UP_PRIORITIES = ["high", "medium", "low"];
+
+let followUpRows = [];
+let followUpAdmins = [];
+let currentAdmin = null;
+let followUpEditing = null;
+let followUpSaving = false;
+
+const followUpFilters = { status: "", priority: "", owner: "", timing: "" };
+
+function startOfTodayUtc() {
+  const now = new Date();
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+}
+
+function followUpDayValue(iso) {
+  if (!iso) return null;
+
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return Date.UTC(
+    parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()
+  );
+}
+
+/* Overdue is derived from the clock, never stored: a persisted flag would be
+   wrong the moment the day rolled over. Day granularity means something due
+   today reads as due today rather than turning overdue at midnight. */
+function followUpTiming(state) {
+  const due = followUpDayValue(state.follow_up_at);
+  if (due === null) return "none";
+
+  const today = startOfTodayUtc();
+
+  if (due < today) return state.status === "dismissed" ? "upcoming" : "overdue";
+  if (due === today) return "today";
+  return "upcoming";
+}
+
+/* journeyDate() omits the year, which is fine for recent activity but makes a
+   2020 due date and a 2099 one both read as "Jan 1". Operational dates show
+   the year whenever it is not the current one. */
+function followUpDate(iso) {
+  if (!iso) return "—";
+
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return "—";
+
+  const sameYear = parsed.getUTCFullYear() === new Date().getUTCFullYear();
+
+  return parsed.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+    ...(sameYear ? {} : { year: "numeric" })
+  });
+}
+
+function followUpState(item) {
+  return item.follow_up || { status: item.follow_up_status || "new" };
+}
+
+const TIMING_RANK = { overdue: 0, today: 2, upcoming: 3, none: 4 };
+
+/* Actionable work first. Overdue outranks everything, then high priority,
+   then due today, upcoming, unscheduled, and dismissed last. */
+function followUpSortKey(a, b) {
+  const stateA = followUpState(a);
+  const stateB = followUpState(b);
+
+  const dismissed = (s) => (s.status === "dismissed" ? 1 : 0);
+  if (dismissed(stateA) !== dismissed(stateB)) {
+    return dismissed(stateA) - dismissed(stateB);
+  }
+
+  const bucket = (s) => {
+    const timing = followUpTiming(s);
+    if (timing === "overdue") return 0;
+    if (s.priority === "high") return 1;
+    return TIMING_RANK[timing] ?? 4;
+  };
+
+  const rank = bucket(stateA) - bucket(stateB);
+  if (rank !== 0) return rank;
+
+  const dueA = followUpDayValue(stateA.follow_up_at);
+  const dueB = followUpDayValue(stateB.follow_up_at);
+
+  if (dueA !== dueB) {
+    if (dueA === null) return 1;
+    if (dueB === null) return -1;
+    return dueA - dueB;
+  }
+
+  const left = a.last_meaningful_activity_at || "";
+  const right = b.last_meaningful_activity_at || "";
+  if (left !== right) return left < right ? 1 : -1;
+
+  // Name last so the order never depends on object iteration order.
+  return (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase());
+}
+
+function followUpMatchesFilters(item) {
+  const state = followUpState(item);
+
+  if (followUpFilters.status && state.status !== followUpFilters.status) {
     return false;
   }
 
-  return response.ok;
+  if (followUpFilters.priority) {
+    const wanted = followUpFilters.priority;
+    const actual = state.priority || "unset";
+    if (actual !== wanted) return false;
+  }
+
+  if (followUpFilters.owner === "me" && state.owner !== currentAdmin) return false;
+  if (followUpFilters.owner === "unassigned" && state.owner) return false;
+
+  if (followUpFilters.timing && followUpTiming(state) !== followUpFilters.timing) {
+    return false;
+  }
+
+  return true;
+}
+
+function labelledCell(row, label, value, className = "") {
+  const cell = document.createElement("td");
+  cell.dataset.label = label;
+  cell.textContent = displayValue(value);
+  if (className) cell.className = className;
+  row.appendChild(cell);
+  return cell;
 }
 
 function renderFollowUps(rows) {
   const body = document.querySelector("[data-follow-ups-body]");
   if (!body) return;
 
+  followUpRows = rows;
   body.replaceChildren();
 
-  if (!rows.length) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
+  const visible = rows.filter(followUpMatchesFilters).sort(followUpSortKey);
+  const counter = document.querySelector("[data-followup-count]");
 
-    cell.colSpan = 6;
+  if (counter) {
+    counter.textContent = rows.length
+      ? `${visible.length} of ${rows.length} shown`
+      : "";
+  }
 
-    cell.className = "empty-cell";
-    cell.textContent = "Nobody needs follow-up right now.";
-
-    row.appendChild(cell);
-    body.appendChild(row);
+  if (!visible.length) {
+    emptyRow(
+      body, 9,
+      rows.length
+        ? "No follow-ups match these filters."
+        : "Nobody needs follow-up right now."
+    );
     return;
   }
 
-  for (const item of rows) {
+  for (const item of visible) {
+    const state = followUpState(item);
+    const timing = followUpTiming(state);
     const row = document.createElement("tr");
 
+    if (timing === "overdue") row.classList.add("row-overdue");
+
     const member = document.createElement("td");
+    member.dataset.label = "Member";
     const name = document.createElement("div");
     name.className = "member-name";
     name.textContent = displayValue(item.name);
@@ -870,69 +970,273 @@ function renderFollowUps(rows) {
       email.textContent = item.email;
       member.appendChild(email);
     }
-
     row.appendChild(member);
 
-    appendBadgeCell(
-      row,
-      displayValue(item.interest_level),
-      badgeClass(item.interest_level)
+    const interest = document.createElement("td");
+    interest.dataset.label = "Interest";
+    interest.appendChild(
+      badgeElement(displayValue(item.interest_level), badgeClass(item.interest_level))
     );
-    appendCell(row, displayValue(item.interest_reason));
-    appendCell(row, journeyDate(item.last_meaningful_activity_at));
-    appendBadgeCell(
-      row,
-      followUpLabel(item.follow_up_status),
-      `status-badge badge-${item.follow_up_status || "new"}`
+    const reason = document.createElement("div");
+    reason.className = "journey-secondary";
+    reason.textContent = displayValue(item.interest_reason);
+    interest.appendChild(reason);
+    row.appendChild(interest);
+
+    const priority = document.createElement("td");
+    priority.dataset.label = "Priority";
+    priority.appendChild(
+      state.priority
+        ? badgeElement(followUpLabel(state.priority), badgeClass(state.priority))
+        : badgeElement("Not set", "status-badge badge-none")
     );
+    row.appendChild(priority);
 
-    const action = document.createElement("td");
-    const select = document.createElement("select");
-    select.className = "follow-up-select";
+    const status = document.createElement("td");
+    status.dataset.label = "Status";
+    status.appendChild(
+      badgeElement(
+        followUpLabel(state.status),
+        `status-badge badge-${state.status || "new"}`
+      )
+    );
+    row.appendChild(status);
 
-    for (const status of FOLLOW_UP_STATUSES) {
-      const option = document.createElement("option");
-      option.value = status;
-      option.textContent = followUpLabel(status);
-      select.appendChild(option);
+    labelledCell(row, "Owner", state.owner_label || "Unassigned");
+
+    labelledCell(row, "Last contacted", followUpDate(state.last_contacted_at));
+
+    const due = document.createElement("td");
+    due.dataset.label = "Next follow-up";
+    const dueText = document.createElement("span");
+    dueText.textContent = followUpDate(state.follow_up_at);
+    due.appendChild(dueText);
+
+    if (timing === "overdue") {
+      due.appendChild(badgeElement("Overdue", "status-badge badge-overdue"));
+    } else if (timing === "today") {
+      due.appendChild(badgeElement("Today", "status-badge badge-new"));
     }
+    row.appendChild(due);
 
-    select.value = item.follow_up_status || "new";
+    labelledCell(row, "Next action", state.next_action || "—", "wrap-cell");
 
-    select.addEventListener("change", async () => {
-      const previous = item.follow_up_status || "new";
-      const next = select.value;
-
-      select.disabled = true;
-
-      const saved = await saveFollowUpStatus(item.member_ref, next);
-
-      select.disabled = false;
-
-      if (!saved) {
-        // Never leave a value on screen that did not persist.
-        select.value = previous;
-
-        if (analyticsStatus) {
-          analyticsStatus.hidden = false;
-          analyticsStatus.classList.add("error");
-          analyticsStatus.textContent = "Follow-up status could not be saved.";
-        }
-
-        return;
-      }
-
-      item.follow_up_status = next;
-
-      // Status changes placement, so re-render rather than leave a stale order.
-      renderFollowUps(rows);
-    });
-
-    action.appendChild(select);
-    row.appendChild(action);
+    const actions = document.createElement("td");
+    actions.dataset.label = "Manage";
+    const manage = document.createElement("button");
+    manage.type = "button";
+    manage.className = "secondary-button compact-button";
+    manage.textContent = "Manage";
+    manage.addEventListener("click", () => openFollowUpDrawer(item));
+    actions.appendChild(manage);
+    row.appendChild(actions);
 
     body.appendChild(row);
   }
+}
+
+// ------------------------------- drawer -------------------------------
+
+const drawer = document.querySelector("[data-followup-drawer]");
+const drawerBackdrop = document.querySelector("[data-followup-backdrop]");
+const drawerError = document.querySelector("[data-followup-error]");
+let followUpLastFocus = null;
+
+function drawerField(name) {
+  return document.querySelector(`[data-followup-${name}]`);
+}
+
+function dateInputValue(iso) {
+  if (!iso) return "";
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().slice(0, 10);
+}
+
+function setDrawerError(message) {
+  if (!drawerError) return;
+  drawerError.textContent = message || "";
+  drawerError.hidden = !message;
+}
+
+function renderOwnerOptions(select, selected) {
+  if (!select) return;
+  select.replaceChildren();
+
+  const none = document.createElement("option");
+  none.value = "";
+  none.textContent = "Unassigned";
+  select.appendChild(none);
+
+  for (const admin of followUpAdmins) {
+    const option = document.createElement("option");
+    option.value = admin.id;
+    option.textContent = admin.label;
+    select.appendChild(option);
+  }
+
+  select.value = selected || "";
+}
+
+function openFollowUpDrawer(item) {
+  if (!drawer) return;
+
+  followUpEditing = item;
+  followUpLastFocus = document.activeElement;
+  const state = followUpState(item);
+
+  const member = drawerField("member");
+  if (member) member.textContent = displayValue(item.name);
+
+  drawerField("status").value = state.status || "new";
+  drawerField("priority").value = state.priority || "";
+  renderOwnerOptions(drawerField("owner"), state.owner);
+  drawerField("next-action").value = state.next_action || "";
+  drawerField("date").value = dateInputValue(state.follow_up_at);
+  drawerField("contacted").value = dateInputValue(state.last_contacted_at);
+  drawerField("note").value = state.note || "";
+
+  const meta = drawerField("updated");
+  if (meta) {
+    meta.textContent = state.updated_at
+      ? `Last updated ${formatDate(state.updated_at)}` +
+        (state.updated_by ? ` by ${state.updated_by}` : "")
+      : "Not yet updated.";
+  }
+
+  setDrawerError("");
+  drawer.hidden = false;
+  if (drawerBackdrop) drawerBackdrop.hidden = false;
+  drawerField("status")?.focus();
+}
+
+function closeFollowUpDrawer() {
+  if (!drawer) return;
+  drawer.hidden = true;
+  if (drawerBackdrop) drawerBackdrop.hidden = true;
+  followUpEditing = null;
+  setDrawerError("");
+  followUpLastFocus?.focus?.();
+}
+
+function drawerPayload(state) {
+  const priority = drawerField("priority").value;
+  const owner = drawerField("owner").value;
+  const followUpAt = drawerField("date").value;
+  const contacted = drawerField("contacted").value;
+
+  return {
+    status: drawerField("status").value,
+    priority: priority || null,
+    owner: owner || null,
+    note: drawerField("note").value,
+    nextAction: drawerField("next-action").value,
+    followUpAt: followUpAt ? `${followUpAt}T00:00:00Z` : null,
+    lastContactedAt: contacted ? `${contacted}T00:00:00Z` : null,
+    // Echoed straight back so the server can refuse an edit built on a
+    // version somebody else has already replaced.
+    expectedUpdatedAt: state.updated_at || "",
+  };
+}
+
+async function saveFollowUp(memberRef, payload) {
+  const response = await fetch(
+    `/api/follow-ups/${encodeURIComponent(memberRef)}`,
+    {
+      method: "PATCH",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (response.status === 401) {
+    window.location.replace("/login");
+    return { ok: false };
+  }
+
+  let body = null;
+
+  try {
+    body = await response.json();
+  } catch (error) {
+    body = null;
+  }
+
+  return { ok: response.ok, status: response.status, body };
+}
+
+async function submitFollowUp(payload) {
+  if (!followUpEditing || followUpSaving) return;
+
+  followUpSaving = true;
+  const save = drawerField("save");
+  if (save) save.disabled = true;
+  setDrawerError("");
+
+  const result = await saveFollowUp(followUpEditing.member_ref, payload);
+
+  followUpSaving = false;
+  if (save) save.disabled = false;
+
+  if (!result.ok) {
+    if (result.status === 409) {
+      // Somebody else got there first; show their version rather than
+      // silently overwriting it.
+      if (result.body?.follow_up) {
+        followUpEditing.follow_up = result.body.follow_up;
+        renderFollowUps(followUpRows);
+        openFollowUpDrawer(followUpEditing);
+      }
+      setDrawerError(
+        "This follow-up changed while you were editing. Reloaded the latest version."
+      );
+      return;
+    }
+
+    setDrawerError("Follow-up could not be saved.");
+    return;
+  }
+
+  if (result.body?.follow_up) {
+    followUpEditing.follow_up = result.body.follow_up;
+    followUpEditing.follow_up_status = result.body.follow_up.status;
+  }
+
+  renderFollowUps(followUpRows);
+  closeFollowUpDrawer();
+}
+
+drawerField("save")?.addEventListener("click", () => {
+  submitFollowUp(drawerPayload(followUpState(followUpEditing || {})));
+});
+
+drawerField("cancel")?.addEventListener("click", closeFollowUpDrawer);
+drawerField("close")?.addEventListener("click", closeFollowUpDrawer);
+drawerBackdrop?.addEventListener("click", closeFollowUpDrawer);
+
+drawerField("contact-now")?.addEventListener("click", () => {
+  const state = followUpState(followUpEditing || {});
+  // The server sets both the status and the moment; the browser clock is
+  // never the source of a contact timestamp.
+  submitFollowUp({ contactedNow: true, expectedUpdatedAt: state.updated_at || "" });
+});
+
+drawerField("assign-me")?.addEventListener("click", () => {
+  const state = followUpState(followUpEditing || {});
+  submitFollowUp({ assignToMe: true, expectedUpdatedAt: state.updated_at || "" });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && drawer && !drawer.hidden) closeFollowUpDrawer();
+});
+
+for (const control of document.querySelectorAll("[data-followup-filter]")) {
+  control.addEventListener("change", () => {
+    followUpFilters[control.dataset.followupFilter] = control.value;
+    renderFollowUps(followUpRows);
+  });
 }
 
 function renderSources(rows) {
@@ -1267,6 +1571,13 @@ async function loadAnalytics() {
 
     if (journeysResponse && journeysResponse.ok) {
       const journeysPayload = await journeysResponse.json();
+
+      // Assignable owners are resolved server-side from the admin allowlist;
+      // the browser only ever echoes back an id it was given.
+      followUpAdmins = Array.isArray(journeysPayload.admins)
+        ? journeysPayload.admins
+        : [];
+      currentAdmin = journeysPayload.current_admin || null;
       journeys = Array.isArray(journeysPayload.members)
         ? journeysPayload.members
         : [];
@@ -1276,11 +1587,10 @@ async function loadAnalytics() {
 
     // All-time operational queue: eligibility comes from the journey signal,
     // not from the analytics range selector.
-    const followUps = journeys
-      .filter(member =>
-        member.activity_status === "active" &&
-        (member.interest_level === "high" || member.interest_level === "medium"))
-      .sort(followUpSortKey);
+    // renderFollowUps applies the operational sort and the queue filters.
+    const followUps = journeys.filter(member =>
+      member.activity_status === "active" &&
+      (member.interest_level === "high" || member.interest_level === "medium"));
 
     renderFollowUps(followUps);
 

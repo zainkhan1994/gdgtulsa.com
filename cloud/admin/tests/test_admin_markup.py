@@ -36,7 +36,7 @@ COLUMN_COUNTS = {
     "data-sources-body": 6,
     "data-traffic-quality-body": 4,
     "data-journeys-body": 8,
-    "data-follow-ups-body": 6,
+    "data-follow-ups-body": 9,
     "data-members-body": 5,
     "data-registrations-body": 5,
     "data-schedules-body": 5,
@@ -63,11 +63,16 @@ def test_table_column_count_matches_colspan(dashboard_html, hook, expected):
 def test_every_colspan_in_js_matches_a_table(admin_js, dashboard_html):
     """No empty-state row may span more columns than its table has."""
     spans = {int(n) for n in re.findall(r"colSpan = (\d+)", admin_js)}
+    spans |= {int(n) for n in re.findall(r"emptyRow\(\s*\w+,\s*(\d+)", admin_js)}
     assert spans <= set(COLUMN_COUNTS.values()) | {6}
 
 
 def test_date_range_options_unchanged(dashboard_html):
-    options = re.findall(r'<option value="([^"]+)"', dashboard_html)
+    """Scoped to the analytics range control: the follow-up queue filters
+    contribute their own options and must not be able to mask a change here."""
+    block = dashboard_html[dashboard_html.index("data-analytics-range"):]
+    block = block[: block.index("</select>")]
+    options = re.findall(r'<option value="([^"]+)"', block)
     assert options == ["7d", "30d", "90d", "all"]
 
 
@@ -118,8 +123,9 @@ def test_skeleton_placeholders_present(dashboard_html):
 
 
 def test_live_regions_preserved(dashboard_html):
-    assert dashboard_html.count('aria-live="polite"') == 2
-    assert dashboard_html.count('role="status"') == 2
+    # analytics status, community status, and the follow-up result count.
+    assert dashboard_html.count('aria-live="polite"') == 3
+    assert dashboard_html.count('role="status"') == 3
 
 
 def test_skip_link_present(dashboard_html):

@@ -856,6 +856,256 @@ FOLLOW_UP_COMPLETED_ORDER = {
 
 MEMBER_REF_PATTERN = re.compile(r"\A[0-9a-f]{64}\Z")
 
+FOLLOW_UP_PRIORITIES = ("high", "medium", "low")
+
+# Only these may be set from the browser. updatedAt and updatedBy are server
+# generated, and member_ref is the document id, so none of them appear here.
+FOLLOW_UP_EDITABLE = frozenset({
+    "status",
+    "priority",
+    "owner",
+    "note",
+    "lastContactedAt",
+    "nextAction",
+    "followUpAt",
+})
+
+NOTE_MAX_LENGTH = 2000
+NEXT_ACTION_MAX_LENGTH = 500
+
+# Control characters have no place in an operator note and are the usual way a
+# log line or a rendered cell gets broken. Tab and newline are kept.
+CONTROL_CHARACTERS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def admin_directory():
+    """Map each allowlisted admin's session hash to their address.
+
+    The hash is what gets stored; the address is only ever resolved for
+    display, so the operational store still holds no readable identity.
+    """
+    directory = {}
+
+    for email in admin_email_allowlist():
+        digest = admin_session_hash(email)
+
+        if digest:
+            directory[digest] = email
+
+    return directory
+
+
+def follow_up_defaults():
+    """V1 documents carry only a status. Everything else reads as unset."""
+    return {
+        "status": "new",
+        "priority": None,
+        "owner": None,
+        "owner_label": None,
+        "note": "",
+        "next_action": "",
+        "last_contacted_at": None,
+        "follow_up_at": None,
+        "updated_at": None,
+        "updated_by": None,
+    }
+
+
+def follow_up_state(data, directory=None):
+    """Normalise a stored document into the shape the dashboard expects.
+
+    Written so a document containing nothing but {"status": "reviewed"} — which
+    is exactly what production holds today — round-trips unchanged.
+    """
+    state = follow_up_defaults()
+
+    if not isinstance(data, dict):
+        return state
+
+    status = data.get("status")
+
+    if status in FOLLOW_UP_STATUSES:
+        state["status"] = status
+
+    priority = data.get("priority")
+
+    if priority in FOLLOW_UP_PRIORITIES:
+        state["priority"] = priority
+
+    owner = data.get("owner")
+
+    if isinstance(owner, str) and owner:
+        state["owner"] = owner
+        # Unknown owner hash (admin removed from the allowlist) stays unlabelled
+        # rather than guessing or leaking the raw hash as a name.
+        state["owner_label"] = (directory or {}).get(owner)
+
+    note = data.get("note")
+
+    if isinstance(note, str):
+        state["note"] = note[:NOTE_MAX_LENGTH]
+
+    action = data.get("nextAction")
+
+    if isinstance(action, str):
+        state["next_action"] = action[:NEXT_ACTION_MAX_LENGTH]
+
+    state["last_contacted_at"] = iso_timestamp(data.get("lastContactedAt"))
+    state["follow_up_at"] = iso_timestamp(data.get("followUpAt"))
+    state["updated_at"] = iso_timestamp(data.get("updatedAt"))
+
+    updated_by = data.get("updatedBy")
+
+    if isinstance(updated_by, str) and updated_by:
+        state["updated_by"] = (directory or {}).get(updated_by)
+
+    return state
+
+
+class FollowUpInvalid(Exception):
+    """One field failed validation. Carries the field name, never the value."""
+
+    def __init__(self, field):
+        super().__init__(field)
+        self.field = field
+
+
+def parse_follow_up_text(value, limit, field):
+    """Plain operator text: no control characters, bounded length.
+
+    Angle brackets and quotes are left intact — the dashboard renders every
+    cell through textContent, so markup is displayed rather than executed, and
+    mangling the note would lose meaning an operator actually typed.
+    """
+    if value is None:
+        return ""
+
+    if not isinstance(value, str):
+        raise FollowUpInvalid(field)
+
+    cleaned = CONTROL_CHARACTERS.sub("", value).strip()
+
+    if len(cleaned) > limit:
+        raise FollowUpInvalid(field)
+
+    return cleaned
+
+
+def _parse_iso(value, field):
+    if not isinstance(value, str) or not value.strip():
+        raise FollowUpInvalid(field)
+
+    text = value.strip()
+
+    # datetime.fromisoformat only learned to accept a trailing Z in 3.11; be
+    # explicit rather than depend on the runtime version.
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        raise FollowUpInvalid(field)
+
+    # A naive value is treated as UTC so the stored instant never depends on
+    # whatever timezone the browser happened to be in.
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+
+    parsed = parsed.astimezone(timezone.utc)
+
+    if not 2000 <= parsed.year <= 2100:
+        raise FollowUpInvalid(field)
+
+    return parsed
+
+
+def parse_follow_up_date(value, field):
+    """A calendar day. Normalised to UTC midnight.
+
+    followUpAt is a day an operator picks, not an instant. Truncating means
+    "due today" stays due today instead of turning overdue at 00:00:01.
+    """
+    if value is None:
+        return None
+
+    return _parse_iso(value, field).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+
+def parse_follow_up_instant(value, field):
+    """A real moment, such as when outreach actually happened."""
+    if value is None:
+        return None
+
+    return _parse_iso(value, field).replace(microsecond=0)
+
+
+def follow_up_updates(payload, directory, admin_hash):
+    """Turn a validated request body into the fields to merge.
+
+    Raises FollowUpInvalid on the first bad field. Anything not named here is
+    rejected by the caller before this runs, so no unexpected key can reach
+    Firestore.
+    """
+    updates = {}
+
+    if "status" in payload:
+        if payload["status"] not in FOLLOW_UP_STATUSES:
+            raise FollowUpInvalid("status")
+
+        updates["status"] = payload["status"]
+
+    if "priority" in payload:
+        priority = payload["priority"]
+
+        if priority is not None and priority not in FOLLOW_UP_PRIORITIES:
+            raise FollowUpInvalid("priority")
+
+        updates["priority"] = priority
+
+    if "owner" in payload:
+        owner = payload["owner"]
+
+        # Only an allowlisted admin's own hash is assignable, so the browser
+        # cannot invent an owner or store free text here.
+        if owner is not None and owner not in directory:
+            raise FollowUpInvalid("owner")
+
+        updates["owner"] = owner
+
+    if "note" in payload:
+        updates["note"] = parse_follow_up_text(
+            payload["note"], NOTE_MAX_LENGTH, "note"
+        )
+
+    if "nextAction" in payload:
+        updates["nextAction"] = parse_follow_up_text(
+            payload["nextAction"], NEXT_ACTION_MAX_LENGTH, "nextAction"
+        )
+
+    if "followUpAt" in payload:
+        updates["followUpAt"] = parse_follow_up_date(
+            payload["followUpAt"], "followUpAt"
+        )
+
+    if "lastContactedAt" in payload:
+        updates["lastContactedAt"] = parse_follow_up_instant(
+            payload["lastContactedAt"], "lastContactedAt"
+        )
+
+    # One controlled action rather than trusting a browser clock: the server
+    # decides both the status and the moment.
+    if payload.get("contactedNow") is True:
+        updates["status"] = "contacted"
+        updates["lastContactedAt"] = firestore.SERVER_TIMESTAMP
+
+    if payload.get("assignToMe") is True:
+        updates["owner"] = admin_hash
+
+    return updates
+
 
 def member_ref(uid):
     """Stable opaque handle for a member, safe to hand to the browser.
@@ -1348,16 +1598,15 @@ def journeys():
         # document means "new"; nothing is created just because somebody became
         # eligible, so the queue stays dynamic.
         follow_up_by_ref = {}
+        directory = admin_directory()
 
         try:
             follow_up_db = firestore.client(app=followup_app)
 
             for document in follow_up_db.collection(FOLLOW_UP_COLLECTION).stream():
-                data = document.to_dict() or {}
-                status = data.get("status")
-
-                if status in FOLLOW_UP_STATUSES:
-                    follow_up_by_ref[document.id] = status
+                follow_up_by_ref[document.id] = follow_up_state(
+                    document.to_dict(), directory
+                )
         except Exception:
             # Follow-up state is operational metadata. If it cannot be read the
             # journeys still render, every member simply shows as "new".
@@ -1367,6 +1616,11 @@ def journeys():
 
         for member in members:
             row = activity_by_hash.get(member["hash_value"])
+
+            # A fresh default per member; never a shared mutable object.
+            follow_up = follow_up_by_ref.get(
+                member["member_ref"]
+            ) or follow_up_defaults()
 
             linked = int(row["linked_identity_count"]) if row else 0
             ambiguous = int(row["ambiguous_identity_count"]) if row else 0
@@ -1444,8 +1698,10 @@ def journeys():
                 "recent_pages": recent,
                 "has_ambiguous_activity": ambiguous > 0,
                 "member_ref": member["member_ref"],
-                "follow_up_status":
-                    follow_up_by_ref.get(member["member_ref"], "new"),
+                # follow_up_status stays for the existing queue ordering; the
+                # nested object carries the V2 operational fields alongside it.
+                "follow_up_status": follow_up.get("status", "new"),
+                "follow_up": follow_up,
             })
 
         order = {"high": 0, "medium": 1, "low": 2, "none": 3}
@@ -1460,6 +1716,13 @@ def journeys():
         return jsonify({
             "range": range_key,
             "members": payload_members,
+            # Assignable owners, by opaque hash with a display label resolved
+            # server-side. The browser never chooses an arbitrary owner string.
+            "admins": [
+                {"id": digest, "label": label}
+                for digest, label in sorted(directory.items(), key=lambda x: x[1])
+            ],
+            "current_admin": session.get("admin_hash"),
         }), 200
 
     except Exception:
@@ -1494,10 +1757,30 @@ def update_follow_up(member_reference):
         return jsonify({"error": "invalid member reference"}), 400
 
     payload = request.get_json(silent=True) or {}
-    status = payload.get("status")
 
-    if status not in FOLLOW_UP_STATUSES:
-        return jsonify({"error": "invalid status"}), 400
+    if not isinstance(payload, dict):
+        return jsonify({"error": "invalid payload"}), 400
+
+    # Anything outside this set is refused rather than ignored, so a typo or a
+    # attempt to set updatedAt/updatedBy/member_ref fails loudly.
+    allowed_keys = FOLLOW_UP_EDITABLE | {
+        "contactedNow", "assignToMe", "expectedUpdatedAt"
+    }
+    unknown = set(payload) - allowed_keys
+
+    if unknown:
+        return jsonify({"error": "unknown field"}), 400
+
+    directory = admin_directory()
+    admin_hash = session.get("admin_hash")
+
+    try:
+        updates = follow_up_updates(payload, directory, admin_hash)
+    except FollowUpInvalid as invalid:
+        return jsonify({"error": f"invalid {invalid.field}"}), 400
+
+    if not updates:
+        return jsonify({"error": "no changes supplied"}), 400
 
     if not FOLLOWUP_MEMBER_REF_SECRET:
         print("Private admin follow-up reference secret unavailable")
@@ -1524,39 +1807,62 @@ def update_follow_up(member_reference):
             member_reference
         )
 
-        previous = "new"
+        stored = {}
 
         try:
             snapshot = reference.get()
 
             if snapshot.exists:
-                stored = (snapshot.to_dict() or {}).get("status")
-
-                if stored in FOLLOW_UP_STATUSES:
-                    previous = stored
+                stored = snapshot.to_dict() or {}
         except Exception:
-            # A missing prior value only affects the log line below.
+            # A missing prior value only affects the log line and the staleness
+            # check below; the write itself still merges safely.
             pass
 
-        # merge keeps the document to exactly these three fields whether it is
-        # being created or updated. updatedBy is the existing non-PII session
-        # hash: no email, name, uid or cookie.
-        reference.set(
-            {
-                "status": status,
-                "updatedAt": firestore.SERVER_TIMESTAMP,
-                "updatedBy": session.get("admin_hash"),
-            },
-            merge=True,
-        )
+        current = follow_up_state(stored, directory)
 
-        # Short prefix only: enough to correlate, not enough to identify.
+        # Optimistic concurrency. The dashboard echoes back the updatedAt it
+        # rendered; if the document moved on since then the edit is refused so
+        # one admin cannot silently overwrite another's note. Omitting the
+        # field keeps the old last-write-wins behaviour.
+        expected = payload.get("expectedUpdatedAt")
+
+        if expected is not None:
+            if not isinstance(expected, str):
+                return jsonify({"error": "invalid expectedUpdatedAt"}), 400
+
+            if (current["updated_at"] or "") != expected:
+                return jsonify({
+                    "error": "follow-up changed since it was loaded",
+                    "follow_up": current,
+                }), 409
+
+        # merge keeps every field the request did not mention. updatedBy is the
+        # existing non-PII session hash: no email, name, uid or cookie.
+        write = dict(updates)
+        write["updatedAt"] = firestore.SERVER_TIMESTAMP
+        write["updatedBy"] = admin_hash
+
+        reference.set(write, merge=True)
+
+        try:
+            refreshed = follow_up_state(reference.get().to_dict(), directory)
+        except Exception:
+            refreshed = follow_up_state({**stored, **updates}, directory)
+
+        # Short prefix and field names only: enough to correlate a change,
+        # never the note text or anything identifying.
         print(
             "follow_up_status_updated "
-            f"ref={member_reference[:8]} old={previous} new={status}"
+            f"ref={member_reference[:8]} "
+            f"old={current['status']} new={refreshed['status']} "
+            f"fields={','.join(sorted(updates))}"
         )
 
-        return jsonify({"status": status}), 200
+        return jsonify({
+            "status": refreshed["status"],
+            "follow_up": refreshed,
+        }), 200
 
     except Exception:
         # Never expose Firestore, IAM, project or document details.

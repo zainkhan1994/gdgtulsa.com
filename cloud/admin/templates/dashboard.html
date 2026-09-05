@@ -467,16 +467,65 @@
               </div>
             </div>
 
+            <div class="followup-toolbar">
+              <label class="filter-field">
+                <span>Status</span>
+                <select data-followup-filter="status">
+                  <option value="">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="reviewed">Reviewed</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="dismissed">Dismissed</option>
+                </select>
+              </label>
+
+              <label class="filter-field">
+                <span>Priority</span>
+                <select data-followup-filter="priority">
+                  <option value="">All priorities</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                  <option value="unset">Not set</option>
+                </select>
+              </label>
+
+              <label class="filter-field">
+                <span>Owner</span>
+                <select data-followup-filter="owner">
+                  <option value="">All owners</option>
+                  <option value="me">Assigned to me</option>
+                  <option value="unassigned">Unassigned</option>
+                </select>
+              </label>
+
+              <label class="filter-field">
+                <span>Timing</span>
+                <select data-followup-filter="timing">
+                  <option value="">All timing</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="today">Today</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="none">No follow-up date</option>
+                </select>
+              </label>
+
+              <span class="followup-count" data-followup-count role="status" aria-live="polite"></span>
+            </div>
+
             <div class="table-scroll">
-              <table>
+              <table class="followup-table">
                 <thead>
                   <tr>
                     <th scope="col">Member</th>
+                    <th scope="col">Interest</th>
                     <th scope="col">Priority</th>
-                    <th scope="col">Reason</th>
-                    <th scope="col">Last active</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Action</th>
+                    <th scope="col">Owner</th>
+                    <th scope="col">Last contacted</th>
+                    <th scope="col">Next follow-up</th>
+                    <th scope="col">Next action</th>
+                    <th scope="col">Manage</th>
                   </tr>
                 </thead>
                 <tbody data-follow-ups-body></tbody>
@@ -599,6 +648,98 @@
             </section>
           </div>
         </section>
+
+      <div class="drawer-backdrop" data-followup-backdrop hidden></div>
+
+      <aside
+        class="followup-drawer"
+        data-followup-drawer
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="followup-drawer-title"
+      >
+        <header class="drawer-header">
+          <div>
+            <h3 id="followup-drawer-title">Manage follow-up</h3>
+            <p class="drawer-member" data-followup-member></p>
+          </div>
+          <button type="button" class="icon-button drawer-close" data-followup-close>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3Z"></path>
+            </svg>
+            <span class="sr-only">Close follow-up editor</span>
+          </button>
+        </header>
+
+        <div class="drawer-body">
+          <div class="drawer-quick">
+            <button type="button" class="secondary-button" data-followup-contact-now>
+              Mark contacted now
+            </button>
+            <button type="button" class="secondary-button" data-followup-assign-me>
+              Assign to me
+            </button>
+          </div>
+
+          <label class="drawer-field">
+            <span>Status</span>
+            <select data-followup-status>
+              <option value="new">New</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="contacted">Contacted</option>
+              <option value="dismissed">Dismissed</option>
+            </select>
+          </label>
+
+          <label class="drawer-field">
+            <span>Priority</span>
+            <select data-followup-priority>
+              <option value="">Not set</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+
+          <label class="drawer-field">
+            <span>Owner</span>
+            <select data-followup-owner>
+              <option value="">Unassigned</option>
+            </select>
+          </label>
+
+          <label class="drawer-field">
+            <span>Next action</span>
+            <input type="text" maxlength="500" data-followup-next-action
+                   placeholder="Email organizer">
+          </label>
+
+          <label class="drawer-field">
+            <span>Next follow-up</span>
+            <input type="date" data-followup-date>
+          </label>
+
+          <label class="drawer-field">
+            <span>Last contacted</span>
+            <input type="date" data-followup-contacted>
+          </label>
+
+          <label class="drawer-field">
+            <span>Note</span>
+            <textarea rows="4" maxlength="2000" data-followup-note
+                      placeholder="Context for whoever picks this up next"></textarea>
+          </label>
+
+          <p class="drawer-meta" data-followup-updated></p>
+          <p class="drawer-error" data-followup-error role="alert" hidden></p>
+        </div>
+
+        <footer class="drawer-footer">
+          <button type="button" class="secondary-button" data-followup-cancel>Cancel</button>
+          <button type="button" class="primary-button" data-followup-save>Save</button>
+        </footer>
+      </aside>
       </main>
     </div>
   </div>
