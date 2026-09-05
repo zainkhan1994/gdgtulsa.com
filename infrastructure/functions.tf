@@ -37,7 +37,7 @@ resource "google_cloudfunctions2_function" "billing_shutdown" {
         # is actually deployed. If the function is redeployed out of band this
         # value changes and the plan will show it — which is the intended
         # signal, not drift to hide.
-        generation = 1787797454329222
+        generation = 1788576668695321
       }
     }
   }
@@ -56,8 +56,18 @@ resource "google_cloudfunctions2_function" "billing_shutdown" {
     # in provider 6.50.0, so omitting it would make Terraform treat the live
     # LOG_EXECUTION_ID as unwanted and propose removing it — which would
     # redeploy the armed shutdown function. Declaring it matches live exactly.
+    #
+    # The four values below are what the function trusts instead of the
+    # incoming message. Each is read from the resource it describes, so the
+    # budget id and amount cannot drift away from the budget Terraform manages,
+    # and no identifier is typed out a second time. The function fails closed
+    # if any of them is missing.
     environment_variables = {
-      LOG_EXECUTION_ID = "true"
+      LOG_EXECUTION_ID            = "true"
+      TARGET_PROJECT_ID           = var.project_id
+      SHUTDOWN_BUDGET_ID          = google_billing_budget.shutdown_80.name
+      EXPECTED_BILLING_ACCOUNT_ID = var.billing_account
+      EXPECTED_BUDGET_UNITS       = google_billing_budget.shutdown_80.amount[0].specified_amount[0].units
     }
   }
 
