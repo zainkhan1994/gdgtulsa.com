@@ -1188,6 +1188,161 @@ def format_signal_date(value):
     return strftime("%b %-d") if callable(strftime) else ""
 
 
+# ===================== Behavioural intent scoring (V1) =====================
+#
+# Deliberately rules-based, deterministic and explainable: every point a member
+# scores traces to one observed production event, and every reason states what
+# was observed rather than claiming anything about the person.
+#
+# This is NOT the same thing as the manual `priority` field. Intent answers
+# "what does the behaviour suggest?"; priority answers "how urgently does an
+# organiser want to act?". They are allowed to disagree, and intent never
+# writes to priority.
+
+INTENT_SCORING_VERSION = "v1"
+
+INTENT_HIGH_THRESHOLD = 60
+INTENT_MEDIUM_THRESHOLD = 30
+INTENT_MAX_SCORE = 100
+
+# One-time conversion signals. Presence scores once; repeating an action can
+# never inflate the score, which is why these are booleans and not counts.
+INTENT_ACTIONS = (
+    ("has_schedule_submit", 35, "Submitted a schedule request"),
+    ("has_partner_interest", 30, "Showed partner interest"),
+    ("has_speaker_interest", 25, "Showed speaker interest"),
+    ("has_member_verified", 20, "Completed member registration"),
+    ("has_member_register_open", 10, "Opened member registration"),
+    ("has_schedule_open", 8, "Opened scheduling"),
+    ("has_email_click", 6, "Clicked an email link"),
+)
+
+# Capped so a burst of browsing can never outweigh a conversion action.
+INTENT_SESSION_POINTS = ((4, 10), (3, 6), (2, 3))
+INTENT_SESSION_CAP = 10
+
+INTENT_ACTIVE_DAY_POINTS = ((5, 8), (4, 6), (3, 4), (2, 2))
+INTENT_ACTIVE_DAY_CAP = 8
+
+# (max age in days, points, reason)
+INTENT_RECENCY = (
+    (3, 15, "Active within the last 3 days"),
+    (7, 10, "Active within the last 7 days"),
+    (30, 5, "Active within the last 30 days"),
+)
+
+
+def intent_level(score):
+    if score >= INTENT_HIGH_THRESHOLD:
+        return "high"
+
+    if score >= INTENT_MEDIUM_THRESHOLD:
+        return "medium"
+
+    return "low"
+
+
+def _intent_days_since(value, now):
+    """Whole days between an event and now, or None if unusable.
+
+    Naive timestamps are treated as UTC rather than raising: a member with one
+    odd row should still be scored, just without a recency bonus if the value
+    cannot be read at all.
+    """
+    if value is None:
+        return None
+
+    if not isinstance(value, datetime):
+        return None
+
+    moment = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    delta = now - moment.astimezone(timezone.utc)
+
+    if delta.total_seconds() < 0:
+        # A future timestamp is bad data, not fresh activity.
+        return None
+
+    return delta.days
+
+
+def score_intent(signals, now=None):
+    """Score observed behaviour from 0-100. Pure: no I/O, no clock reads.
+
+    `signals` is the aggregate row for one member. Missing keys, None values and
+    unusable timestamps all degrade to "no contribution" rather than raising, so
+    a sparse or malformed row scores 0 / low instead of breaking the queue.
+    """
+    now = now or datetime.now(timezone.utc)
+    signals = signals or {}
+
+    score = 0
+    reasons = []
+
+    for key, points, reason in INTENT_ACTIONS:
+        if signals.get(key):
+            score += points
+            reasons.append((points, reason))
+
+    sessions = signals.get("intent_session_count") or 0
+
+    try:
+        sessions = int(sessions)
+    except (TypeError, ValueError):
+        sessions = 0
+
+    for threshold, points in INTENT_SESSION_POINTS:
+        if sessions >= threshold:
+            score += min(points, INTENT_SESSION_CAP)
+            reasons.append((
+                points,
+                f"Returned across {sessions} sessions",
+            ))
+            break
+
+    days_active = signals.get("intent_active_days") or 0
+
+    try:
+        days_active = int(days_active)
+    except (TypeError, ValueError):
+        days_active = 0
+
+    for threshold, points in INTENT_ACTIVE_DAY_POINTS:
+        if days_active >= threshold:
+            score += min(points, INTENT_ACTIVE_DAY_CAP)
+            reasons.append((
+                points,
+                f"Active on {days_active} different days",
+            ))
+            break
+
+    age = _intent_days_since(signals.get("intent_last_activity_at"), now)
+
+    if age is not None:
+        for max_age, points, reason in INTENT_RECENCY:
+            if age <= max_age:
+                score += points
+                reasons.append((points, reason))
+                break
+
+    score = max(0, min(INTENT_MAX_SCORE, score))
+
+    # Highest contribution first; ties fall back to the declared order above so
+    # the same signals always produce the same reason sequence.
+    ordered = [
+        reason
+        for _, reason in sorted(
+            reasons, key=lambda item: (-item[0], reasons.index(item))
+        )
+    ]
+
+    return {
+        "score": score,
+        "level": intent_level(score),
+        "reasons": ordered,
+        "version": INTENT_SCORING_VERSION,
+    }
+
+
 def follow_up_signal(activity):
     """Deterministic, ordered, first match wins.
 
@@ -1450,6 +1605,31 @@ def journey_query(event_date_filter):
           )
           WHERE row_num = 1
         ),
+        -- Behavioural intent is deliberately all-time and production-only,
+        -- for the same reason acquisition is: the analytics range selector must
+        -- not change how interested somebody's behaviour looks, and the
+        -- Follow-up Queue is an all-time operational view. Aggregated in one
+        -- pass here rather than hydrating raw events into the application.
+        intent_signals AS (
+          SELECT
+            eligible_links.hash_value,
+            COUNTIF(event.event_name = 'schedule_submit') > 0 AS has_schedule_submit,
+            COUNTIF(event.event_name = 'partner_interest') > 0 AS has_partner_interest,
+            COUNTIF(event.event_name = 'speaker_interest') > 0 AS has_speaker_interest,
+            COUNTIF(event.event_name = 'member_verified') > 0 AS has_member_verified,
+            COUNTIF(event.event_name = 'member_register_open') > 0
+              AS has_member_register_open,
+            COUNTIF(event.event_name = 'schedule_open') > 0 AS has_schedule_open,
+            COUNTIF(event.event_name = 'email_click') > 0 AS has_email_click,
+            COUNT(DISTINCT event.session_id) AS intent_session_count,
+            COUNT(DISTINCT DATE(event.event_timestamp)) AS intent_active_days,
+            MAX(event.event_timestamp) AS intent_last_activity_at
+          FROM `{PROJECT_ID}.{DATASET_ID}.events` AS event
+          JOIN eligible_links
+            ON eligible_links.anonymous_id = event.anonymous_id
+          WHERE COALESCE(NULLIF(event.traffic_type, ''), 'production') = 'production'
+          GROUP BY eligible_links.hash_value
+        ),
         recent_pages AS (
           SELECT
             hash_value,
@@ -1509,13 +1689,25 @@ def journey_query(event_date_filter):
           END AS first_source,
           first_touch.utm_medium AS first_medium,
           first_touch.utm_campaign AS first_campaign,
-          recent_pages.pages AS recent_pages
+          recent_pages.pages AS recent_pages,
+          intent_signals.has_schedule_submit,
+          intent_signals.has_partner_interest,
+          intent_signals.has_speaker_interest,
+          intent_signals.has_member_verified,
+          intent_signals.has_member_register_open,
+          intent_signals.has_schedule_open,
+          intent_signals.has_email_click,
+          intent_signals.intent_session_count,
+          intent_signals.intent_active_days,
+          intent_signals.intent_last_activity_at
         FROM member_hashes
         LEFT JOIN activity ON activity.hash_value = member_hashes.hash_value
         LEFT JOIN linked_counts ON linked_counts.hash_value = member_hashes.hash_value
         LEFT JOIN ambiguity ON ambiguity.hash_value = member_hashes.hash_value
         LEFT JOIN first_touch ON first_touch.hash_value = member_hashes.hash_value
         LEFT JOIN recent_pages ON recent_pages.hash_value = member_hashes.hash_value
+        LEFT JOIN intent_signals
+          ON intent_signals.hash_value = member_hashes.hash_value
     """
 
 
@@ -1614,6 +1806,10 @@ def journeys():
 
         payload_members = []
 
+        # One clock read for the whole response so every member in a single
+        # payload is scored against the same instant.
+        scored_at = datetime.now(timezone.utc)
+
         for member in members:
             row = activity_by_hash.get(member["hash_value"])
 
@@ -1621,6 +1817,11 @@ def journeys():
             follow_up = follow_up_by_ref.get(
                 member["member_ref"]
             ) or follow_up_defaults()
+
+            # Derived at request time from the aggregate row, never persisted.
+            # A member with no analytics row scores 0 / low rather than being
+            # skipped, so somebody nobody has looked at yet still appears.
+            intent = score_intent(dict(row) if row else {}, scored_at)
 
             linked = int(row["linked_identity_count"]) if row else 0
             ambiguous = int(row["ambiguous_identity_count"]) if row else 0
@@ -1702,6 +1903,11 @@ def journeys():
                 # nested object carries the V2 operational fields alongside it.
                 "follow_up_status": follow_up.get("status", "new"),
                 "follow_up": follow_up,
+                # System-derived and read-only: no PATCH accepts these.
+                "intent_score": intent["score"],
+                "intent_level": intent["level"],
+                "intent_reasons": intent["reasons"],
+                "intent_scoring_version": intent["version"],
             })
 
         order = {"high": 0, "medium": 1, "low": 2, "none": 3}

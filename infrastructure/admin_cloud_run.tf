@@ -20,7 +20,7 @@ resource "google_cloud_run_v2_service" "admin" {
     max_instance_request_concurrency = 40
 
     containers {
-      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:9b2f7c42525147254562890ec414904acfbb94e8aea11cea83aa4b7effdabd79"
+      image = "us-central1-docker.pkg.dev/gdg-tulsa/cloud-run-source-deploy/gdg-tulsa-admin@sha256:7e4cfcb3f380b547015caec2fa122929b05796d2ac1a15b9a0eed3da5836a454"
 
       ports {
         name           = "http1"

@@ -1325,3 +1325,93 @@ tbody tr:hover {
     margin-left: 0;
   }
 }
+
+/* ------------------------------------------------ behavioural intent */
+
+/* Distinguishes the system-derived Intent column from the manual Priority
+   column at a glance, without relying on colour to carry the meaning. */
+.th-note {
+  display: inline-block;
+  margin-left: 4px;
+  color: var(--admin-text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.intent-headline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.intent-score {
+  color: var(--admin-text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.intent-panel {
+  margin-bottom: 18px;
+  padding: 14px;
+  background: var(--admin-surface-soft);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--radius-sm);
+}
+
+.intent-panel h4 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.intent-system {
+  color: var(--admin-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.intent-panel .intent-score {
+  font-size: 14px;
+}
+
+.intent-reasons {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--admin-text-secondary);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.intent-note {
+  margin: 10px 0 0;
+  color: var(--admin-text-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+@media (max-width: 860px) {
+  /* Card layout: keep the level, score and reason summary on one readable
+     line rather than reintroducing a horizontal scroll. */
+  .followup-table tbody td[data-label="Intent"] {
+    display: block;
+    text-align: left;
+  }
+
+  .followup-table tbody td[data-label="Intent"]::before {
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .intent-headline {
+    justify-content: flex-start;
+  }
+}

@@ -434,6 +434,7 @@
                   <tr>
                     <th scope="col">Member</th>
                     <th scope="col">Interest</th>
+                    <th scope="col">Intent</th>
                     <th scope="col">First source</th>
                     <th scope="col">First seen</th>
                     <th scope="col">Last seen</th>
@@ -480,7 +481,17 @@
               </label>
 
               <label class="filter-field">
-                <span>Priority</span>
+                <span>Intent (system)</span>
+                <select data-followup-filter="intent">
+                  <option value="">All intent</option>
+                  <option value="high">High intent</option>
+                  <option value="medium">Medium intent</option>
+                  <option value="low">Low intent</option>
+                </select>
+              </label>
+
+              <label class="filter-field">
+                <span>Priority (manual)</span>
                 <select data-followup-filter="priority">
                   <option value="">All priorities</option>
                   <option value="high">High</option>
@@ -519,7 +530,8 @@
                   <tr>
                     <th scope="col">Member</th>
                     <th scope="col">Interest</th>
-                    <th scope="col">Priority</th>
+                    <th scope="col">Intent <span class="th-note">system</span></th>
+                    <th scope="col">Priority <span class="th-note">manual</span></th>
                     <th scope="col">Status</th>
                     <th scope="col">Owner</th>
                     <th scope="col">Last contacted</th>
@@ -681,6 +693,19 @@
               Assign to me
             </button>
           </div>
+
+          <section class="intent-panel" data-followup-intent aria-labelledby="intent-panel-title">
+            <h4 id="intent-panel-title">Visitor intent <span class="intent-system">system-derived</span></h4>
+            <p class="intent-headline">
+              <span data-followup-intent-level></span>
+              <span class="intent-score" data-followup-intent-score></span>
+            </p>
+            <ul class="intent-reasons" data-followup-intent-reasons></ul>
+            <p class="intent-note">
+              Based on observed site activity. Read-only, and separate from the
+              manual priority below.
+            </p>
+          </section>
 
           <label class="drawer-field">
             <span>Status</span>

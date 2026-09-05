@@ -694,7 +694,7 @@ function renderJourneys(rows) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
 
-    cell.colSpan = 8;
+    cell.colSpan = 9;
 
     cell.className = "empty-cell";
     cell.textContent = "No verified members yet.";
@@ -744,6 +744,7 @@ function renderJourneys(rows) {
     reason.textContent = displayValue(item.interest_reason);
     interest.appendChild(reason);
     row.appendChild(interest);
+    row.appendChild(intentCell(item, 1));
 
     if (item.activity_status === "none") {
       const empty = document.createElement("td");
@@ -791,13 +792,61 @@ function followUpLabel(status) {
 
 const FOLLOW_UP_PRIORITIES = ["high", "medium", "low"];
 
+/* System-derived behavioural intent. Read-only everywhere in the UI: there is
+   no control that writes it, and it is deliberately never mixed with the
+   admin-controlled `priority` field. */
+const INTENT_LABELS = { high: "High intent", medium: "Medium intent", low: "Low intent" };
+
+function intentOf(item) {
+  return {
+    score: Number.isFinite(item?.intent_score) ? item.intent_score : 0,
+    level: item?.intent_level || "low",
+    reasons: Array.isArray(item?.intent_reasons) ? item.intent_reasons : []
+  };
+}
+
+function intentLabel(level) {
+  return INTENT_LABELS[level] || INTENT_LABELS.low;
+}
+
+/* Level first so the meaning survives without colour, score second. */
+function intentCell(item, reasonLimit = 2) {
+  const intent = intentOf(item);
+  const cell = document.createElement("td");
+  cell.dataset.label = "Intent";
+
+  const headline = document.createElement("div");
+  headline.className = "intent-headline";
+  headline.appendChild(
+    badgeElement(intentLabel(intent.level), `status-badge badge-${intent.level}`)
+  );
+
+  const score = document.createElement("span");
+  score.className = "intent-score";
+  score.textContent = `${intent.score}`;
+  headline.appendChild(score);
+  cell.appendChild(headline);
+
+  if (intent.reasons.length) {
+    const summary = document.createElement("div");
+    summary.className = "journey-secondary";
+    // textContent, so a reason can only ever be displayed as text.
+    summary.textContent = intent.reasons.slice(0, reasonLimit).join(" · ");
+    cell.appendChild(summary);
+  }
+
+  return cell;
+}
+
 let followUpRows = [];
 let followUpAdmins = [];
 let currentAdmin = null;
 let followUpEditing = null;
 let followUpSaving = false;
 
-const followUpFilters = { status: "", priority: "", owner: "", timing: "" };
+const followUpFilters = {
+  status: "", priority: "", owner: "", timing: "", intent: ""
+};
 
 function startOfTodayUtc() {
   const now = new Date();
@@ -865,14 +914,21 @@ function followUpSortKey(a, b) {
     return dismissed(stateA) - dismissed(stateB);
   }
 
-  const bucket = (s) => {
-    const timing = followUpTiming(s);
-    if (timing === "overdue") return 0;
-    if (s.priority === "high") return 1;
-    return TIMING_RANK[timing] ?? 4;
-  };
+  // Overdue work outranks everything else that is still open.
+  const overdue = (s) => (followUpTiming(s) === "overdue" ? 0 : 1);
+  if (overdue(stateA) !== overdue(stateB)) return overdue(stateA) - overdue(stateB);
 
-  const rank = bucket(stateA) - bucket(stateB);
+  /* Explicit human priority beats automated scoring: intent only breaks ties
+     between leads an organiser has ranked the same. */
+  const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
+  const priority = (s) => PRIORITY_RANK[s.priority] ?? 3;
+  if (priority(stateA) !== priority(stateB)) return priority(stateA) - priority(stateB);
+
+  const intentRank = intentOf(b).score - intentOf(a).score;
+  if (intentRank !== 0) return intentRank;
+
+  const rank = (TIMING_RANK[followUpTiming(stateA)] ?? 4)
+    - (TIMING_RANK[followUpTiming(stateB)] ?? 4);
   if (rank !== 0) return rank;
 
   const dueA = followUpDayValue(stateA.follow_up_at);
@@ -903,6 +959,12 @@ function followUpMatchesFilters(item) {
     const wanted = followUpFilters.priority;
     const actual = state.priority || "unset";
     if (actual !== wanted) return false;
+  }
+
+  // System intent, evaluated independently of the manual priority filter so an
+  // admin can hold both at once (high intent AND low priority, for example).
+  if (followUpFilters.intent && intentOf(item).level !== followUpFilters.intent) {
+    return false;
   }
 
   if (followUpFilters.owner === "me" && state.owner !== currentAdmin) return false;
@@ -942,7 +1004,7 @@ function renderFollowUps(rows) {
 
   if (!visible.length) {
     emptyRow(
-      body, 9,
+      body, 10,
       rows.length
         ? "No follow-ups match these filters."
         : "Nobody needs follow-up right now."
@@ -982,6 +1044,7 @@ function renderFollowUps(rows) {
     reason.textContent = displayValue(item.interest_reason);
     interest.appendChild(reason);
     row.appendChild(interest);
+    row.appendChild(intentCell(item));
 
     const priority = document.createElement("td");
     priority.dataset.label = "Priority";
@@ -1095,6 +1158,36 @@ function openFollowUpDrawer(item) {
   drawerField("date").value = dateInputValue(state.follow_up_at);
   drawerField("contacted").value = dateInputValue(state.last_contacted_at);
   drawerField("note").value = state.note || "";
+
+  const intent = intentOf(item);
+  const levelNode = drawerField("intent-level");
+  const scoreNode = drawerField("intent-score");
+  const reasonList = drawerField("intent-reasons");
+
+  if (levelNode) {
+    levelNode.replaceChildren(
+      badgeElement(intentLabel(intent.level), `status-badge badge-${intent.level}`)
+    );
+  }
+
+  if (scoreNode) scoreNode.textContent = `${intent.score} / 100`;
+
+  if (reasonList) {
+    reasonList.replaceChildren();
+
+    if (!intent.reasons.length) {
+      const none = document.createElement("li");
+      none.textContent = "No scoring signals recorded yet.";
+      reasonList.appendChild(none);
+    }
+
+    // Full contributing set here; the queue row shows only the top few.
+    for (const reason of intent.reasons) {
+      const entry = document.createElement("li");
+      entry.textContent = reason;
+      reasonList.appendChild(entry);
+    }
+  }
 
   const meta = drawerField("updated");
   if (meta) {
