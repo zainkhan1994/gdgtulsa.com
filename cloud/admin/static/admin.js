@@ -18,6 +18,13 @@ const communityStatus = document.querySelector("[data-community-status]");
 const communityMetrics = document.querySelector("[data-community-metrics]");
 const communityContents = document.querySelectorAll("[data-community-content]");
 
+const skeletons = document.querySelectorAll("[data-skeleton]");
+const sidebar = document.querySelector("[data-sidebar]");
+const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+const sidebarBackdrop = document.querySelector("[data-sidebar-backdrop]");
+const navLinks = document.querySelectorAll("[data-nav-link]");
+const refreshLabel = refreshButton?.querySelector("span");
+
 function setStatus(message) {
   if (status) status.textContent = message;
 }
@@ -174,6 +181,42 @@ function timestampValue(value) {
   return Number.isFinite(time) ? time : 0;
 }
 
+// Presentation helpers. Nothing below interprets API data differently; they
+// only change how an already-computed value is drawn.
+
+const BADGE_LEVELS = ["high", "medium", "low", "none"];
+
+function badgeClass(value) {
+  const key = String(value || "").trim().toLowerCase();
+  return BADGE_LEVELS.includes(key) ? `status-badge badge-${key}` : "status-badge badge-none";
+}
+
+function badgeElement(text, className) {
+  const badge = document.createElement("span");
+  badge.className = className;
+  // The label always carries the meaning; colour is only reinforcement.
+  badge.textContent = text;
+  return badge;
+}
+
+function appendBadgeCell(row, value, className) {
+  const cell = document.createElement("td");
+  cell.appendChild(badgeElement(displayValue(value), className));
+  row.appendChild(cell);
+}
+
+function emptyRow(body, columns, message) {
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+
+  cell.colSpan = columns;
+  cell.className = "empty-cell";
+  cell.textContent = message;
+
+  row.appendChild(cell);
+  body.appendChild(row);
+}
+
 function appendCell(row, value, className = "") {
   const cell = document.createElement("td");
   cell.textContent = displayValue(value);
@@ -250,6 +293,8 @@ function renderTrends(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 6;
+
+    cell.className = "empty-cell";
     cell.textContent =
       "No website activity was recorded for this period.";
 
@@ -292,11 +337,189 @@ function renderTrends(rows) {
   }
 }
 
+// Inline SVG so the dashboard gains a chart without taking on a chart library.
+const TREND_SERIES = [
+  { key: "page_views", label: "Page views", color: "#2563eb" },
+  { key: "sessions", label: "Sessions", color: "#0f766e" },
+  { key: "visitors", label: "Visitors", color: "#b45309" }
+];
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function svgNode(name, attributes) {
+  const node = document.createElementNS(SVG_NS, name);
+
+  for (const [key, value] of Object.entries(attributes)) {
+    node.setAttribute(key, String(value));
+  }
+
+  return node;
+}
+
+function shortDate(value) {
+  if (!value) return "";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+
+  return parsed.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function renderTrendsChart(rows) {
+  const host = document.querySelector("[data-trends-chart]");
+  if (!host) return;
+
+  host.replaceChildren();
+
+  if (!rows.length) {
+    const empty = document.createElement("p");
+    empty.className = "chart-empty";
+    empty.textContent = "No daily activity recorded for this period.";
+    host.appendChild(empty);
+    return;
+  }
+
+  const width = 720;
+  const height = 220;
+  const left = 44;
+  const right = 16;
+  const top = 16;
+  const bottom = 28;
+  const innerWidth = width - left - right;
+  const innerHeight = height - top - bottom;
+
+  const peak = Math.max(
+    1,
+    ...rows.flatMap((item) =>
+      TREND_SERIES.map((series) => numericValue(item[series.key]))
+    )
+  );
+
+  const xAt = (index) =>
+    rows.length > 1
+      ? left + (index * innerWidth) / (rows.length - 1)
+      : left + innerWidth / 2;
+
+  const yAt = (value) =>
+    top + innerHeight - (numericValue(value) / peak) * innerHeight;
+
+  const svg = svgNode("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label":
+      `Daily website activity over ${rows.length} ` +
+      `${rows.length === 1 ? "day" : "days"}. ` +
+      "The table below lists the same values."
+  });
+
+  // Horizontal gridlines with value labels.
+  for (let step = 0; step <= 4; step += 1) {
+    const value = (peak / 4) * step;
+    const y = yAt(value);
+
+    svg.appendChild(
+      svgNode("line", {
+        x1: left,
+        x2: width - right,
+        y1: y,
+        y2: y,
+        stroke: "#e6eaf0",
+        "stroke-width": 1
+      })
+    );
+
+    const label = svgNode("text", {
+      x: left - 8,
+      y: y + 4,
+      "text-anchor": "end",
+      fill: "#98a2b3",
+      "font-size": 10
+    });
+
+    label.textContent = formatNumber(Math.round(value));
+    svg.appendChild(label);
+  }
+
+  for (const series of TREND_SERIES) {
+    const points = rows
+      .map((item, index) => `${xAt(index)},${yAt(item[series.key])}`)
+      .join(" ");
+
+    svg.appendChild(
+      svgNode("polyline", {
+        points,
+        fill: "none",
+        stroke: series.color,
+        "stroke-width": 2,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      })
+    );
+
+    // A single day has no line to draw, so mark it with a dot instead.
+    if (rows.length === 1) {
+      svg.appendChild(
+        svgNode("circle", {
+          cx: xAt(0),
+          cy: yAt(rows[0][series.key]),
+          r: 3.5,
+          fill: series.color
+        })
+      );
+    }
+  }
+
+  // Only label the ends so crowded ranges stay readable.
+  const ticks =
+    rows.length > 1 ? [0, rows.length - 1] : [0];
+
+  for (const index of ticks) {
+    const label = svgNode("text", {
+      x: xAt(index),
+      y: height - 8,
+      "text-anchor": index === 0 ? "start" : "end",
+      fill: "#98a2b3",
+      "font-size": 10
+    });
+
+    label.textContent = shortDate(rows[index].date);
+    svg.appendChild(label);
+  }
+
+  host.appendChild(svg);
+
+  const legend = document.createElement("div");
+  legend.className = "chart-legend";
+
+  for (const series of TREND_SERIES) {
+    const item = document.createElement("span");
+    item.className = "chart-legend-item";
+
+    const swatch = document.createElement("span");
+    swatch.className = "chart-swatch";
+    swatch.style.background = series.color;
+    swatch.setAttribute("aria-hidden", "true");
+
+    const text = document.createElement("span");
+    text.textContent = series.label;
+
+    item.append(swatch, text);
+    legend.appendChild(item);
+  }
+
+  host.appendChild(legend);
+}
+
 function renderFunnel(rows) {
   const body = document.querySelector("[data-funnel-body]");
   if (!body) return;
 
   body.replaceChildren();
+
+  if (!rows.length) {
+    emptyRow(body, 3, "No funnel activity for this period.");
+    return;
+  }
 
   // stage_order is the canonical ordering field. Sort defensively so the funnel
   // always renders 1 -> 5 and never depends on database row ordering.
@@ -307,7 +530,30 @@ function renderFunnel(rows) {
   for (const item of stages) {
     const row = document.createElement("tr");
 
-    appendCell(row, item.stage);
+    // The bar is drawn from the percentage the backend already returned; the
+    // frontend never recomputes funnel progression.
+    const stageCell = document.createElement("td");
+    const stageWrap = document.createElement("div");
+    stageWrap.className = "funnel-stage";
+
+    const stageName = document.createElement("span");
+    stageName.textContent = displayValue(item.stage);
+
+    const bar = document.createElement("div");
+    bar.className = "funnel-bar";
+
+    const fill = document.createElement("span");
+    const share = Math.max(
+      0,
+      Math.min(1, numericValue(item.percent_of_visitors))
+    );
+    fill.style.width = `${share * 100}%`;
+    bar.appendChild(fill);
+
+    stageWrap.append(stageName, bar);
+    stageCell.appendChild(stageWrap);
+    row.appendChild(stageCell);
+
     appendCell(row, formatNumber(item.visitors), "number-cell");
     appendCell(
       row,
@@ -330,7 +576,7 @@ function renderPages(rows) {
   for (const item of rows) {
     const row = document.createElement("tr");
 
-    appendCell(row, item.page_path);
+    appendCell(row, item.page_path, "path-cell");
     appendCell(row, formatNumber(item.page_views), "number-cell");
     appendCell(
       row,
@@ -359,6 +605,8 @@ function renderAcquisition(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 8;
+
+    cell.className = "empty-cell";
     cell.textContent =
       "No acquisition sources were recorded for this period.";
 
@@ -406,6 +654,8 @@ function renderTrafficQuality(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 4;
+
+    cell.className = "empty-cell";
     cell.textContent = "No traffic was recorded for this period.";
 
     row.appendChild(cell);
@@ -445,6 +695,8 @@ function renderJourneys(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 8;
+
+    cell.className = "empty-cell";
     cell.textContent = "No verified members yet.";
 
     row.appendChild(cell);
@@ -458,6 +710,7 @@ function renderJourneys(rows) {
     // Name over email, both from Firestore. Nothing here comes from analytics.
     const member = document.createElement("td");
     const name = document.createElement("div");
+    name.className = "member-name";
     name.textContent = displayValue(item.name);
     member.appendChild(name);
 
@@ -480,8 +733,10 @@ function renderJourneys(rows) {
     row.appendChild(member);
 
     const interest = document.createElement("td");
-    const level = document.createElement("div");
-    level.textContent = displayValue(item.interest_level);
+    const level = badgeElement(
+      displayValue(item.interest_level),
+      badgeClass(item.interest_level)
+    );
     interest.appendChild(level);
 
     const reason = document.createElement("div");
@@ -493,7 +748,7 @@ function renderJourneys(rows) {
     if (item.activity_status === "none") {
       const empty = document.createElement("td");
       empty.colSpan = 6;
-      empty.className = "journey-secondary";
+      empty.className = "journey-secondary empty-cell";
       empty.textContent = "No website activity recorded";
       row.appendChild(empty);
       body.appendChild(row);
@@ -503,7 +758,7 @@ function renderJourneys(rows) {
     if (item.activity_status === "no_activity_in_range") {
       const empty = document.createElement("td");
       empty.colSpan = 6;
-      empty.className = "journey-secondary";
+      empty.className = "journey-secondary empty-cell";
       empty.textContent = "No activity in selected range";
       row.appendChild(empty);
       body.appendChild(row);
@@ -591,6 +846,8 @@ function renderFollowUps(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 6;
+
+    cell.className = "empty-cell";
     cell.textContent = "Nobody needs follow-up right now.";
 
     row.appendChild(cell);
@@ -603,6 +860,7 @@ function renderFollowUps(rows) {
 
     const member = document.createElement("td");
     const name = document.createElement("div");
+    name.className = "member-name";
     name.textContent = displayValue(item.name);
     member.appendChild(name);
 
@@ -615,10 +873,18 @@ function renderFollowUps(rows) {
 
     row.appendChild(member);
 
-    appendCell(row, displayValue(item.interest_level));
+    appendBadgeCell(
+      row,
+      displayValue(item.interest_level),
+      badgeClass(item.interest_level)
+    );
     appendCell(row, displayValue(item.interest_reason));
     appendCell(row, journeyDate(item.last_meaningful_activity_at));
-    appendCell(row, followUpLabel(item.follow_up_status));
+    appendBadgeCell(
+      row,
+      followUpLabel(item.follow_up_status),
+      `status-badge badge-${item.follow_up_status || "new"}`
+    );
 
     const action = document.createElement("td");
     const select = document.createElement("select");
@@ -674,6 +940,11 @@ function renderSources(rows) {
   if (!body) return;
 
   body.replaceChildren();
+
+  if (!rows.length) {
+    emptyRow(body, 6, "No traffic sources recorded for this period.");
+    return;
+  }
 
   for (const item of rows) {
     const row = document.createElement("tr");
@@ -738,6 +1009,8 @@ function renderMembers(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 5;
+
+    cell.className = "empty-cell";
     cell.textContent = "No members registered yet.";
     row.appendChild(cell);
     body.appendChild(row);
@@ -779,6 +1052,8 @@ function renderRegistrations(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 5;
+
+    cell.className = "empty-cell";
     cell.textContent = "No event registrations yet.";
     row.appendChild(cell);
     body.appendChild(row);
@@ -815,6 +1090,8 @@ function renderSchedules(rows) {
     const cell = document.createElement("td");
 
     cell.colSpan = 5;
+
+    cell.className = "empty-cell";
     cell.textContent = "No schedule requests yet.";
     row.appendChild(cell);
     body.appendChild(row);
@@ -896,13 +1173,22 @@ function renderActivity(members, registrations, schedules) {
 function setAnalyticsLoading(isLoading) {
   if (refreshButton) {
     refreshButton.disabled = isLoading;
-    refreshButton.textContent = isLoading
-      ? "Refreshing..."
-      : "Refresh";
+    refreshButton.setAttribute("aria-busy", isLoading ? "true" : "false");
+  }
+
+  // Only the label changes; replacing textContent would delete the icon.
+  if (refreshLabel) {
+    refreshLabel.textContent = isLoading ? "Refreshing..." : "Refresh";
   }
 
   if (rangeSelect) {
     rangeSelect.disabled = isLoading;
+  }
+}
+
+function hideSkeletons() {
+  for (const skeleton of skeletons) {
+    skeleton.hidden = true;
   }
 }
 
@@ -970,6 +1256,7 @@ async function loadAnalytics() {
 
     renderMetrics(payload);
     renderTrends(trends);
+    renderTrendsChart(trends);
     renderFunnel(funnel);
     renderAcquisition(acquisition);
     renderPages(pages);
@@ -1026,6 +1313,8 @@ async function loadAnalytics() {
           : "Analytics could not be loaded.";
     }
   } finally {
+    // Placeholders must never outlive the request, success or failure.
+    hideSkeletons();
     setAnalyticsLoading(false);
   }
 }
@@ -1102,11 +1391,60 @@ async function loadCommunity() {
   }
 }
 
+let dashboardLoading = false;
+
 async function loadDashboard() {
-  await Promise.all([
-    loadAnalytics(),
-    loadCommunity()
-  ]);
+  // A second click while a refresh is in flight would double every request.
+  if (dashboardLoading) return;
+
+  dashboardLoading = true;
+
+  try {
+    await Promise.all([
+      loadAnalytics(),
+      loadCommunity()
+    ]);
+  } finally {
+    dashboardLoading = false;
+  }
+}
+
+/* Mobile navigation drawer. The sidebar is always in the DOM; on narrow
+   viewports CSS moves it off-canvas and this toggles it back. */
+function setSidebar(open) {
+  if (!sidebar) return;
+
+  sidebar.dataset.open = open ? "true" : "false";
+
+  if (sidebarToggle) {
+    sidebarToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.hidden = !open;
+  }
+}
+
+sidebarToggle?.addEventListener("click", () => {
+  setSidebar(sidebar?.dataset.open !== "true");
+});
+
+sidebarBackdrop?.addEventListener("click", () => setSidebar(false));
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setSidebar(false);
+});
+
+for (const link of navLinks) {
+  link.addEventListener("click", () => {
+    setSidebar(false);
+
+    for (const other of navLinks) {
+      other.removeAttribute("aria-current");
+    }
+
+    link.setAttribute("aria-current", "true");
+  });
 }
 
 loginButton?.addEventListener("click", loginWithGoogle);

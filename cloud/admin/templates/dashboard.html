@@ -9,437 +9,598 @@
   <script type="module" src="/static/admin.js"></script>
 </head>
 <body class="dashboard-page">
-  <header class="admin-header">
-    <div>
-      <p class="eyebrow">GDG Tulsa</p>
-      <h1>Private Admin</h1>
-    </div>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <button
-      type="button"
-      class="secondary-button"
-      data-admin-signout
-    >
-      Sign out
-    </button>
-  </header>
-
-  <main class="dashboard-shell" data-analytics-root>
-    <div class="dashboard-heading">
-      <div>
-        <h2>Website Analytics</h2>
-        <p>
-          Private reporting from GDG Tulsa website activity.
-        </p>
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="admin-sidebar" data-sidebar>
+      <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <circle cx="7" cy="8" r="3.1" fill="#4285f4"></circle>
+            <circle cx="16.5" cy="8" r="3.1" fill="#ea4335"></circle>
+            <circle cx="7" cy="16" r="3.1" fill="#34a853"></circle>
+            <circle cx="16.5" cy="16" r="3.1" fill="#fbbc04"></circle>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>GDG Tulsa</strong>
+          <span>Admin Portal</span>
+        </span>
       </div>
 
-      <div class="dashboard-actions">
-        <label class="analytics-range-control">
-          <span class="sr-only">Analytics date range</span>
-          <select
-            class="analytics-range-select"
-            data-analytics-range
-            aria-label="Analytics date range"
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d" selected>Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-            <option value="all">All time</option>
-          </select>
-        </label>
+      <nav class="sidebar-nav" aria-label="Dashboard sections">
+        <a class="sidebar-link" href="#dashboard-overview" data-nav-link aria-current="true">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"></path>
+          </svg>
+          <span>Dashboard</span>
+        </a>
 
-        <span class="updated-at" data-updated-at></span>
+        <a class="sidebar-link" href="#analytics" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 21V9h3v12H5Zm5.5 0V3h3v18h-3ZM16 21v-8h3v8h-3Z"></path>
+          </svg>
+          <span>Analytics</span>
+        </a>
 
+        <a class="sidebar-link" href="#visitor-intelligence" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5c-5 0-8.5 4.4-9.5 7 1 2.6 4.5 7 9.5 7s8.5-4.4 9.5-7c-1-2.6-4.5-7-9.5-7Zm0 11.5A4.5 4.5 0 1 1 16.5 12 4.5 4.5 0 0 1 12 16.5Zm0-7A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Z"></path>
+          </svg>
+          <span>Visitor Intelligence</span>
+        </a>
+
+        <a class="sidebar-link" href="#follow-up-queue" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 0-7 7c0 4.5-1.5 5.6-2 6.4A1 1 0 0 0 4 17h16a1 1 0 0 0 .9-1.6c-.4-.8-1.9-1.9-1.9-6.4a7 7 0 0 0-7-7Zm0 20a3 3 0 0 0 2.8-2H9.2a3 3 0 0 0 2.8 2Z"></path>
+          </svg>
+          <span>Follow-up Queue</span>
+        </a>
+
+        <a class="sidebar-link" href="#community" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8.5 12a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 8.5 12Zm8 .5a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8.5 14C5.5 14 1 15.5 1 18.5V21h15v-2.5C16 15.5 11.5 14 8.5 14Zm8 .5a9.9 9.9 0 0 0-2 .2c1.4 1 2.5 2.4 2.5 3.8V21h6v-2.3c0-2.7-3.9-4.2-6.5-4.2Z"></path>
+          </svg>
+          <span>Community</span>
+        </a>
+
+        <a class="sidebar-link" href="#event-registrations" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7ZM5 9h14v10H5V9Z"></path>
+          </svg>
+          <span>Events</span>
+        </a>
+
+        <a class="sidebar-link" href="#schedule-requests" data-nav-link>
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 10.6 4 2.3-.9 1.5-5.1-3V6h2Z"></path>
+          </svg>
+          <span>Schedule Requests</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
         <button
           type="button"
-          class="secondary-button"
-          data-analytics-refresh
+          class="secondary-button sidebar-signout"
+          data-admin-signout
         >
-          Refresh
+          Sign out
         </button>
       </div>
+    </aside>
+
+    <div class="sidebar-backdrop" data-sidebar-backdrop hidden></div>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button
+          type="button"
+          class="icon-button sidebar-toggle"
+          data-sidebar-toggle
+          aria-controls="admin-sidebar"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M3 6h18v2H3V6Zm0 5h18v2H3v-2Zm0 5h18v2H3v-2Z"></path>
+          </svg>
+          <span class="sr-only">Open navigation</span>
+        </button>
+
+        <div class="topbar-title">
+          <h1>GDG Tulsa Admin Dashboard</h1>
+          <p>Website analytics, community activity, and operational tools</p>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="analytics-range-control">
+            <span class="sr-only">Analytics date range</span>
+            <select
+              class="analytics-range-select"
+              data-analytics-range
+              aria-label="Analytics date range"
+            >
+              <option value="7d">Last 7 days</option>
+              <option value="30d" selected>Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+              <option value="all">All time</option>
+            </select>
+          </label>
+
+          <span class="updated-at" data-updated-at></span>
+
+          <button
+            type="button"
+            class="secondary-button refresh-button"
+            data-analytics-refresh
+          >
+            <svg class="refresh-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </header>
+
+      <main id="main-content" class="dashboard-shell" data-analytics-root>
+        <section id="dashboard-overview" class="page-section" aria-labelledby="overview-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="overview-title">Overview</h2>
+              <p>Website activity and community totals at a glance.</p>
+            </div>
+          </div>
+
+          <div
+            class="analytics-status"
+            data-analytics-status
+            role="status"
+            aria-live="polite"
+          >
+            Loading analytics...
+          </div>
+
+          <div class="kpi-row" aria-label="Key metrics">
+            <div class="kpi-skeleton" data-skeleton aria-hidden="true">
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+              <div class="skeleton-card"></div>
+            </div>
+
+            <div class="kpi-group" data-metrics hidden>
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-blue" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4 0-9 2-9 5v3h18v-3c0-3-5-5-9-5Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">Visitors</span>
+                <strong class="metric-value" data-total-visitors>0</strong>
+                <span class="metric-context">Unique visitors in range</span>
+              </article>
+
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-indigo" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M4 4h16v2H4V4Zm0 4h16v12H4V8Zm2 2v8h12v-8H6Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">Page views</span>
+                <strong class="metric-value" data-total-page-views>0</strong>
+                <span class="metric-context">Total pages rendered</span>
+              </article>
+
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-teal" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">Sessions</span>
+                <strong class="metric-value" data-total-sessions>0</strong>
+                <span class="metric-context">Visits across all sources</span>
+              </article>
+            </div>
+
+            <div class="kpi-group" data-community-metrics hidden>
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-green" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M8.5 12a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 8.5 12Zm8 .5a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8.5 14C5.5 14 1 15.5 1 18.5V21h15v-2.5C16 15.5 11.5 14 8.5 14Zm8 .5a9.9 9.9 0 0 0-2 .2c1.4 1 2.5 2.4 2.5 3.8V21h6v-2.3c0-2.7-3.9-4.2-6.5-4.2Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">Chapter members</span>
+                <strong class="metric-value" data-chapter-members>0</strong>
+                <span class="metric-context">All-time chapter total</span>
+              </article>
+
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-amber" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3 0-8 1.6-8 4.5V21h16v-2.5C23 15.6 18 14 15 14ZM6 8V5H4v3H1v2h3v3h2v-3h3V8H6Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">New accounts</span>
+                <strong class="metric-value" data-new-members>0</strong>
+                <span class="metric-context">Accounts on record</span>
+              </article>
+
+              <article class="metric-card">
+                <span class="metric-icon metric-icon-violet" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 10.6 4 2.3-.9 1.5-5.1-3V6h2Z"></path>
+                  </svg>
+                </span>
+                <span class="metric-label">Schedule requests</span>
+                <strong class="metric-value" data-schedule-count>0</strong>
+                <span class="metric-context">Office-hour submissions</span>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="analytics" class="page-section" aria-labelledby="analytics-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="analytics-title">Analytics</h2>
+              <p>What visitors are doing, and where they came from.</p>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <section class="admin-card card-span-8" data-analytics-content hidden aria-labelledby="trends-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="trends-title">Daily Trends</h3>
+                  <p>Daily website activity for the selected reporting period.</p>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="trend-chart" data-trends-chart></div>
+              </div>
+
+              <div class="table-scroll table-scroll-capped">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Date</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                      <th scope="col" class="number-cell">Sessions</th>
+                      <th scope="col" class="number-cell">Page Views</th>
+                      <th scope="col" class="number-cell">Registrations</th>
+                      <th scope="col" class="number-cell">Schedule Submits</th>
+                    </tr>
+                  </thead>
+                  <tbody data-trends-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-4" data-analytics-content hidden aria-labelledby="funnel-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="funnel-title">Conversion Funnel</h3>
+                  <p>Unique visitors progressing through each conversion stage in order.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table class="funnel-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Stage</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                      <th scope="col" class="number-cell">Percent</th>
+                    </tr>
+                  </thead>
+                  <tbody data-funnel-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-12" data-analytics-content hidden aria-labelledby="acquisition-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="acquisition-title">Acquisition Attribution</h3>
+                  <p>
+                    First-touch sources that brought visitors who were active during
+                    the selected period.
+                  </p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Type</th>
+                      <th scope="col">Source</th>
+                      <th scope="col">Medium</th>
+                      <th scope="col">Campaign</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                      <th scope="col" class="number-cell">Registration</th>
+                      <th scope="col" class="number-cell">Verified</th>
+                      <th scope="col" class="number-cell">Schedule submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody data-acquisition-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-6" data-analytics-content hidden aria-labelledby="pages-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="pages-title">Page Traffic</h3>
+                  <p>Most visited pages across the public website.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Page</th>
+                      <th scope="col" class="number-cell">Views</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                      <th scope="col" class="number-cell">Sessions</th>
+                      <th scope="col" class="number-cell">Views / visitor</th>
+                    </tr>
+                  </thead>
+                  <tbody data-pages-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-6" data-analytics-content hidden aria-labelledby="sources-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="sources-title">Traffic Sources</h3>
+                  <p>How visitor sessions reached the website.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Type</th>
+                      <th scope="col">Source</th>
+                      <th scope="col">Medium</th>
+                      <th scope="col">Campaign</th>
+                      <th scope="col" class="number-cell">Sessions</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                    </tr>
+                  </thead>
+                  <tbody data-sources-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-12" data-analytics-content hidden aria-labelledby="quality-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="quality-title">Traffic Quality</h3>
+                  <p>
+                    How visits classify before exclusions. Admin, internal and test
+                    traffic are listed here but kept out of every other report.
+                  </p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Traffic type</th>
+                      <th scope="col" class="number-cell">Visitors</th>
+                      <th scope="col" class="number-cell">Sessions</th>
+                      <th scope="col" class="number-cell">Page views</th>
+                    </tr>
+                  </thead>
+                  <tbody data-traffic-quality-body></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="visitor-intelligence" class="page-section" aria-labelledby="visitors-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="visitors-title">Visitor Intelligence</h2>
+              <p>Which visitors are known, and who appears interested.</p>
+            </div>
+          </div>
+
+          <section class="admin-card card-emphasis" data-analytics-content hidden aria-labelledby="journeys-title">
+            <div class="card-heading">
+              <div>
+                <h3 id="journeys-title">Known Visitor Journeys</h3>
+                <p>
+                  Website activity for verified members only. Anonymous visitors are
+                  never named here.
+                </p>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Member</th>
+                    <th scope="col">Interest</th>
+                    <th scope="col">First source</th>
+                    <th scope="col">First seen</th>
+                    <th scope="col">Last seen</th>
+                    <th scope="col" class="number-cell">Sessions</th>
+                    <th scope="col" class="number-cell">Page views</th>
+                    <th scope="col">Latest action</th>
+                  </tr>
+                </thead>
+                <tbody data-journeys-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="follow-up-queue" class="page-section" aria-labelledby="followup-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="followup-title">Follow-up Queue</h2>
+              <p>Who needs attention from an organizer.</p>
+            </div>
+          </div>
+
+          <section class="admin-card card-emphasis" data-analytics-content hidden aria-labelledby="followup-card-title">
+            <div class="card-heading">
+              <div>
+                <h3 id="followup-card-title">Follow-up Queue</h3>
+                <p>
+                  All-time operational queue, independent of the selected analytics
+                  date range. Status is set manually and never changes on its own.
+                </p>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Member</th>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col">Last active</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody data-follow-ups-body></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="community" class="page-section" aria-labelledby="community-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="community-title">Community</h2>
+              <p>Member accounts, registrations, and scheduling activity.</p>
+            </div>
+          </div>
+
+          <div
+            class="analytics-status"
+            data-community-status
+            role="status"
+            aria-live="polite"
+          >
+            Loading community data...
+          </div>
+
+          <div class="chip-row" data-community-content hidden>
+            <div class="stat-chip">
+              <span class="chip-label">Confirmed members</span>
+              <strong class="chip-value" data-confirmed-members>0</strong>
+            </div>
+
+            <div class="stat-chip">
+              <span class="chip-label">Event registrations</span>
+              <strong class="chip-value" data-registration-count>0</strong>
+            </div>
+          </div>
+
+          <div class="community-grid">
+            <section class="admin-card card-span-12" data-community-content hidden aria-labelledby="members-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="members-title">Members</h3>
+                  <p>Registered GDG Tulsa member accounts.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Created</th>
+                      <th scope="col">Terms accepted</th>
+                    </tr>
+                  </thead>
+                  <tbody data-members-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="event-registrations" class="admin-card card-span-6" data-community-content hidden aria-labelledby="registrations-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="registrations-title">Event Registrations</h3>
+                  <p>Member registrations submitted through the website.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Event</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody data-registrations-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="schedule-requests" class="admin-card card-span-6" data-community-content hidden aria-labelledby="schedules-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="schedules-title">Schedule Requests</h3>
+                  <p>Office-hour and scheduling requests from members.</p>
+                </div>
+              </div>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Request</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody data-schedules-body></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card card-span-12" data-community-content hidden aria-labelledby="activity-title">
+              <div class="card-heading">
+                <div>
+                  <h3 id="activity-title">Recent Activity</h3>
+                  <p>Latest member and registration activity.</p>
+                </div>
+              </div>
+
+              <ul class="activity-list" data-activity-list></ul>
+            </section>
+          </div>
+        </section>
+      </main>
     </div>
-
-    <div
-      class="analytics-status"
-      data-analytics-status
-      role="status"
-      aria-live="polite"
-    >
-      Loading analytics...
-    </div>
-
-    <section
-      class="metrics-grid"
-      data-metrics
-      hidden
-      aria-label="Analytics overview"
-    >
-      <article class="metric-card">
-        <span class="metric-label">Visitors</span>
-        <strong class="metric-value" data-total-visitors>0</strong>
-      </article>
-
-      <article class="metric-card">
-        <span class="metric-label">Page views</span>
-        <strong class="metric-value" data-total-page-views>0</strong>
-      </article>
-
-      <article class="metric-card">
-        <span class="metric-label">Sessions</span>
-        <strong class="metric-value" data-total-sessions>0</strong>
-      </article>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Daily Trends</h3>
-          <p>
-            Daily website activity for the selected reporting period.
-          </p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Date</th>
-              <th scope="col" class="number-cell">Visitors</th>
-              <th scope="col" class="number-cell">Sessions</th>
-              <th scope="col" class="number-cell">Page Views</th>
-              <th scope="col" class="number-cell">Registrations</th>
-              <th scope="col" class="number-cell">
-                Schedule Submits
-              </th>
-            </tr>
-          </thead>
-          <tbody data-trends-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Conversion Funnel</h3>
-          <p>Unique visitors progressing through each conversion stage in order.</p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Stage</th>
-              <th scope="col" class="number-cell">Visitors</th>
-              <th scope="col" class="number-cell">Percent</th>
-            </tr>
-          </thead>
-          <tbody data-funnel-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Acquisition Attribution</h3>
-          <p>
-            First-touch sources that brought visitors who were active during
-            the selected period.
-          </p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Type</th>
-              <th scope="col">Source</th>
-              <th scope="col">Medium</th>
-              <th scope="col">Campaign</th>
-              <th scope="col" class="number-cell">Visitors</th>
-              <th scope="col" class="number-cell">Registration</th>
-              <th scope="col" class="number-cell">Verified</th>
-              <th scope="col" class="number-cell">Schedule submitted</th>
-            </tr>
-          </thead>
-          <tbody data-acquisition-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Page Traffic</h3>
-          <p>Most visited pages across the public website.</p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Page</th>
-              <th scope="col" class="number-cell">Views</th>
-              <th scope="col" class="number-cell">Visitors</th>
-              <th scope="col" class="number-cell">Sessions</th>
-              <th scope="col" class="number-cell">Views / visitor</th>
-            </tr>
-          </thead>
-          <tbody data-pages-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Traffic Sources</h3>
-          <p>How visitor sessions reached the website.</p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Type</th>
-              <th scope="col">Source</th>
-              <th scope="col">Medium</th>
-              <th scope="col">Campaign</th>
-              <th scope="col" class="number-cell">Sessions</th>
-              <th scope="col" class="number-cell">Visitors</th>
-            </tr>
-          </thead>
-          <tbody data-sources-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Traffic Quality</h3>
-          <p>
-            How visits classify before exclusions. Admin, internal and test
-            traffic are listed here but kept out of every other report.
-          </p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Traffic type</th>
-              <th scope="col" class="number-cell">Visitors</th>
-              <th scope="col" class="number-cell">Sessions</th>
-              <th scope="col" class="number-cell">Page views</th>
-            </tr>
-          </thead>
-          <tbody data-traffic-quality-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Known Visitor Journeys</h3>
-          <p>
-            Website activity for verified members only. Anonymous visitors are
-            never named here.
-          </p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Member</th>
-              <th scope="col">Interest</th>
-              <th scope="col">First source</th>
-              <th scope="col">First seen</th>
-              <th scope="col">Last seen</th>
-              <th scope="col" class="number-cell">Sessions</th>
-              <th scope="col" class="number-cell">Page views</th>
-              <th scope="col">Latest action</th>
-            </tr>
-          </thead>
-          <tbody data-journeys-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="analytics-card" data-analytics-content hidden>
-      <div class="card-heading">
-        <div>
-          <h3>Follow-up Queue</h3>
-          <p>
-            All-time operational queue, independent of the date range above.
-            Status is set manually and never changes on its own.
-          </p>
-        </div>
-      </div>
-
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Member</th>
-              <th scope="col">Priority</th>
-              <th scope="col">Reason</th>
-              <th scope="col">Last active</th>
-              <th scope="col">Status</th>
-              <th scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody data-follow-ups-body></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="community-section">
-      <div class="dashboard-heading community-heading">
-        <div>
-          <h2>Community</h2>
-          <p>
-            Member accounts, registrations, and scheduling activity.
-          </p>
-        </div>
-      </div>
-
-      <div
-        class="analytics-status"
-        data-community-status
-        role="status"
-        aria-live="polite"
-      >
-        Loading community data...
-      </div>
-
-      <section
-        class="metrics-grid community-metrics"
-        data-community-metrics
-        hidden
-        aria-label="Community overview"
-      >
-        <article class="metric-card">
-          <span class="metric-label">Chapter members</span>
-          <strong class="metric-value" data-chapter-members>0</strong>
-        </article>
-
-        <article class="metric-card">
-          <span class="metric-label">New accounts</span>
-          <strong class="metric-value" data-new-members>0</strong>
-        </article>
-
-        <article class="metric-card">
-          <span class="metric-label">Confirmed</span>
-          <strong class="metric-value" data-confirmed-members>0</strong>
-        </article>
-
-        <article class="metric-card">
-          <span class="metric-label">Registrations</span>
-          <strong class="metric-value" data-registration-count>0</strong>
-        </article>
-
-        <article class="metric-card">
-          <span class="metric-label">Schedule requests</span>
-          <strong class="metric-value" data-schedule-count>0</strong>
-        </article>
-      </section>
-
-      <section class="analytics-card" data-community-content hidden>
-        <div class="card-heading">
-          <div>
-            <h3>Members</h3>
-            <p>Registered GDG Tulsa member accounts.</p>
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Status</th>
-                <th scope="col">Created</th>
-                <th scope="col">Terms accepted</th>
-              </tr>
-            </thead>
-            <tbody data-members-body></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="analytics-card" data-community-content hidden>
-        <div class="card-heading">
-          <div>
-            <h3>Event Registrations</h3>
-            <p>Member registrations submitted through the website.</p>
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Event</th>
-                <th scope="col">Type</th>
-                <th scope="col">Created</th>
-              </tr>
-            </thead>
-            <tbody data-registrations-body></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="analytics-card" data-community-content hidden>
-        <div class="card-heading">
-          <div>
-            <h3>Schedule Requests</h3>
-            <p>Office-hour and scheduling requests from members.</p>
-          </div>
-        </div>
-
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Request</th>
-                <th scope="col">Type</th>
-                <th scope="col">Created</th>
-              </tr>
-            </thead>
-            <tbody data-schedules-body></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="analytics-card" data-community-content hidden>
-        <div class="card-heading">
-          <div>
-            <h3>Recent Activity</h3>
-            <p>Latest member and registration activity.</p>
-          </div>
-        </div>
-
-        <ul class="activity-list" data-activity-list></ul>
-      </section>
-    </section>
-
-  </main>
+  </div>
 </body>
 </html>
