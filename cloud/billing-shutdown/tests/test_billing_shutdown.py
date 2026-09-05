@@ -28,10 +28,12 @@ def test_correct_event_disables_billing_exactly_once(call, billing, budgets, cap
     assert billing.billing_enabled is False
 
 
-def test_completed_marker_is_critical_and_carries_no_payload(call, billing, budgets, capsys):
+def test_completed_is_not_logged_at_an_error_severity(call, billing, budgets, capsys):
+    """A successful shutdown is not an application error; a dedicated metric
+    matches the marker instead."""
     call(make_event(), billing, budgets)
     entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_completed"][0]
-    assert entry["severity"] == "CRITICAL"
+    assert entry["severity"] not in ("ERROR", "CRITICAL", "ALERT", "EMERGENCY")
     assert entry["project_id"] == TEST_PROJECT
     assert "costAmount" not in json.dumps(entry)
 
@@ -233,15 +235,18 @@ def test_unsupported_schema_version_is_rejected(call, billing, budgets, capsys):
 
 # --- 12/13. threshold not reached ----------------------------------------
 
-def test_cost_below_budget_takes_no_action(call, billing, budgets, capsys):
+def test_cost_below_budget_takes_no_action_but_still_verifies(call, billing, budgets, capsys):
+    """Readiness check runs on routine traffic so a broken Budgets API surfaces
+    every twenty minutes rather than at the one moment it matters."""
     call(make_event(payload={"costAmount": 0.04, "budgetAmount": 80.0}), billing, budgets)
 
     assert billing.update_calls == []
     assert billing.get_calls == []
-    assert budgets.calls == []
+    assert len(budgets.calls) == 1
     entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_no_action"][0]
     assert entry["reason"] == "cost_below_budget"
     assert entry["severity"] == "INFO"
+    assert entry["verification"] == "ok"
 
 
 def test_threshold_below_shutdown_takes_no_action(call, billing, budgets, capsys):
@@ -266,7 +271,7 @@ def test_budget_amount_mismatch_blocks_shutdown(call, billing, capsys):
 
     assert billing.update_calls == []
     assert billing.get_calls == []
-    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_permanent_reject"][0]
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_configuration_error"][0]
     assert entry["reason"] == "budget_amount_mismatch"
 
 
@@ -274,7 +279,7 @@ def test_missing_shutdown_threshold_rule_blocks_shutdown(call, billing, capsys):
     call(make_event(), billing, FakeBudgetClient(threshold=0.5))
 
     assert billing.update_calls == []
-    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_permanent_reject"][0]
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_configuration_error"][0]
     assert entry["reason"] == "budget_threshold_rule_missing"
 
 
@@ -283,7 +288,7 @@ def test_forecasted_spend_basis_blocks_shutdown(call, billing, capsys):
          FakeBudgetClient(basis=budgets_v1.ThresholdRule.Basis.FORECASTED_SPEND))
 
     assert billing.update_calls == []
-    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_permanent_reject"][0]
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_configuration_error"][0]
     assert entry["reason"] == "budget_threshold_rule_missing"
 
 
@@ -291,7 +296,7 @@ def test_budget_not_found_blocks_shutdown(call, billing, capsys):
     call(make_event(), billing, FakeBudgetClient(error=api_exceptions.NotFound("gone")))
 
     assert billing.update_calls == []
-    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_permanent_reject"][0]
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_configuration_error"][0]
     assert entry["reason"] == "shutdown_budget_not_found"
 
 
@@ -353,13 +358,145 @@ def test_transient_get_billing_failure_raises(budgets, capsys, error):
     api_exceptions.ServiceUnavailable("503"),
     api_exceptions.PermissionDenied("denied"),
 ])
-def test_transient_get_budget_failure_raises(billing, capsys, error):
+def test_transient_get_budget_failure_raises_at_threshold(billing, capsys, error):
+    """At the threshold the check is mandatory, so the event must retry."""
     with pytest.raises(type(error)):
         billing_main.handle(make_event(), billing, FakeBudgetClient(error=error))
 
     assert billing.update_calls == []
     entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_transient_failure"][0]
     assert entry["stage"] == "get_budget"
+
+
+# ================= Stage 2: readiness verification semantics =================
+
+BELOW_THRESHOLD = {"costAmount": 0.04, "budgetAmount": 80.0}
+
+
+def test_below_threshold_verification_runs_and_passes(call, billing, budgets, capsys):
+    call(make_event(payload=BELOW_THRESHOLD), billing, budgets)
+
+    assert len(budgets.calls) == 1
+    assert billing.update_calls == []
+    assert billing.get_calls == []
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_no_action"][0]
+    assert entry["verification"] == "ok"
+
+
+@pytest.mark.parametrize("error", [
+    api_exceptions.ServiceUnavailable("503"),
+    api_exceptions.DeadlineExceeded("timeout"),
+    api_exceptions.PermissionDenied("denied"),
+    api_exceptions.InternalServerError("500"),
+])
+def test_below_threshold_transient_verification_does_not_raise(call, billing, capsys, error):
+    """A Budgets API blip must not start a 24-hour retry storm at $0.04 spend."""
+    budgets = FakeBudgetClient(error=error)
+    call(make_event(payload=BELOW_THRESHOLD), billing, budgets)
+
+    assert billing.update_calls == []
+    entry = [e for e in markers(capsys)
+             if e["marker"] == "billing_shutdown_verification_unavailable"][0]
+    assert entry["severity"] == "WARNING"
+    assert entry["error_type"] == type(error).__name__
+
+
+def test_below_threshold_verification_unavailable_is_not_an_error(call, billing, capsys):
+    budgets = FakeBudgetClient(error=api_exceptions.ServiceUnavailable("503"))
+    call(make_event(payload=BELOW_THRESHOLD), billing, budgets)
+
+    entries = markers(capsys)
+    assert not [e for e in entries if e["severity"] in ("ERROR", "CRITICAL")]
+    assert "billing_shutdown_transient_failure" not in [e["marker"] for e in entries]
+
+
+@pytest.mark.parametrize("client,reason", [
+    (FakeBudgetClient(units="500"), "budget_amount_mismatch"),
+    (FakeBudgetClient(threshold=0.5), "budget_threshold_rule_missing"),
+    (FakeBudgetClient(error=api_exceptions.NotFound("gone")), "shutdown_budget_not_found"),
+])
+def test_below_threshold_configuration_mismatch_alerts_and_acknowledges(
+        call, billing, capsys, client, reason):
+    """The safeguard has been reconfigured — permanent, and a human must know."""
+    call(make_event(payload=BELOW_THRESHOLD), billing, client)
+
+    assert billing.update_calls == []
+    entry = [e for e in markers(capsys)
+             if e["marker"] == "billing_shutdown_configuration_error"][0]
+    assert entry["reason"] == reason
+    assert entry["severity"] == "ERROR"
+
+
+def test_below_threshold_configuration_error_does_not_raise(call, billing):
+    """Acknowledged, not retried: retrying cannot fix a reconfigured budget.
+
+    handle() signals via PermanentReject; the entry point converts that into an
+    acknowledgement, which is the behaviour that matters to Pub/Sub.
+    """
+    call(make_event(payload=BELOW_THRESHOLD), billing, FakeBudgetClient(units="500"))
+    assert billing.update_calls == []
+
+
+@pytest.mark.parametrize("error", [
+    api_exceptions.ServiceUnavailable("503"),
+    api_exceptions.DeadlineExceeded("timeout"),
+    api_exceptions.PermissionDenied("denied"),
+])
+def test_at_threshold_verification_failure_raises(billing, capsys, error):
+    with pytest.raises(type(error)):
+        billing_main.handle(make_event(), billing, FakeBudgetClient(error=error))
+
+    assert billing.update_calls == []
+    names = [e["marker"] for e in markers(capsys)]
+    assert "billing_shutdown_transient_failure" in names
+    assert "billing_shutdown_verification_unavailable" not in names
+
+
+def test_at_threshold_configuration_mismatch_blocks_and_acknowledges(call, billing, capsys):
+    call(make_event(), billing, FakeBudgetClient(units="500"))
+
+    assert billing.update_calls == []
+    entry = [e for e in markers(capsys)
+             if e["marker"] == "billing_shutdown_configuration_error"][0]
+    assert entry["reason"] == "budget_amount_mismatch"
+
+
+def test_threshold_below_shutdown_still_verifies(call, billing, budgets, capsys):
+    call(make_event(payload={"costAmount": 95.0, "budgetAmount": 80.0,
+                             "alertThresholdExceeded": 0.5}), billing, budgets)
+
+    assert len(budgets.calls) == 1
+    assert billing.update_calls == []
+    entry = [e for e in markers(capsys) if e["marker"] == "billing_shutdown_no_action"][0]
+    assert entry["reason"] == "threshold_below_shutdown"
+
+
+def test_other_budget_still_skips_verification_entirely(call, billing, budgets, capsys):
+    """The $100 budget must not cost a Budgets API call every 20 minutes."""
+    event = make_event(attributes={"budgetId": OTHER_BUDGET_ID,
+                                   "billingAccountId": TEST_BILLING_ACCOUNT,
+                                   "schemaVersion": "1.0"})
+    call(event, billing, budgets)
+
+    assert budgets.calls == []
+    assert billing.update_calls == []
+
+
+def test_completed_path_still_verifies_resulting_state(call, budgets, capsys):
+    client = FakeBillingClient(update_leaves_enabled=True)
+    call(make_event(), client, budgets)
+
+    entries = markers(capsys)
+    assert "billing_shutdown_completed" not in [e["marker"] for e in entries]
+    assert [e for e in entries if e["reason"] == "billing_still_enabled_after_update"]
+
+
+def test_duplicate_delivery_still_safe_with_verification_enabled(call, billing, budgets):
+    for _ in range(5):
+        call(make_event(), billing, budgets)
+
+    assert len(billing.update_calls) == 1
+    assert billing.billing_enabled is False
 
 
 def test_permanent_reject_never_raises_out_of_the_entry_point(billing, budgets):

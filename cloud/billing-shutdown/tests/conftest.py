@@ -163,8 +163,9 @@ def call():
         try:
             billing_main.handle(event, billing_client, budget_client)
         except billing_main.PermanentReject as reject:
+            # Mirrors stop_billing() exactly, including the reject's own marker.
             billing_main.log(
-                reject.severity, "billing_shutdown_permanent_reject",
+                reject.severity, reject.marker,
                 reason=reject.reason, **reject.fields)
         return None
     return _call

@@ -37,7 +37,7 @@ resource "google_cloudfunctions2_function" "billing_shutdown" {
         # is actually deployed. If the function is redeployed out of band this
         # value changes and the plan will show it — which is the intended
         # signal, not drift to hide.
-        generation = 1788576668695321
+        generation = 1788583525387311
       }
     }
   }
@@ -72,10 +72,16 @@ resource "google_cloudfunctions2_function" "billing_shutdown" {
   }
 
   event_trigger {
-    trigger_region        = var.region
-    event_type            = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic          = google_pubsub_topic.billing_alerts.id
-    retry_policy          = "RETRY_POLICY_DO_NOT_RETRY"
+    trigger_region = var.region
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.billing_alerts.id
+    # A failed shutdown is the one event that must not be dropped. Redelivery
+    # is safe because the unlink is a set-to-state operation and the function
+    # checks live billing state first, so a duplicate is a logged no-op.
+    # Only genuinely transient failures on the threshold path raise; malformed
+    # input and configuration errors acknowledge, so nothing retries for 24h
+    # that retrying could never fix.
+    retry_policy          = "RETRY_POLICY_RETRY"
     service_account_email = google_service_account.billing_shutdown.email
   }
 }

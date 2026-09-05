@@ -51,11 +51,27 @@ TRANSIENT_ERRORS = (
 class PermanentReject(Exception):
     """The event can never succeed. Acknowledge it; do not retry it."""
 
-    def __init__(self, reason, severity="ERROR", **fields):
+    def __init__(self, reason, severity="ERROR",
+                 marker="billing_shutdown_permanent_reject", **fields):
         super().__init__(reason)
         self.reason = reason
         self.severity = severity
+        self.marker = marker
         self.fields = fields
+
+
+class ConfigurationError(PermanentReject):
+    """The safeguard itself is misconfigured. Never retry; always alert."""
+
+    def __init__(self, reason, **fields):
+        super().__init__(reason, severity="ERROR",
+                         marker="billing_shutdown_configuration_error", **fields)
+
+
+# Returned when the readiness check could not run but the project is nowhere
+# near the threshold, so there is nothing to retry for yet.
+VERIFICATION_UNAVAILABLE = "unavailable"
+VERIFICATION_OK = "ok"
 
 
 def log(severity, marker, **fields):
@@ -163,13 +179,29 @@ def threshold_exceeded(payload):
 # ------------------------------------------------------------ verification
 
 
-def verify_budget_configuration(budget_client):
+def verify_budget_configuration(budget_client, at_threshold):
     """Re-read the budget from the API and confirm it is still the safeguard.
 
     This does NOT recompute spend — the Budgets API does not report accrued
-    cost. It confirms that the budget the message claims to be is configured
-    the way the shutdown path requires, so a message describing a budget that
-    no longer exists (or has been altered) cannot drive a shutdown.
+    cost. It confirms the budget is configured the way the shutdown path
+    requires, so a message describing a budget that no longer exists (or has
+    been altered) cannot drive a shutdown.
+
+    It runs on every shutdown-budget notification, not only at the threshold,
+    so a broken Budgets API or a revoked permission is discovered during the
+    routine traffic that arrives every twenty minutes rather than at the single
+    moment the safeguard is needed.
+
+    `at_threshold` decides how hard a temporary failure is treated:
+
+      at threshold   -> the check is mandatory: log ERROR and raise, so the
+                        event is retried once retries are enabled.
+      below threshold-> the check is readiness only: log WARNING and carry on.
+                        A Budgets API blip must not start a 24-hour retry storm
+                        while spend is nowhere near the cap.
+
+    A configuration MISMATCH is permanent at either level: it means the
+    safeguard has been reconfigured, and no amount of retrying fixes that.
     """
     name = (
         f"billingAccounts/{EXPECTED_BILLING_ACCOUNT_ID}"
@@ -179,22 +211,31 @@ def verify_budget_configuration(budget_client):
     try:
         budget = budget_client.get_budget(name=name)
     except TRANSIENT_ERRORS as error:
+        if at_threshold:
+            log(
+                "ERROR",
+                "billing_shutdown_transient_failure",
+                stage="get_budget",
+                error_type=type(error).__name__,
+            )
+            raise
+
         log(
-            "ERROR",
-            "billing_shutdown_transient_failure",
+            "WARNING",
+            "billing_shutdown_verification_unavailable",
             stage="get_budget",
             error_type=type(error).__name__,
         )
-        raise
+        return VERIFICATION_UNAVAILABLE
     except (api_exceptions.NotFound, api_exceptions.InvalidArgument):
         # The pinned budget is gone or the name we built is unusable. Both mean
         # our configuration no longer matches reality: refuse, do not retry.
-        raise PermanentReject("shutdown_budget_not_found")
+        raise ConfigurationError("shutdown_budget_not_found")
 
     units = str(getattr(budget.amount.specified_amount, "units", ""))
 
     if units != str(EXPECTED_BUDGET_UNITS):
-        raise PermanentReject("budget_amount_mismatch")
+        raise ConfigurationError("budget_amount_mismatch")
 
     has_shutdown_rule = any(
         float(getattr(rule, "threshold_percent", 0)) >= 1.0
@@ -203,9 +244,9 @@ def verify_budget_configuration(budget_client):
     )
 
     if not has_shutdown_rule:
-        raise PermanentReject("budget_threshold_rule_missing")
+        raise ConfigurationError("budget_threshold_rule_missing")
 
-    return budget
+    return VERIFICATION_OK
 
 
 # ---------------------------------------------------------------- handling
@@ -260,27 +301,32 @@ def handle(cloud_event, billing_client, budget_client):
     limit = amount(payload, "budgetAmount")
     exceeded = threshold_exceeded(payload)
 
+    below_threshold_reason = None
+
     if exceeded is not None and exceeded < 1.0:
+        below_threshold_reason = "threshold_below_shutdown"
+    elif cost < limit:
+        below_threshold_reason = "cost_below_budget"
+
+    at_threshold = below_threshold_reason is None
+
+    # Runs either way: below the threshold it is a readiness check that keeps
+    # the critical dependency exercised; at the threshold it is mandatory.
+    verification = verify_budget_configuration(budget_client, at_threshold)
+
+    if not at_threshold:
+        if verification == VERIFICATION_UNAVAILABLE:
+            # Already logged at WARNING. Nothing to retry: spend is below cap.
+            return
+
         log(
             "INFO",
             "billing_shutdown_no_action",
             budget_id=budget_id,
-            reason="threshold_below_shutdown",
+            reason=below_threshold_reason,
+            verification=verification,
         )
         return
-
-    if cost < limit:
-        log(
-            "INFO",
-            "billing_shutdown_no_action",
-            budget_id=budget_id,
-            reason="cost_below_budget",
-        )
-        return
-
-    # The message claims the shutdown threshold was crossed. Confirm the budget
-    # it names is still the safeguard we expect before acting on that claim.
-    verify_budget_configuration(budget_client)
 
     try:
         current = billing_client.get_project_billing_info(name=project_name)
@@ -322,8 +368,11 @@ def handle(cloud_event, billing_client, budget_client):
     if result.billing_enabled or result.billing_account_name:
         raise PermanentReject("billing_still_enabled_after_update")
 
+    # Deliberately not an error severity: the safeguard worked. A dedicated
+    # log-based metric matches this marker, so alerting does not depend on
+    # dressing success up as a failure.
     log(
-        "CRITICAL",
+        "INFO",
         "billing_shutdown_completed",
         project_id=TARGET_PROJECT_ID,
         budget_id=budget_id,
@@ -338,7 +387,7 @@ def stop_billing(cloud_event):
         # Acknowledged on purpose: redelivering this event can never help.
         log(
             reject.severity,
-            "billing_shutdown_permanent_reject",
+            reject.marker,
             reason=reject.reason,
             **reject.fields,
         )

@@ -170,16 +170,86 @@ resource "google_logging_metric" "deployment_failures" {
 
 # Errors only. The function records ~100 successful infrastructure/startup
 # requests a day, so alerting on invocations would be permanent noise.
+# The billing-shutdown markers are matched by name rather than by severity.
+# Severity alone cannot separate "the safeguard is broken" from "the safeguard
+# fired successfully", and the function deliberately no longer logs success at
+# an error severity to make an alert fire.
+
+# Transient failures on the threshold path — the event will be retried.
 resource "google_logging_metric" "billing_shutdown_errors" {
   project = var.project_id
   name    = "gdg_tulsa_billing_shutdown_errors"
 
-  description = "Billing shutdown function errors."
+  description = "Billing shutdown transient failures on the threshold path."
 
   filter = <<-EOT
     resource.type="cloud_run_revision"
     AND resource.labels.service_name="billing-shutdown"
-    AND severity>=ERROR
+    AND jsonPayload.marker="billing_shutdown_transient_failure"
+  EOT
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+  }
+}
+
+# The safeguard itself is misconfigured or the event was rejected outright.
+# Retrying cannot fix either, so one occurrence is worth a human.
+resource "google_logging_metric" "billing_shutdown_config_errors" {
+  project = var.project_id
+  name    = "gdg_tulsa_billing_shutdown_config_errors"
+
+  description = "Billing shutdown configuration errors and permanent rejects."
+
+  filter = <<-EOT
+    resource.type="cloud_run_revision"
+    AND resource.labels.service_name="billing-shutdown"
+    AND (
+      jsonPayload.marker="billing_shutdown_configuration_error"
+      OR jsonPayload.marker="billing_shutdown_permanent_reject"
+    )
+  EOT
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+  }
+}
+
+# Readiness degradation: the budget verification could not run while spend was
+# below the cap. Harmless once; sustained, it means the safeguard would fail if
+# it were needed.
+resource "google_logging_metric" "billing_shutdown_verification_unavailable" {
+  project = var.project_id
+  name    = "gdg_tulsa_billing_shutdown_verification_unavailable"
+
+  description = "Budget readiness verification unavailable below threshold."
+
+  filter = <<-EOT
+    resource.type="cloud_run_revision"
+    AND resource.labels.service_name="billing-shutdown"
+    AND jsonPayload.marker="billing_shutdown_verification_unavailable"
+  EOT
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+  }
+}
+
+# The shutdown actually ran. Not a failure — but the most operationally
+# significant event this project can produce.
+resource "google_logging_metric" "billing_shutdown_completed" {
+  project = var.project_id
+  name    = "gdg_tulsa_billing_shutdown_completed"
+
+  description = "Project billing was detached by the shutdown function."
+
+  filter = <<-EOT
+    resource.type="cloud_run_revision"
+    AND resource.labels.service_name="billing-shutdown"
+    AND jsonPayload.marker="billing_shutdown_completed"
   EOT
 
   metric_descriptor {
@@ -335,22 +405,118 @@ resource "google_monitoring_alert_policy" "cloud_run_server_errors" {
 
 # Immediate: the shutdown path has no retry and no dead-letter, so a failed
 # invocation can mean the $80 billing shutdown simply does not happen.
+# One policy, three conditions, each matched to how urgent that failure is.
+# Budget notifications arrive roughly every twenty minutes, which is what makes
+# the occurrence counts below meaningful.
 resource "google_monitoring_alert_policy" "billing_shutdown_failure" {
   project      = var.project_id
   display_name = "Budget shutdown failure"
   combiner     = "OR"
 
   documentation {
-    content   = "The billing shutdown function logged an error. It is configured without retry or dead-lettering, so the $80 shutdown may not have executed."
+    content   = "The $80 billing shutdown safeguard is not healthy. Transient failures on the threshold path are retried automatically, so this fires only once retries have failed repeatedly. A configuration error fires immediately: it means the budget no longer matches what the function requires, and retrying cannot fix it. Readiness-verification warnings mean the Budgets API check could not run while spend was below the cap - harmless once, but sustained it means the safeguard would fail if it were needed. This alert does NOT indicate that billing was detached; see 'Billing shutdown completed' for that."
     mime_type = "text/markdown"
   }
 
+  # Retries handle a single blip. Repeated failures mean they are not working.
   conditions {
-    display_name = "Billing shutdown function error"
+    display_name = "Repeated transient failure on the shutdown path"
 
     condition_threshold {
       filter = join(" AND ", [
         "metric.type=\"logging.googleapis.com/user/${google_logging_metric.billing_shutdown_errors.name}\"",
+        "resource.type=\"cloud_run_revision\"",
+      ])
+
+      # COMPARISON_GT 2 is ">= 3" for integer counts; the API accepts only
+      # COMPARISON_LT and COMPARISON_GT.
+      comparison      = "COMPARISON_GT"
+      threshold_value = 2
+      duration        = "0s"
+
+      aggregations {
+        alignment_period   = "1800s"
+        per_series_aligner = "ALIGN_DELTA"
+      }
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+
+  # The safeguard has been reconfigured or an event was rejected outright.
+  # No amount of retrying helps, so one occurrence pages.
+  conditions {
+    display_name = "Shutdown configuration or validation error"
+
+    condition_threshold {
+      filter = join(" AND ", [
+        "metric.type=\"logging.googleapis.com/user/${google_logging_metric.billing_shutdown_config_errors.name}\"",
+        "resource.type=\"cloud_run_revision\"",
+      ])
+
+      comparison      = "COMPARISON_GT"
+      threshold_value = 0
+      duration        = "0s"
+
+      aggregations {
+        alignment_period   = "300s"
+        per_series_aligner = "ALIGN_DELTA"
+      }
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+
+  # Three misses across ~90 minutes is a sustained readiness problem rather
+  # than one Budgets API hiccup.
+  conditions {
+    display_name = "Budget readiness verification unavailable"
+
+    condition_threshold {
+      filter = join(" AND ", [
+        "metric.type=\"logging.googleapis.com/user/${google_logging_metric.billing_shutdown_verification_unavailable.name}\"",
+        "resource.type=\"cloud_run_revision\"",
+      ])
+
+      comparison      = "COMPARISON_GT"
+      threshold_value = 2
+      duration        = "0s"
+
+      aggregations {
+        alignment_period   = "5400s"
+        per_series_aligner = "ALIGN_DELTA"
+      }
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+
+  notification_channels = [google_monitoring_notification_channel.operations.id]
+}
+
+# Separate from the failure policy on purpose: this is the safeguard WORKING.
+resource "google_monitoring_alert_policy" "billing_shutdown_completed" {
+  project      = var.project_id
+  display_name = "Billing shutdown completed"
+  combiner     = "OR"
+
+  documentation {
+    content   = "The automated $80 safety mechanism succeeded and project billing has been detached from gdg-tulsa. This is not a failure, an error, or a crash - the safeguard did exactly what it exists to do. Every service in the project will stop once the detachment propagates. Restoring service requires an operator to re-link a billing account deliberately after confirming the spend is understood."
+    mime_type = "text/markdown"
+  }
+
+  conditions {
+    display_name = "Project billing detached"
+
+    condition_threshold {
+      filter = join(" AND ", [
+        "metric.type=\"logging.googleapis.com/user/${google_logging_metric.billing_shutdown_completed.name}\"",
         "resource.type=\"cloud_run_revision\"",
       ])
 
