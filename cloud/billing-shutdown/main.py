@@ -249,6 +249,43 @@ def verify_budget_configuration(budget_client, at_threshold):
     return VERIFICATION_OK
 
 
+def read_billing_state(billing_client, project_name, at_threshold):
+    """Read the project's current billing state.
+
+    Runs on every shutdown-budget notification for the same reason GetBudget
+    does: this permission is project-scoped and cannot be supplied by a
+    billing-account role, so the only way to know it still works is to use it
+    on the routine traffic that arrives every twenty minutes.
+
+    `at_threshold` sets how hard a failure is treated, exactly as for the
+    budget check: mandatory at the threshold, readiness-only below it.
+    """
+    try:
+        info = billing_client.get_project_billing_info(name=project_name)
+    except TRANSIENT_ERRORS as error:
+        if at_threshold:
+            log(
+                "ERROR",
+                "billing_shutdown_transient_failure",
+                stage="get_project_billing_info",
+                error_type=type(error).__name__,
+            )
+            raise
+
+        log(
+            "WARNING",
+            "billing_shutdown_verification_unavailable",
+            stage="get_project_billing_info",
+            error_type=type(error).__name__,
+        )
+        return VERIFICATION_UNAVAILABLE, None
+    except (api_exceptions.NotFound, api_exceptions.InvalidArgument):
+        # The configured target project is unusable. Retrying cannot fix that.
+        raise ConfigurationError("target_project_not_found")
+
+    return VERIFICATION_OK, info
+
+
 # ---------------------------------------------------------------- handling
 
 
@@ -314,9 +351,18 @@ def handle(cloud_event, billing_client, budget_client):
     # the critical dependency exercised; at the threshold it is mandatory.
     verification = verify_budget_configuration(budget_client, at_threshold)
 
+    if not at_threshold and verification == VERIFICATION_UNAVAILABLE:
+        # Already logged at WARNING. Nothing to retry: spend is below cap.
+        return
+
+    # Second readiness dependency, checked the same way and for the same
+    # reason. Below the threshold this only proves the permission still works.
+    billing_state, current = read_billing_state(
+        billing_client, project_name, at_threshold
+    )
+
     if not at_threshold:
-        if verification == VERIFICATION_UNAVAILABLE:
-            # Already logged at WARNING. Nothing to retry: spend is below cap.
+        if billing_state == VERIFICATION_UNAVAILABLE:
             return
 
         log(
@@ -325,19 +371,9 @@ def handle(cloud_event, billing_client, budget_client):
             budget_id=budget_id,
             reason=below_threshold_reason,
             verification=verification,
+            billing_state_verification=billing_state,
         )
         return
-
-    try:
-        current = billing_client.get_project_billing_info(name=project_name)
-    except TRANSIENT_ERRORS as error:
-        log(
-            "ERROR",
-            "billing_shutdown_transient_failure",
-            stage="get_project_billing_info",
-            error_type=type(error).__name__,
-        )
-        raise
 
     if not current.billing_enabled:
         # Replay, duplicate delivery, or a shutdown that already happened.

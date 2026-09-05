@@ -37,7 +37,41 @@ resource "google_secret_manager_secret_iam_member" "collector_ip_hash_accessor" 
 }
 
 # --- Billing shutdown service account ------------------------------------
+#
+# The shutdown function makes exactly three API calls, and each permission
+# below was proved necessary and sufficient in a disposable project before
+# being applied here:
+#
+#   GetBudget                -> billing.budgets.get                (account)
+#   get_project_billing_info -> resourcemanager.projects.get       (project)
+#   detach billing           -> resourcemanager.projects.delete... (project)
+#
+# The same validation proved billing.resourceAssociations.delete is NOT needed
+# to unlink, so roles/billing.admin is unnecessary here.
 
+resource "google_project_iam_custom_role" "billing_shutdown" {
+  project     = var.project_id
+  role_id     = "gdgTulsaBillingShutdown"
+  title       = "GDG Tulsa Billing Shutdown"
+  description = "Read project billing state and detach billing. No re-link."
+
+  # createBillingAssignment is deliberately absent: the function never
+  # re-links, and without it a compromised function cannot move the project
+  # onto a different billing account.
+  permissions = [
+    "resourcemanager.projects.get",
+    "resourcemanager.projects.deleteBillingAssignment",
+  ]
+}
+
+resource "google_project_iam_member" "billing_shutdown_custom" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.billing_shutdown.name
+  member  = "serviceAccount:${google_service_account.billing_shutdown.email}"
+}
+
+# Superseded by billing_shutdown_custom above. Kept only until the narrow role
+# has been proved working against a real budget notification in production.
 resource "google_project_iam_member" "billing_shutdown_project_manager" {
   project = var.project_id
   role    = "roles/billing.projectManager"
@@ -53,6 +87,16 @@ resource "google_project_iam_member" "billing_shutdown_project_manager" {
 # Non-authoritative: this manages exactly this one member and cannot remove
 # any other principal on the billing account.
 
+# Read-only. Supplies billing.budgets.get for the GetBudget verification and
+# nothing that can mutate the account, its budgets or its associations.
+resource "google_billing_account_iam_member" "billing_shutdown_viewer" {
+  billing_account_id = var.billing_account
+  role               = "roles/billing.viewer"
+  member             = "serviceAccount:${google_service_account.billing_shutdown.email}"
+}
+
+# Superseded by billing_shutdown_viewer above. Retained only until the narrow
+# roles are proved in production; removing it is the point of this change.
 resource "google_billing_account_iam_member" "billing_shutdown_admin" {
   billing_account_id = var.billing_account
   role               = "roles/billing.admin"

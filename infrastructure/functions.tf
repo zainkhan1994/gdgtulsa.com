@@ -37,7 +37,7 @@ resource "google_cloudfunctions2_function" "billing_shutdown" {
         # is actually deployed. If the function is redeployed out of band this
         # value changes and the plan will show it — which is the intended
         # signal, not drift to hide.
-        generation = 1788583525387311
+        generation = 1788594248444304
       }
     }
   }
