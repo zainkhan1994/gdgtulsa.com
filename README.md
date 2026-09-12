@@ -4,7 +4,7 @@
 
 # GDG Tulsa
 
-**The official website for Google Developer Group Tulsa**
+
 
 A community of developers, designers, and builders in Tulsa, Oklahoma — powered by the Google Developer Groups program.
 
