@@ -183,7 +183,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 |--|--|
 | 🌐 Website | [gdgtulsa.com](https://gdgtulsa.com) |
 | 👥 GDG Community | [gdg.community.dev/gdg-tulsa](https://gdg.community.dev/gdg-tulsa/) |
-| 📅 Events | DevFest · Build with AI · Monthly meetups |
+
 
 ---
 
