@@ -6,6 +6,7 @@ directory reaches Google Cloud, and none of them writes anything.
 """
 
 import os
+import importlib.util
 import sys
 import types
 from pathlib import Path
@@ -39,8 +40,12 @@ def admin_module():
 
     _install_stubs()
 
-    sys.path.insert(0, str(ADMIN_DIR))
-    import main
+    spec = importlib.util.spec_from_file_location(
+        "gdg_tulsa_admin_main", ADMIN_DIR / "main.py"
+    )
+    main = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = main
+    spec.loader.exec_module(main)
 
     main.app.config.update(TESTING=True)
     return main

@@ -6,6 +6,7 @@ the environment before import so no test depends on a live deployment.
 """
 
 import base64
+import importlib.util
 import json
 import os
 import sys
@@ -31,9 +32,12 @@ os.environ.update(
     EXPECTED_BUDGET_UNITS=TEST_UNITS,
 )
 
-sys.path.insert(0, str(FUNCTION_DIR))
-
-import main as billing_main  # noqa: E402
+spec = importlib.util.spec_from_file_location(
+    "gdg_tulsa_billing_shutdown_main", FUNCTION_DIR / "main.py"
+)
+billing_main = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = billing_main
+spec.loader.exec_module(billing_main)
 
 from google.cloud import billing_v1  # noqa: E402
 from google.cloud.billing import budgets_v1  # noqa: E402
