@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 ADMIN_DIR = REPO_ROOT / "src" / "backend" / "services" / "admin"
 
 TEST_SECRET = "test-session-secret-not-a-real-value"

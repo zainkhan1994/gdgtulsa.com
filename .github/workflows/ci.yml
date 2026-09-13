@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -r src/backend/services/admin/requirements.txt
+          python -m pip install -r src/backend/services/collector/requirements.txt
+          python -m pip install -r src/backend/services/billing-shutdown/requirements.txt
+      - name: Compile backend and tests
+        run: python -m compileall -q src/backend tests/backend
+      - name: Run backend tests
+        run: pytest tests/backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend
+        run: ./scripts/build.sh
+      - name: Check generated references
+        run: ./scripts/check-frontend.sh
+
+  infrastructure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.9.8'
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+      - name: Initialize Terraform providers
+        run: terraform init -backend=false
+      - name: Validate Terraform
+        run: terraform validate

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-FUNCTION_DIR = Path(__file__).resolve().parents[3] / "src" / "backend" / "services" / "billing-shutdown"
+FUNCTION_DIR = Path(__file__).resolve().parents[4] / "src" / "backend" / "services" / "billing-shutdown"
 
 # Deliberately not the production values, so a test can never be mistaken for
 # a real event and a copied fixture can never address the real project.
