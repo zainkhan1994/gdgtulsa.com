@@ -1,6 +1,18 @@
 // AI Stack page: mobile accordion and desktop diagram interactions.
 /* Mobile accordion */
 (function () {
+  var track = document.getElementById("aiModelTrack");
+  var previous = document.querySelector("[data-model-prev]");
+  var next = document.querySelector("[data-model-next]");
+  if (track && previous && next) {
+    previous.addEventListener("click", function () {
+      track.scrollBy({ left: -track.clientWidth * 0.82, behavior: "smooth" });
+    });
+    next.addEventListener("click", function () {
+      track.scrollBy({ left: track.clientWidth * 0.82, behavior: "smooth" });
+    });
+  }
+
   document.querySelectorAll(".stack-acc-trigger").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var item = btn.closest(".stack-acc-item");

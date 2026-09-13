@@ -1,49 +1,45 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A practical map of the Google AI stack, from models and research to agents and production systems.">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/spotlight-pages.css">
-  <title>Google AI Stack | GDG Tulsa</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Google AI products, models, coding tools, and frameworks curated by GDG Tulsa.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/ai-stack-reference.css">
+  <title>Google AI | GDG Tulsa</title>
 </head>
-<body>
-<header class="site-header" aria-label="Site header">
-  <a class="brand" href="/index.html#top" aria-label="GDG Tulsa home"><img width="480" height="48" class="brand-logo" src="/assets/logos/gdg-community-logo-dark.png" alt=""><span><strong>Google Developer Group Tulsa</strong></span></a>
-  <nav aria-label="Primary navigation"><a href="/index.html#events">Events</a><a href="/bwai.html">Build with AI</a><a href="/devfest.html">DevFest</a><a href="/hackathons.html">Hackathons</a><a href="/community.html">Community</a><a href="/about-gdg.html">About GDGs</a><a href="/google-ecosystem.html">Ecosystem</a><a href="/ai-stack.html" aria-current="page">AI Stack</a></nav>
-</header>
-<main id="top">
-  <section class="spotlight-hero"><div class="spotlight-shell">
-    <p class="spotlight-kicker">Google AI · from idea to production</p>
-    <h1>Build from <em>prompt</em> to product.</h1>
-    <p class="spotlight-lede">The Google AI stack is not one tool. It is a connected path through models, research, design, code, agents, and the cloud systems that make an idea useful in the real world.</p>
-    <div class="spotlight-actions"><a class="primary" href="/hackathons.html">Build something real</a><a href="/google-ecosystem.html">Explore the ecosystem</a></div>
-    <div class="spotlight-metric-row"><div class="spotlight-metric"><strong>01</strong><span>Start with a model that understands the problem.</span></div><div class="spotlight-metric"><strong>02</strong><span>Shape the experience with research and design.</span></div><div class="spotlight-metric"><strong>03</strong><span>Ship it with agents, Firebase, and Google Cloud.</span></div></div>
+<body class="ai-page">
+<header class="site-header" aria-label="Google AI navigation"><a class="brand" href="/index.html#top" aria-label="GDG Tulsa home"><strong>Google AI</strong></a><nav aria-label="Primary navigation"><a href="#products">Products</a><a href="#build">Build</a><a href="#research">Research</a><a href="/about-gdg.html">Responsibility</a><a href="/community.html">Social impact</a><a href="/about-gdg.html">About</a></nav></header>
+<main id="top" class="ai-catalog">
+  <section class="ai-catalog-section" id="build"><div class="ai-section-head"><div><h1>Start building</h1></div></div><div class="ai-catalog-grid">
+    <article class="ai-card featured"><div class="ai-card-icon"><img src="/assets/logos/products/ai-studio-icon.png" alt=""></div><h3>Build with Google AI Studio</h3><p>Start building something new, with cutting-edge AI models and tools.</p><div class="ai-card-links"><a href="https://aistudio.google.com/" rel="noopener">Try Google AI Studio</a><a href="https://ai.google.dev/" rel="noopener">View Gemini API docs</a></div></article>
+    <article class="ai-card featured"><div class="ai-card-icon"><img src="/assets/logos/products/adk.png" alt=""></div><h3>Gemini Enterprise Agent Platform</h3><p>Use our comprehensive platform to build, scale, govern, and optimize agents.</p><div class="ai-card-links"><a href="https://cloud.google.com/products/agent-builder" rel="noopener">Try Gemini Enterprise Agent Platform</a></div></article>
+    <article class="ai-card featured"><div class="ai-card-icon"><img src="/assets/logos/products/antigravity.png" alt=""></div><h3>Build with Google Antigravity</h3><p>Experience our agent-first development platform that allows anyone to be a builder.</p><div class="ai-card-links"><a href="https://antigravity.google/" rel="noopener">Try Google Antigravity</a></div></article>
   </div></section>
-  <section class="spotlight-section"><div class="spotlight-shell">
-    <p class="spotlight-kicker">The stack, in practice</p><h2>Every layer has a job.</h2><p class="spotlight-section-intro">GDG Tulsa teaches the stack as a workflow, not a wall of product names. Pick the layer closest to your next question, then follow the path outward.</p>
-    <div class="spotlight-grid">
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/gemini.svg" alt=""><h3>Models &amp; intelligence</h3><p>Gemini, Gemma, and the Gemini API turn language, images, code, and context into a useful starting point.</p><a href="https://ai.google.dev/" rel="noopener">Open AI for Developers</a></article>
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/products/notebooklm.svg" alt=""><h3>Research &amp; understanding</h3><p>NotebookLM and Search help you ground the work in sources, evidence, and the questions people actually ask.</p><a href="https://notebooklm.google.com/" rel="noopener">Explore NotebookLM</a></article>
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/products/jules.png" alt=""><h3>Code &amp; creation</h3><p>AI Studio, Gemini Code Assist, Jules, and Firebase shorten the distance between a prototype and a working build.</p><a href="https://aistudio.google.com/" rel="noopener">Open AI Studio</a></article>
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/products/adk.png" alt=""><h3>Agents &amp; orchestration</h3><p>ADK, A2A, and tool use give an application the ability to reason, call services, and complete a multi-step task.</p><a href="https://google.github.io/adk-docs/" rel="noopener">Read the ADK docs</a></article>
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/google-cloud.png" alt=""><h3>Production systems</h3><p>Vertex AI, Cloud Run, BigQuery, and observability turn a demo into something teams can operate and improve.</p><a href="https://cloud.google.com/vertex-ai" rel="noopener">See Vertex AI</a></article>
-      <article class="spotlight-card"><img class="card-icon" src="/assets/logos/firebase.svg" alt=""><h3>Users and feedback</h3><p>Firebase gives builders authentication, data, hosting, and the fast feedback loop every community project needs.</p><a href="https://firebase.google.com/" rel="noopener">Explore Firebase</a></article>
-    </div>
+  <section class="ai-catalog-section" id="products"><div class="ai-section-head"><div><h2>Try latest models</h2></div><a class="ai-section-link" href="https://ai.google.dev/gemini-api/docs/models" rel="noopener">View all models ↗</a></div><div class="ai-model-rail"><div class="ai-model-track" id="aiModelTrack">
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/products/antigravity.png" alt=""></div><h3>Gemini Omni</h3><p>Create anything from anything, starting with video</p><div class="ai-card-links"><a href="https://gemini.google.com/" rel="noopener">Try it ↗</a><a href="https://ai.google.dev/" rel="noopener">Gemini API</a></div></article>
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/gemini.svg" alt=""></div><h3>Nano Banana 🍌</h3><p>Create and edit images with Gemini Image</p><div class="ai-card-links"><a href="https://gemini.google.com/" rel="noopener">Try it ↗</a><a href="https://aistudio.google.com/" rel="noopener">Google AI Studio</a></div></article>
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/gemini.svg" alt=""></div><h3>Lyria <small>NEW</small></h3><p>Our most advanced music generation model</p><div class="ai-card-links"><a href="https://labs.google/fx/tools/flow" rel="noopener">Try it ↗</a><a href="https://aistudio.google.com/" rel="noopener">Google AI Studio</a></div></article>
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/products/a2a.svg" alt=""></div><h3>Gemini Audio</h3><p>Advanced real-time audio models, built on Gemini</p><div class="ai-card-links"><a href="https://aistudio.google.com/" rel="noopener">Try it ↗</a><a href="https://ai.google.dev/" rel="noopener">Learn more</a></div></article>
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/products/antigravity.png" alt=""></div><h3>Veo</h3><p>Our leading video generation model</p><div class="ai-card-links"><a href="https://gemini.google.com/" rel="noopener">Try it ↗</a><a href="https://deepmind.google/models/veo/" rel="noopener">Learn more</a></div></article>
+    <article class="ai-model-card"><div class="ai-card-icon"><img src="/assets/logos/gemini.svg" alt=""></div><h3>Gemma</h3><p>Our most capable open models</p><div class="ai-card-links"><a href="https://ai.google.dev/gemma" rel="noopener">Build with Gemma ↗</a><a href="https://ai.google.dev/gemma/docs" rel="noopener">Developer docs</a></div></article>
+  </div><div class="ai-model-controls"><button type="button" data-model-prev aria-label="Previous models">‹</button><button type="button" data-model-next aria-label="Next models">›</button></div></div></section>
+  <section class="ai-catalog-section" id="research"><div class="ai-section-head"><div><h2>Code with AI assistance</h2><p>Accelerate development with integrated AI coding assistance</p></div></div><div class="ai-catalog-grid">
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/products/antigravity.png" alt=""></div><h3>Google Antigravity CLI</h3><p>A lightweight, highly-versatile surface to create new agents without a graphical user interface.</p><div class="ai-card-links"><a href="https://antigravity.google/" rel="noopener">Try Google Antigravity CLI</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/products/colab.png" alt=""></div><h3>Colab</h3><p>AI-first coding experience in browser and free-of-charge accelerators.</p><div class="ai-card-links"><a href="https://colab.research.google.com/" rel="noopener">Try Colab</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/products/jules.png" alt=""></div><h3>Jules</h3><p>An AI agent for your GitHub repositories to help you improve and understand your code.</p><div class="ai-card-links"><a href="https://jules.google/" rel="noopener">Try Jules</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/gemini.svg" alt=""></div><h3>Gemini Code Assist</h3><p>Coding assistance in popular IDEs like VSCode and IntelliJ at no cost.</p><div class="ai-card-links"><a href="https://codeassist.google/" rel="noopener">Try Gemini Code Assist</a></div></article>
+    <article class="ai-card featured"><div class="ai-card-icon"><img src="/assets/logos/android.png" alt=""></div><h3>Gemini in Android Studio</h3><p>AI support for every stage of your development lifecycle, right at your fingertips.</p><div class="ai-card-links"><a href="https://developer.android.com/studio/preview/gemini" rel="noopener">Download Android Studio ↗</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/Google__G__logo.svg" alt=""></div><h3>Chrome DevTools</h3><p>Use AI assistance to streamline debugging across styling, performance, and more.</p><div class="ai-card-links"><a href="https://developer.chrome.com/docs/devtools" rel="noopener">Try Chrome DevTools</a></div></article>
   </div></section>
-  <section class="spotlight-section alt"><div class="spotlight-shell">
-    <p class="spotlight-kicker">A builder's route</p><h2>Start wherever the friction is.</h2>
-    <div class="spotlight-list">
-      <div class="spotlight-list-item"><span class="spotlight-number">A</span><div><strong>“I have too much information.”</strong><p>Use NotebookLM to turn a source set into a grounded conversation, summary, study guide, or research trail.</p></div></div>
-      <div class="spotlight-list-item"><span class="spotlight-number">B</span><div><strong>“I have an idea, but no prototype.”</strong><p>Use Gemini and AI Studio to explore the shape of the experience, then put the first version in Firebase.</p></div></div>
-      <div class="spotlight-list-item"><span class="spotlight-number">C</span><div><strong>“The prototype needs to do more.”</strong><p>Add tools and agents with ADK, connect the system to Vertex AI, and deploy the path that proves the idea.</p></div></div>
-    </div>
+  <section class="ai-catalog-section"><div class="ai-section-head"><div><h2>Leverage frameworks and tools</h2><p>Develop and deploy models with strong foundations in place</p></div></div><div class="ai-catalog-grid">
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/gemini.svg" alt=""></div><h3>Google AI Edge</h3><p>Deploy AI across mobile, web, and embedded applications</p><div class="ai-card-links"><a href="https://ai.google.dev/edge" rel="noopener">Try Google AI Edge</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/google-cloud.png" alt=""></div><h3>Google Cloud</h3><p>Get personalized AI tool recommendations, and explore pre-built solutions to support your work.</p><div class="ai-card-links"><a href="https://cloud.google.com/" rel="noopener">Try Gemini Enterprise Agent Platform</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/products/a2a.svg" alt=""></div><h3>JAX</h3><p>Build and train high-performance ML models using accelerator-optimized, differentiable NumPy-like API</p><div class="ai-card-links"><a href="https://jax.dev/" rel="noopener">Try JAX</a></div></article>
+    <article class="ai-card featured"><div class="ai-card-icon"><img src="/assets/logos/products/adk.png" alt=""></div><h3>TensorFlow</h3><p>Build and train ML models for deployment in any environment</p><div class="ai-card-links"><a href="https://www.tensorflow.org/" rel="noopener">Try TensorFlow</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/products/firebase-alt.svg" alt=""></div><h3>Keras</h3><p>Explore easy ways to train models of state-of-the-art LLMs to recommender systems</p><div class="ai-card-links"><a href="https://keras.io/" rel="noopener">Try Keras</a></div></article>
+    <article class="ai-card"><div class="ai-card-icon"><img src="/assets/logos/google-maps.png" alt=""></div><h3>Google Maps Platform</h3><p>Access agentic AI geospatial tools for LLMs</p><div class="ai-card-links"><a href="https://mapsplatform.google.com/" rel="noopener">Try Google Maps Platform</a></div></article>
   </div></section>
-  <section class="spotlight-section dark"><div class="spotlight-shell spotlight-cta"><div><p class="spotlight-kicker">Build with GDG Tulsa</p><h2>The fastest way to understand the stack is to use it.</h2><p>Join a hackathon, bring a question to an event, or follow the ecosystem map into the tool you need next.</p></div><a class="spotlight-actions primary" href="/hackathons.html">Find your build path</a></div></section>
 </main>
 <footer class="bwai-footer"><h2>Stay connected</h2><div class="bwai-social-row"><a href="https://gdg.community.dev/gdg-tulsa/" rel="noopener">GDG Community Page</a><a href="mailto:zain@gdgtulsa.com">Email the Organizers</a></div><div class="bwai-footer-links"><div><a href="/index.html#events">Events</a><a href="/bwai.html">Build with AI</a></div><div><a href="/devfest.html">DevFest</a><a href="/hackathons.html">Hackathons</a></div><div><a href="/google-ecosystem.html">Ecosystem</a><a href="/google-workspace.html">Workspace</a></div><div><a href="/organizer.html">Organizer</a><a href="/about-gdg.html">About GDGs</a></div></div><p class="bwai-footer-note">GDG Tulsa is an independent community group, not an official Google product.</p><button class="privacy-preferences-trigger" type="button" data-privacy-preferences hidden>Privacy Preferences</button></footer>
-<script src="/consent.js" defer></script><script src="/tracker.js" defer></script>
+<script src="/assets/ai-stack.js" defer></script><script src="/consent.js" defer></script><script src="/tracker.js" defer></script>
 </body>
 </html>
