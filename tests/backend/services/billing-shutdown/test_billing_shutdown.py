@@ -502,8 +502,10 @@ def test_duplicate_delivery_still_safe_with_verification_enabled(call, billing, 
     assert billing.billing_enabled is False
 
 
-def test_permanent_reject_never_raises_out_of_the_entry_point(billing, budgets):
+def test_permanent_reject_never_raises_out_of_the_entry_point(billing, budgets, monkeypatch):
     """Acknowledging is the point: redelivery could never help."""
+    monkeypatch.setattr(billing_main.billing_v1, "CloudBillingClient", lambda: billing)
+    monkeypatch.setattr(billing_main.budgets_v1, "BudgetServiceClient", lambda: budgets)
     billing_main.stop_billing.__wrapped__(make_event(raw_data="!!!", payload=None))  # noqa
 
 

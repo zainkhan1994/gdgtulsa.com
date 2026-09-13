@@ -395,7 +395,7 @@ def test_only_real_production_event_names_are_scored(admin_module):
 
     services_dir = Path(admin_module.__file__).parents[1]
     collector = services_dir / "collector" / "main.py"
-    tracker = services_dir.parents[2] / "frontend" / "assets" / "js" / "tracker.js"
+    tracker = services_dir.parents[2] / "src" / "frontend" / "assets" / "js" / "tracker.js"
     known = collector.read_text() + tracker.read_text()
 
     block = intent_cte(admin_module)
