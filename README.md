@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logos/gdg-community-logo-dark.png" alt="GDG Tulsa" width="180" />
+<img src="src/frontend/assets/images/logos/gdg-community-logo-dark.png" alt="GDG Tulsa" width="180" />
 
 # GDG Tulsa
 
@@ -65,52 +65,23 @@ No framework. No bundler. No dependencies to install. Pages load fast and deploy
 
 ```
 gdgtulsa.com/
-│
-├── index.html                  # Home page
-├── bwai.html                   # Build with AI
-├── devfest.html                # DevFest Tulsa
-├── google-ecosystem.html       # Google Ecosystem (4-view switcher)
-├── google-workspace.html       # Google Workspace
-├── ai-stack.html               # AI Stack
-├── hackathons.html             # Hackathons
-├── about-gdg.html              # About GDGs
-├── organizer.html              # Organizer profile
-│
-├── styles.css                  # All site styles (design tokens → components)
-├── script.js                   # Nav, auth, member portal, filtering
-├── globe.js                    # Interactive globe logic
-├── globe-explorer.css          # Globe-specific styles
-├── firebase-config.js          # Firebase SDK init
-├── firestore.rules             # Firestore security rules
-│
-├── assets/
-│   ├── brand/                  # GDG brand assets (banners, signage)
-│   ├── badges/
-│   │   ├── credentials/        # Organizer certification badges
-│   │   └── roles/              # Speaker / member / partner badges
-│   ├── bwai/                   # Build with AI motion graphics
-│   ├── logos/                  # Google product and GDG marks
-│   │   └── products/           # Individual product logos
-│   ├── workspace/
-│   │   ├── icons/              # Workspace product icons
-│   │   ├── logos/              # Workspace logos
-│   │   ├── shots/              # Product screenshots
-│   │   └── video/              # Hero videos
-│   └── ecosystem-views.js      # Orbit/Grid/Table renderers for ecosystem page
-│
-├── data/
-│   ├── gdg-events.geojson      # Event locations for the globe
-│   └── world-countries.geojson # Country boundaries for the globe
-│
-├── vendor/
-│   ├── maplibre-gl.js          # Pinned MapLibre GL (offline-safe)
-│   ├── maplibre-gl.css
-│   └── maplibre-LICENSE.txt
-│
-├── CNAME                       # Custom domain: gdgtulsa.com
-├── favicon.svg
-└── .nojekyll                   # Disables Jekyll on GitHub Pages
+├── src/frontend/               # Pages, browser code, CSS, images, data, vendor files
+├── src/backend/services/       # Independently deployable Python services
+├── tests/backend/              # Backend tests organized by service
+├── infra/terraform/            # Terraform infrastructure definitions
+├── infra/policies/             # Policy-as-code and security rules
+├── scripts/                    # Build, test, lint, bootstrap, and deployment helpers
+├── docs/                       # Architecture, ADRs, onboarding, and runbooks
+├── .github/workflows/          # CI and GitHub Pages deployment
+├── config/                     # Non-secret environment-specific configuration
+├── build/                      # Generated GitHub Pages artifact, ignored by Git
+├── CNAME                       # Custom domain source for the Pages artifact
+└── .nojekyll                   # Copied into the Pages artifact
 ```
+
+The public site remains URL-compatible with its existing root routes. Run
+`./scripts/build.sh` to package the organized source into the deployable
+`build/` directory.
 
 ---
 
@@ -148,8 +119,9 @@ No install step required.
 git clone https://github.com/zainkhan1994/gdgtulsa.com.git
 cd gdgtulsa.com
 
-# Serve locally
-python3 -m http.server 8000
+# Build and serve locally
+./scripts/build.sh
+python3 -m http.server 8000 --directory build
 ```
 
 Open [http://localhost:8000](http://localhost:8000).

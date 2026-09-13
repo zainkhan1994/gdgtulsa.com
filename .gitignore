@@ -45,3 +45,9 @@ full_bookmarks_export.json
 # Wireframes / planning
 Website wireframe.pdf
 __pycache__/
+
+# Generated site output and local environment
+build/
+.env
+.env.*
+!.env.example
